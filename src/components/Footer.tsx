@@ -38,6 +38,11 @@ export default function Footer() {
                   Recharger
                 </Link>
               </li>
+              <li>
+                <Link href="/parrainage" className="text-sm text-gray-400 hover:text-orange transition-colors">
+                  Parrainage
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Send, ArrowLeft } from 'lucide-react';
+import { Send, ArrowLeft, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 
 const categoryEmojis: Record<string, string> = {
   'Téléphones': '📱',
@@ -39,6 +40,7 @@ const categoryNames = Object.keys(categoryEmojis);
 export default function DeposerPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user, token, isLoading, loadFromStorage } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     title: '',
@@ -47,6 +49,21 @@ export default function DeposerPage() {
     category: '',
     location: 'Dakar',
   });
+
+  useEffect(() => {
+    loadFromStorage();
+  }, [loadFromStorage]);
+
+  useEffect(() => {
+    if (!isLoading && !token) {
+      toast({
+        title: 'Connexion requise',
+        description: 'Vous devez être connecté pour déposer une annonce.',
+        variant: 'destructive',
+      });
+      router.push('/login');
+    }
+  }, [token, isLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,11 +81,13 @@ export default function DeposerPage() {
     try {
       const res = await fetch('/api/annonces', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
           ...form,
           emoji: categoryEmojis[form.category] || '📦',
-          authorId: 'demo-user',
           isVip: false,
         }),
       });
@@ -81,11 +100,20 @@ export default function DeposerPage() {
         router.push('/annonces');
       } else {
         const data = await res.json();
-        toast({
-          title: 'Erreur',
-          description: data.error || 'Erreur lors de la création',
-          variant: 'destructive',
-        });
+        if (res.status === 401) {
+          toast({
+            title: 'Session expirée',
+            description: 'Veuillez vous reconnecter.',
+            variant: 'destructive',
+          });
+          router.push('/login');
+        } else {
+          toast({
+            title: 'Erreur',
+            description: data.error || 'Erreur lors de la création',
+            variant: 'destructive',
+          });
+        }
       }
     } catch {
       toast({
@@ -97,6 +125,20 @@ export default function DeposerPage() {
       setSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <p className="text-gray-500">Chargement...</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -133,6 +175,7 @@ export default function DeposerPage() {
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   className="rounded-xl border-gray-200 h-12"
+                  maxLength={100}
                 />
               </div>
 
@@ -168,6 +211,7 @@ export default function DeposerPage() {
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
                   className="rounded-xl border-gray-200 h-12"
+                  min={0}
                 />
               </div>
 
@@ -195,6 +239,7 @@ export default function DeposerPage() {
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   className="rounded-xl border-gray-200 min-h-24"
                   rows={4}
+                  maxLength={1000}
                 />
               </div>
 

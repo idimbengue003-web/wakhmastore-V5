@@ -1,18 +1,82 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create a demo user
+  // Hash the demo password
+  const hashedPassword = await bcrypt.hash('Demo1234', 12);
+
+  // Create demo user
   const user = await prisma.user.upsert({
     where: { email: 'demo@wakhmastore.com' },
     update: {},
     create: {
       email: 'demo@wakhmastore.com',
-      name: 'Demo User',
+      name: 'Démo Wakhma',
       phone: '+221 77 123 4567',
-      password: 'demo123',
+      password: hashedPassword,
       role: 'user',
       plan: 'vip_king',
+      points: 1600,
+      referralCode: 'WK-DEMO1',
+    },
+  });
+
+  // Create a second user to show referral history
+  const user2 = await prisma.user.upsert({
+    where: { email: 'ami@wakhmastore.com' },
+    update: {},
+    create: {
+      email: 'ami@wakhmastore.com',
+      name: 'Ami Diallo',
+      phone: '+221 78 987 6543',
+      password: hashedPassword,
+      role: 'user',
+      plan: 'diambar',
+      points: 0,
+      referralCode: 'WK-AMI001',
+      referredBy: user.id,
+    },
+  });
+
+  // Create a third user
+  const user3 = await prisma.user.upsert({
+    where: { email: 'fatou@wakhmastore.com' },
+    update: {},
+    create: {
+      email: 'fatou@wakhmastore.com',
+      name: 'Fatou Ndiaye',
+      phone: '+221 76 555 1234',
+      password: hashedPassword,
+      role: 'user',
+      plan: 'gratuit',
+      points: 0,
+      referralCode: 'WK-FATOU1',
+      referredBy: user.id,
+    },
+  });
+
+  // Create referral records
+  await prisma.referral.upsert({
+    where: { id: 'ref1' },
+    update: {},
+    create: {
+      id: 'ref1',
+      referrerId: user.id,
+      referredId: user2.id,
+      points: 400,
+    },
+  });
+
+  await prisma.referral.upsert({
+    where: { id: 'ref2' },
+    update: {},
+    create: {
+      id: 'ref2',
+      referrerId: user.id,
+      referredId: user3.id,
+      points: 400,
     },
   });
 
@@ -36,7 +100,9 @@ async function main() {
     });
   }
 
-  console.log('Seed completed!');
+  console.log('✅ Seed completed!');
+  console.log('📧 Demo login: demo@wakhmastore.com / Demo1234');
+  console.log('🎁 Referral code: WK-DEMO1');
 }
 
 main()

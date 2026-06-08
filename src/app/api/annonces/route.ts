@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { annonceSchema } from '@/lib/validation';
+import { getUserFromRequest } from '@/lib/get-user';
+import { rateLimit } from '@/lib/rate-limit';
+import { securityHeaders } from '@/lib/security-headers';
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,42 +34,74 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    return NextResponse.json(annonces);
+    return securityHeaders(NextResponse.json(annonces));
   } catch (error) {
     console.error('Error fetching annonces:', error);
-    return NextResponse.json({ error: 'Erreur lors du chargement des annonces' }, { status: 500 });
+    return securityHeaders(NextResponse.json(
+      { error: 'Erreur lors du chargement des annonces' },
+      { status: 500 }
+    ));
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { title, description, price, category, location, emoji, authorId, isVip, vipType } = body;
-
-    if (!title || !price || !category || !authorId) {
-      return NextResponse.json(
-        { error: 'Titre, prix, catégorie et auteur sont requis' },
-        { status: 400 }
-      );
+    // Rate limiting
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const { allowed } = rateLimit(ip);
+    if (!allowed) {
+      return securityHeaders(NextResponse.json(
+        { error: 'Trop de requêtes. Réessayez plus tard.' },
+        { status: 429 }
+      ));
     }
+
+    // Authentication required
+    const payload = getUserFromRequest(request);
+    if (!payload) {
+      return securityHeaders(NextResponse.json(
+        { error: 'Authentification requise. Connectez-vous d\'abord.' },
+        { status: 401 }
+      ));
+    }
+
+    const body = await request.json();
+
+    // Input validation
+    const result = annonceSchema.safeParse({
+      ...body,
+      price: typeof body.price === 'string' ? parseInt(body.price) : body.price,
+    });
+    if (!result.success) {
+      const errors = result.error.errors.map((e) => e.message).join(', ');
+      return securityHeaders(NextResponse.json(
+        { error: errors },
+        { status: 400 }
+      ));
+    }
+
+    const { title, description, price, category, location, emoji } = result.data;
 
     const annonce = await db.annonce.create({
       data: {
         title,
         description,
-        price: parseInt(price),
+        price,
         category,
         location: location || 'Dakar',
         emoji: emoji || '📦',
-        isVip: isVip || false,
-        vipType: vipType || null,
-        authorId,
+        isVip: body.isVip || false,
+        vipType: body.vipType || null,
+        authorId: payload.userId,
       },
     });
 
-    return NextResponse.json(annonce, { status: 201 });
+    return securityHeaders(NextResponse.json(annonce, { status: 201 }));
   } catch (error) {
     console.error('Error creating annonce:', error);
-    return NextResponse.json({ error: 'Erreur lors de la création de l\'annonce' }, { status: 500 });
+    return securityHeaders(NextResponse.json(
+      { error: 'Erreur lors de la création de l\'annonce' },
+      { status: 500 }
+    ));
   }
 }

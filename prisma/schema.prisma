@@ -8,16 +8,21 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  name      String?
-  phone     String?
-  password  String
-  role      String    @default("user") // user, admin
-  plan      String    @default("gratuit") // gratuit, diambar, vip_king
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  annonces  Annonce[]
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String?
+  phone        String?
+  password     String
+  role         String     @default("user") // user, admin
+  plan         String     @default("gratuit") // gratuit, diambar, vip_king
+  points       Int        @default(0)
+  referralCode String     @unique @default(cuid())
+  referredBy   String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  annonces     Annonce[]
+  referrals    Referral[] @relation("Referrer")
+  referredByR  Referral?  @relation("Referred")
 }
 
 model Annonce {
@@ -34,4 +39,17 @@ model Annonce {
   author      User     @relation(fields: [authorId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Referral {
+  id         String   @id @default(cuid())
+  referrerId String
+  referredId String
+  points     Int      @default(400)
+  createdAt  DateTime @default(now())
+
+  referrer   User     @relation("Referrer", fields: [referrerId], references: [id])
+  referred   User     @relation("Referred", fields: [referredId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([referredId])
 }
