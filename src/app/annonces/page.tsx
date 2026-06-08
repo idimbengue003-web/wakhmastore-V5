@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,7 @@ interface Annonce {
   createdAt: string;
 }
 
-export default function AnnoncesPage() {
+function AnnoncesContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'all';
   const initialSearch = searchParams.get('search') || '';
@@ -207,5 +207,21 @@ export default function AnnoncesPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function AnnoncesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <p className="text-gray-500">Chargement...</p>
+        </main>
+        <Footer />
+      </div>
+    }>
+      <AnnoncesContent />
+    </Suspense>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Send, ArrowLeft, Lock } from 'lucide-react';
+import { Send, ArrowLeft, Phone, MessageCircle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -48,6 +48,8 @@ export default function DeposerPage() {
     price: '',
     category: '',
     location: 'Dakar',
+    phone: '',
+    whatsapp: '',
   });
 
   useEffect(() => {
@@ -64,6 +66,13 @@ export default function DeposerPage() {
       router.push('/login');
     }
   }, [token, isLoading]);
+
+  // Pre-fill phone from user profile
+  useEffect(() => {
+    if (user?.phone && !form.phone) {
+      setForm(prev => ({ ...prev, phone: user.phone || '' }));
+    }
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +96,7 @@ export default function DeposerPage() {
         },
         body: JSON.stringify({
           ...form,
+          price: parseInt(form.price),
           emoji: categoryEmojis[form.category] || '📦',
           isVip: false,
         }),
@@ -95,7 +105,7 @@ export default function DeposerPage() {
       if (res.ok) {
         toast({
           title: 'Annonce publiée !',
-          description: 'Votre annonce a été créée avec succès.',
+          description: 'Votre annonce a été créée avec succès. Elle est visible par tous les utilisateurs.',
         });
         router.push('/annonces');
       } else {
@@ -160,8 +170,16 @@ export default function DeposerPage() {
               Déposer une annonce
             </CardTitle>
             <p className="text-gray-500 text-sm">
-              Remplissez le formulaire pour publier votre demande
+              Publiez gratuitement ce que vous cherchez. Les vendeurs vous contacteront !
             </p>
+            {/* Free posting notice */}
+            <div className="flex items-start gap-2 bg-green-50 border border-green-200 rounded-xl p-3 mt-2">
+              <Info className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-green-700">
+                <strong>C&apos;est gratuit !</strong> Sur Wakhma Store, c&apos;est le vendeur qui paye pour voir vos coordonnées.
+                Vous postez votre demande gratuitement et les vendeurs intéressés débloquent votre contact pour 1 500 points.
+              </p>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -243,6 +261,53 @@ export default function DeposerPage() {
                 />
               </div>
 
+              {/* Contact Info Section */}
+              <div className="border-t border-gray-100 pt-5 mt-5">
+                <h3 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-orange" />
+                  Coordonnées de contact
+                </h3>
+                <p className="text-xs text-gray-500 mb-4">
+                  Ces informations seront visibles uniquement par les vendeurs qui paient 1 500 points pour débloquer votre contact.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="font-medium text-gray-700 flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-gray-400" />
+                      Téléphone
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="Ex: 77 123 45 67"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      className="rounded-xl border-gray-200 h-12"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="whatsapp" className="font-medium text-gray-700 flex items-center gap-1.5">
+                      <MessageCircle className="w-3.5 h-3.5 text-green-500" />
+                      WhatsApp
+                    </Label>
+                    <Input
+                      id="whatsapp"
+                      type="tel"
+                      placeholder="Ex: 77 123 45 67"
+                      value={form.whatsapp}
+                      onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
+                      className="rounded-xl border-gray-200 h-12"
+                    />
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-400 mt-2">
+                  Format : numéro sénégalais (ex: 771234567 ou +221771234567)
+                </p>
+              </div>
+
               <Button
                 type="submit"
                 className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl h-12 text-base"
@@ -256,7 +321,7 @@ export default function DeposerPage() {
                 ) : (
                   <span className="flex items-center gap-2">
                     <Send className="w-5 h-5" />
-                    Publier l&apos;annonce
+                    Publier gratuitement
                   </span>
                 )}
               </Button>

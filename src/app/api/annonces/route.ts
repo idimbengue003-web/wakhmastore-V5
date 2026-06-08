@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         author: {
-          select: { id: true, name: true, phone: true },
+          select: { id: true, name: true },
         },
       },
       orderBy: [
@@ -34,7 +34,10 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    return securityHeaders(NextResponse.json(annonces));
+    // Remove sensitive contact info from list view
+    const safeAnnonces = annonces.map(({ phone, whatsapp, ...rest }) => rest);
+
+    return securityHeaders(NextResponse.json(safeAnnonces));
   } catch (error) {
     console.error('Error fetching annonces:', error);
     return securityHeaders(NextResponse.json(
@@ -80,7 +83,7 @@ export async function POST(request: NextRequest) {
       ));
     }
 
-    const { title, description, price, category, location, emoji } = result.data;
+    const { title, description, price, category, location, emoji, phone, whatsapp } = result.data;
 
     const annonce = await db.annonce.create({
       data: {
@@ -90,6 +93,8 @@ export async function POST(request: NextRequest) {
         category,
         location: location || 'Dakar',
         emoji: emoji || '📦',
+        phone: phone || null,
+        whatsapp: whatsapp || null,
         isVip: body.isVip || false,
         vipType: body.vipType || null,
         authorId: payload.userId,

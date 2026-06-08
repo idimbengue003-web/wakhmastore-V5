@@ -34,6 +34,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function AnnonceCard({
+  id,
   title,
   price,
   category,
@@ -82,7 +83,7 @@ export default function AnnonceCard({
               {timeAgo(createdAt)}
             </span>
           </div>
-          <Link href="/annonces">
+          <Link href={`/annonces/${id}`}>
             <Button
               variant="ghost"
               className="w-full mt-2 text-orange hover:text-orange-dark hover:bg-orange-bg font-semibold text-sm rounded-lg"

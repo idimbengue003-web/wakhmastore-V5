@@ -21,24 +21,41 @@ model User {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   annonces     Annonce[]
+  purchases    Purchase[]
   referrals    Referral[] @relation("Referrer")
   referredByR  Referral?  @relation("Referred")
 }
 
 model Annonce {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   description String?
   price       Int
   category    String
-  location    String   @default("Dakar")
-  emoji       String   @default("📦")
-  isVip       Boolean  @default(false)
-  vipType     String?  // diambar, vip_king
+  location    String    @default("Dakar")
+  emoji       String    @default("📦")
+  phone       String?   // Numéro de téléphone du vendeur
+  whatsapp    String?   // Numéro WhatsApp du vendeur
+  isVip       Boolean   @default(false)
+  vipType     String?   // diambar, vip_king
   authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  author      User      @relation(fields: [authorId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  purchases   Purchase[]
+}
+
+model Purchase {
+  id         String   @id @default(cuid())
+  userId     String
+  annonceId  String
+  points     Int      @default(1500) // Coût pour débloquer le contact
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+  annonce    Annonce  @relation(fields: [annonceId], references: [id])
+
+  @@unique([userId, annonceId]) // Un utilisateur ne paie qu'une fois par annonce
 }
 
 model Referral {

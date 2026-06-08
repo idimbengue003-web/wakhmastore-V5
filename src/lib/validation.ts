@@ -27,6 +27,14 @@ export const annonceSchema = z.object({
   category: z.string().min(1, 'La catégorie est requise'),
   location: z.string().min(1).max(100).default('Dakar'),
   emoji: z.string().default('📦'),
+  phone: z.string().optional().refine(
+    (val) => !val || /^(\+221|0)?[0-9]{9}$/.test(val.replace(/\s/g, '')),
+    'Numéro de téléphone sénégalais invalide'
+  ),
+  whatsapp: z.string().optional().refine(
+    (val) => !val || /^(\+221|0)?[0-9]{9}$/.test(val.replace(/\s/g, '')),
+    'Numéro WhatsApp sénégalais invalide'
+  ),
 });
 
 export const referralApplySchema = z.object({
