@@ -4,9 +4,19 @@ import { getUserFromRequest } from '@/lib/get-user';
 import { rateLimit } from '@/lib/rate-limit';
 import { securityHeaders } from '@/lib/security-headers';
 
-const POINTS_TO_UNLOCK = 1500;
+// Unlock cost based on user's subscription plan
+function getUnlockCost(plan: string): number {
+  switch (plan) {
+    case 'diambar':
+      return 1000;
+    case 'vip_king':
+      return 800;
+    default:
+      return 1500;
+  }
+}
 
-// POST: Purchase access to an annonce's contact info (1500 points)
+// POST: Purchase access to an annonce's contact info
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -65,7 +75,6 @@ export async function POST(
     });
 
     if (existingPurchase) {
-      // Already purchased, return the contact info
       return securityHeaders(NextResponse.json({
         success: true,
         message: 'Accès déjà débloqué',
@@ -75,10 +84,10 @@ export async function POST(
       }));
     }
 
-    // Check user points
+    // Get user with plan info
     const user = await db.user.findUnique({
       where: { id: payload.userId },
-      select: { id: true, points: true },
+      select: { id: true, points: true, plan: true },
     });
 
     if (!user) {
@@ -88,16 +97,17 @@ export async function POST(
       ));
     }
 
-    if (user.points < POINTS_TO_UNLOCK) {
-      return securityHeaders(NextResponse.json(
-        {
-          error: 'Points insuffisants',
-          currentPoints: user.points,
-          requiredPoints: POINTS_TO_UNLOCK,
-          missingPoints: POINTS_TO_UNLOCK - user.points,
-        },
-        { status: 400 }
-      ));
+    // Calculate unlock cost based on subscription plan
+    const pointsToUnlock = getUnlockCost(user.plan);
+
+    if (user.points < pointsToUnlock) {
+      return securityHeaders(NextResponse.json({
+        error: 'Points insuffisants',
+        currentPoints: user.points,
+        requiredPoints: pointsToUnlock,
+        missingPoints: pointsToUnlock - user.points,
+        plan: user.plan,
+      }, { status: 400 }));
     }
 
     // Deduct points and create purchase record
@@ -106,22 +116,25 @@ export async function POST(
         data: {
           userId: payload.userId,
           annonceId: id,
-          points: POINTS_TO_UNLOCK,
+          points: pointsToUnlock,
         },
       }),
       db.user.update({
         where: { id: payload.userId },
-        data: { points: user.points - POINTS_TO_UNLOCK },
+        data: { points: user.points - pointsToUnlock },
       }),
     ]);
 
+    const planLabel = user.plan === 'vip_king' ? 'VIP KING' : user.plan === 'diambar' ? 'Diambar' : 'Gratuit';
+
     return securityHeaders(NextResponse.json({
       success: true,
-      message: 'Accès débloqué avec succès !',
+      message: `Accès débloqué avec succès ! (${planLabel} : ${pointsToUnlock} pts)`,
       phone: annonce.phone,
       whatsapp: annonce.whatsapp,
-      pointsDeducted: POINTS_TO_UNLOCK,
-      remainingPoints: user.points - POINTS_TO_UNLOCK,
+      pointsDeducted: pointsToUnlock,
+      remainingPoints: user.points - pointsToUnlock,
+      plan: user.plan,
     }));
   } catch (error) {
     console.error('Error purchasing annonce access:', error);

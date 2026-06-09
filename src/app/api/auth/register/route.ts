@@ -68,12 +68,12 @@ export async function POST(request: NextRequest) {
       referredBy = referrer.id;
     }
 
-    // Create user
+    // Create user with phone (mandatory)
     const user = await db.user.create({
       data: {
         name,
         email,
-        phone: phone || null,
+        phone: phone.replace(/\s/g, ''),
         password: hashedPassword,
         referralCode: userReferralCode,
         referredBy: referredBy,
@@ -129,6 +129,8 @@ export async function POST(request: NextRequest) {
         plan: user.plan,
         points: user.points,
         referralCode: user.referralCode,
+        avatar: user.avatar,
+        provider: user.provider,
       },
     }, { status: 201 }));
   } catch (error) {

@@ -7,7 +7,7 @@ async function main() {
   // Hash the demo password
   const hashedPassword = await bcrypt.hash('Demo1234', 12);
 
-  // Create demo user with enough points to test purchasing
+  // Create demo user - VIP KING plan (800 pts/annonce)
   const user = await prisma.user.upsert({
     where: { email: 'demo@wakhmastore.com' },
     update: {},
@@ -18,12 +18,13 @@ async function main() {
       password: hashedPassword,
       role: 'user',
       plan: 'vip_king',
+      provider: 'email',
       points: 5000,
       referralCode: 'WK-DEMO1',
     },
   });
 
-  // Create a second user to show referral history
+  // Create a second user - Diambar plan (1000 pts/annonce)
   const user2 = await prisma.user.upsert({
     where: { email: 'ami@wakhmastore.com' },
     update: {},
@@ -34,13 +35,14 @@ async function main() {
       password: hashedPassword,
       role: 'user',
       plan: 'diambar',
+      provider: 'email',
       points: 3200,
       referralCode: 'WK-AMI001',
       referredBy: user.id,
     },
   });
 
-  // Create a third user
+  // Create a third user - Gratuit plan (1500 pts/annonce)
   const user3 = await prisma.user.upsert({
     where: { email: 'fatou@wakhmastore.com' },
     update: {},
@@ -51,6 +53,7 @@ async function main() {
       password: hashedPassword,
       role: 'user',
       plan: 'gratuit',
+      provider: 'email',
       points: 800,
       referralCode: 'WK-FATOU1',
       referredBy: user.id,
@@ -77,6 +80,29 @@ async function main() {
       referrerId: user.id,
       referredId: user3.id,
       points: 400,
+    },
+  });
+
+  // Create subscription records
+  await prisma.subscription.create({
+    data: {
+      userId: user.id,
+      plan: 'vip_king',
+      priceFcfa: 5000,
+      status: 'active',
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+  });
+
+  await prisma.subscription.create({
+    data: {
+      userId: user2.id,
+      plan: 'diambar',
+      priceFcfa: 2000,
+      status: 'active',
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     },
   });
 
@@ -173,7 +199,9 @@ async function main() {
   console.log('✅ Seed completed!');
   console.log('📧 Demo login: demo@wakhmastore.com / Demo1234');
   console.log('🎁 Referral code: WK-DEMO1');
-  console.log('💰 Demo user has 5000 points (enough to unlock 3 annonces at 1500 pts each)');
+  console.log('👑 Demo user: VIP KING plan (800 pts/annonce), 5000 points');
+  console.log('⭐ User 2: Diambar plan (1000 pts/annonce), 3200 points');
+  console.log('🆓 User 3: Gratuit plan (1500 pts/annonce), 800 points');
 }
 
 main()

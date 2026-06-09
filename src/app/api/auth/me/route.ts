@@ -25,6 +25,8 @@ export async function GET(request: NextRequest) {
         points: true,
         referralCode: true,
         referredBy: true,
+        avatar: true,
+        provider: true,
         createdAt: true,
         _count: {
           select: {

@@ -1,179 +1,125 @@
 'use client';
 
-import { Check, Crown, Star, Zap } from 'lucide-react';
+import { Coins, Crown, ArrowRight, CreditCard, Smartphone, Building2, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-
-const plans = [
-  {
-    name: 'Gratuit',
-    icon: Zap,
-    price: '0',
-    period: '/mois',
-    description: 'Pour découvrir Wakhma Store',
-    features: [
-      '3 annonces par mois',
-      'Visibilité standard',
-      'Support par email',
-    ],
-    color: 'gray',
-    buttonText: 'Plan actuel',
-    buttonVariant: 'outline' as const,
-    popular: false,
-  },
-  {
-    name: 'Diambar',
-    icon: Star,
-    price: '2 000',
-    period: '/mois',
-    description: 'Pour les vendeurs actifs',
-    features: [
-      '15 annonces par mois',
-      'Badge ⭐ Diambar',
-      'Annonces mises en avant',
-      'Support prioritaire WhatsApp',
-    ],
-    color: 'blue',
-    buttonText: 'Choisir Diambar',
-    buttonVariant: 'default' as const,
-    popular: false,
-  },
-  {
-    name: 'VIP KING',
-    icon: Crown,
-    price: '5 000',
-    period: '/mois',
-    description: 'Pour les pros de la vente',
-    features: [
-      'Annonces illimitées',
-      'Badge ⭐ VIP KING',
-      'Annonces en tête de liste',
-      'Support prioritaire WhatsApp',
-      'Statistiques détaillées',
-      'Mise en avant hebdomadaire',
-    ],
-    color: 'orange',
-    buttonText: 'Choisir VIP KING',
-    buttonVariant: 'default' as const,
-    popular: true,
-  },
-];
 
 export default function RechargePage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="text-center mb-10">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
             Rechargez votre compte
           </h1>
           <p className="text-gray-500 mt-2 max-w-xl mx-auto">
-            Choisissez le plan qui correspond à vos besoins et boostez vos annonces sur Wakhma Store
+            Achetez des points ou souscrivez un abonnement pour maximiser votre expérience sur Wakhma Store
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan) => {
-            const Icon = plan.icon;
-            return (
-              <Card
-                key={plan.name}
-                className={`relative rounded-2xl border-2 transition-all ${
-                  plan.popular
-                    ? 'border-orange shadow-lg scale-[1.02]'
-                    : 'border-gray-100 hover:border-gray-200'
-                }`}
-              >
-                {plan.popular && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange text-white border-0 font-semibold px-4">
-                    Le plus populaire
-                  </Badge>
-                )}
-                <CardHeader className="text-center pb-2">
-                  <div
-                    className={`w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-3 ${
-                      plan.popular ? 'bg-orange/10' : 'bg-gray-100'
-                    }`}
-                  >
-                    <Icon className={`w-7 h-7 ${plan.popular ? 'text-orange' : 'text-gray-500'}`} />
-                  </div>
-                  <CardTitle className="text-xl font-bold text-gray-900">{plan.name}</CardTitle>
-                  <p className="text-gray-500 text-sm">{plan.description}</p>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="text-center">
-                    <span className="text-4xl font-extrabold text-gray-900">{plan.price}</span>
-                    <span className="text-gray-500 text-sm"> FCFA{plan.period}</span>
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Buy Points Card */}
+          <Card className="rounded-2xl border-2 border-orange hover:shadow-lg transition-all">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-orange/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Coins className="w-8 h-8 text-orange" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Acheter des points
+              </h2>
+              <p className="text-gray-500 text-sm mb-6 max-w-xs mx-auto">
+                Rechargez votre solde de points pour débloquer les coordonnées des vendeurs
+              </p>
 
-                  <ul className="space-y-3">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2">
-                        <Check
-                          className={`w-5 h-5 flex-shrink-0 ${
-                            plan.popular ? 'text-orange' : 'text-green-500'
-                          }`}
-                        />
-                        <span className="text-sm text-gray-600">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+              <div className="bg-gray-50 rounded-xl p-4 mb-6 space-y-2 text-left">
+                <p className="text-sm font-medium text-gray-700 text-center mb-2">Nos packs</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Starter</span>
+                  <span className="font-semibold">1 300 F → 7 000 pts</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Standard</span>
+                  <span className="font-semibold">2 500 F → 17 000 pts</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Premium</span>
+                  <span className="font-semibold">5 000 F → 50 000 pts</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Ultimate</span>
+                  <span className="font-semibold">10 000 F → 105 000 pts</span>
+                </div>
+              </div>
 
-                  <Link href="/login">
-                    <Button
-                      variant={plan.buttonVariant}
-                      className={`w-full rounded-xl h-11 font-semibold ${
-                        plan.popular
-                          ? 'bg-orange hover:bg-orange-dark text-white'
-                          : plan.buttonVariant === 'outline'
-                          ? 'border-gray-200 text-gray-500'
-                          : ''
-                      }`}
-                    >
-                      {plan.buttonText}
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            );
-          })}
+              <div className="flex gap-2 mb-4 justify-center">
+                <Smartphone className="w-5 h-5 text-orange-500" />
+                <Wallet className="w-5 h-5 text-blue-600" />
+                <Building2 className="w-5 h-5 text-gray-500" />
+              </div>
+
+              <Link href="/acheter-points">
+                <Button className="bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl h-12 px-8 text-base w-full">
+                  Acheter des points
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Subscriptions Card */}
+          <Card className="rounded-2xl border-2 border-gray-900 hover:shadow-lg transition-all">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-gray-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Crown className="w-8 h-8 text-yellow-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Abonnements
+              </h2>
+              <p className="text-gray-500 text-sm mb-6 max-w-xs mx-auto">
+                Économisez sur le débloquage des annonces avec un abonnement mensuel
+              </p>
+
+              <div className="bg-gray-50 rounded-xl p-4 mb-6 space-y-3 text-left">
+                <div className="p-3 bg-white rounded-lg">
+                  <p className="font-semibold text-blue-600 text-sm">Diambar - 2 000 F/mois</p>
+                  <p className="text-xs text-gray-500">Débloque à 1 000 pts (-33%)</p>
+                </div>
+                <div className="p-3 bg-orange/5 rounded-lg border border-orange/20">
+                  <p className="font-semibold text-orange text-sm">VIP KING - 5 000 F/mois</p>
+                  <p className="text-xs text-gray-500">Débloque à 800 pts (-47%)</p>
+                </div>
+              </div>
+
+              <Link href="/abonnements">
+                <Button className="bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-xl h-12 px-8 text-base w-full">
+                  Voir les abonnements
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* FAQ Section */}
-        <div className="mt-12 max-w-2xl mx-auto">
-          <h2 className="text-xl font-bold text-gray-900 text-center mb-6">
-            Questions fréquentes
-          </h2>
-          <div className="space-y-4">
-            <div className="bg-gray-50 rounded-xl p-5">
-              <h3 className="font-semibold text-gray-900 mb-1">
-                Comment puis-je payer ?
-              </h3>
-              <p className="text-sm text-gray-600">
-                Nous acceptons Wave, Orange Money et les transferts bancaires. Contactez-nous sur WhatsApp pour finaliser votre paiement.
-              </p>
+        {/* Payment Methods */}
+        <div className="mt-10 text-center">
+          <p className="text-sm text-gray-500 mb-3">Méthodes de paiement acceptées</p>
+          <div className="flex items-center justify-center gap-6">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Wallet className="w-5 h-5 text-blue-600" />
+              Wave
             </div>
-            <div className="bg-gray-50 rounded-xl p-5">
-              <h3 className="font-semibold text-gray-900 mb-1">
-                Puis-je changer de plan ?
-              </h3>
-              <p className="text-sm text-gray-600">
-                Oui, vous pouvez upgrader ou downgrader votre plan à tout moment. Le nouveau plan sera actif immédiatement.
-              </p>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Smartphone className="w-5 h-5 text-orange-500" />
+              Orange Money
             </div>
-            <div className="bg-gray-50 rounded-xl p-5">
-              <h3 className="font-semibold text-gray-900 mb-1">
-                Y a-t-il une période d&apos;essai ?
-              </h3>
-              <p className="text-sm text-gray-600">
-                Le plan Gratuit vous permet de tester la plateforme. Vous pouvez upgrader quand vous êtes prêt.
-              </p>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Building2 className="w-5 h-5 text-gray-500" />
+              Virement
             </div>
           </div>
         </div>

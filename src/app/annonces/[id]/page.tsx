@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import {
   ArrowLeft, MapPin, Clock, Phone, MessageCircle, Lock,
   Shield, Star, Loader2, CheckCircle, AlertCircle, User,
-  Eye, CreditCard, ExternalLink
+  Eye, CreditCard, ExternalLink, Crown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -33,6 +33,7 @@ interface AnnonceDetail {
   whatsapp: string | null;
   hasAccess: boolean;
   unlockCost: number;
+  userPlan: string;
 }
 
 function formatPrice(price: number): string {
@@ -50,16 +51,31 @@ function timeAgo(dateStr: string): string {
   return date.toLocaleDateString('fr-FR');
 }
 
+function getPlanLabel(plan: string): string {
+  switch (plan) {
+    case 'diambar': return 'Diambar';
+    case 'vip_king': return 'VIP KING';
+    default: return 'Gratuit';
+  }
+}
+
+function getPlanBadgeColor(plan: string): string {
+  switch (plan) {
+    case 'diambar': return 'bg-blue-100 text-blue-700';
+    case 'vip_king': return 'bg-orange/10 text-orange';
+    default: return 'bg-gray-100 text-gray-500';
+  }
+}
+
 export default function AnnonceDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const { user, token, isLoading, loadFromStorage } = useAuth();
+  const { user, token, isLoading, loadFromStorage, login } = useAuth();
   const { toast } = useToast();
   const [annonce, setAnnonce] = useState<AnnonceDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
-  const [revealPhase, setRevealPhase] = useState(0); // 0: loading, 1: card appear, 2: details appear, 3: paywall appear, 4: contact revealed
-  const [showPaywallModal, setShowPaywallModal] = useState(false);
+  const [revealPhase, setRevealPhase] = useState(0);
 
   useEffect(() => {
     loadFromStorage();
@@ -83,16 +99,15 @@ export default function AnnonceDetailPage() {
         const data = await res.json();
         setAnnonce(data);
 
-        // Start the slow-reveal animation sequence
-        setTimeout(() => setRevealPhase(1), 100);  // Card appears
-        setTimeout(() => setRevealPhase(2), 600);  // Details appear
+        setTimeout(() => setRevealPhase(1), 100);
+        setTimeout(() => setRevealPhase(2), 600);
         setTimeout(() => {
           if (data.hasAccess) {
-            setRevealPhase(4); // Already purchased - show contact
+            setRevealPhase(4);
           } else {
-            setRevealPhase(3); // Show paywall option
+            setRevealPhase(3);
           }
-        }, 1200); // Paywall/contact appear
+        }, 1200);
       } else {
         toast({
           title: 'Erreur',
@@ -135,7 +150,6 @@ export default function AnnonceDetailPage() {
       const data = await res.json();
 
       if (res.ok) {
-        // Update the annonce state with contact info
         setAnnonce(prev => prev ? {
           ...prev,
           phone: data.phone,
@@ -143,26 +157,24 @@ export default function AnnonceDetailPage() {
           hasAccess: true,
         } : prev);
 
-        setShowPaywallModal(false);
-
-        // Smooth reveal animation for contact info
         setTimeout(() => setRevealPhase(4), 100);
 
+        const planLabel = getPlanLabel(user.plan);
         toast({
           title: 'Accès débloqué !',
-          description: `${data.pointsDeducted} points déduits. Il vous reste ${data.remainingPoints} points.`,
+          description: `${data.pointsDeducted} points déduits (${planLabel}). Il vous reste ${data.remainingPoints} points.`,
         });
 
         // Update user points in auth store
         if (user) {
           const updatedUser = { ...user, points: data.remainingPoints };
-          localStorage.setItem('wakhma_user', JSON.stringify(updatedUser));
+          login(token, updatedUser);
         }
       } else {
         if (res.status === 400 && data.missingPoints !== undefined) {
           toast({
             title: 'Points insuffisants',
-            description: `Il vous manque ${data.missingPoints} points. Vous avez ${data.currentPoints} points sur ${data.requiredPoints} requis.`,
+            description: `Il vous manque ${data.missingPoints} points. Vous avez ${data.currentPoints} points sur ${data.requiredPoints} requis (${getPlanLabel(data.plan)}).`,
             variant: 'destructive',
           });
         } else {
@@ -202,6 +214,10 @@ export default function AnnonceDetailPage() {
   if (!annonce) return null;
 
   const isOwner = user && user.id === annonce.authorId;
+  const unlockCost = annonce.unlockCost || 1500;
+  const userPlan = annonce.userPlan || user?.plan || 'gratuit';
+  const planLabel = getPlanLabel(userPlan);
+  const hasDiscount = userPlan !== 'gratuit';
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -301,6 +317,12 @@ export default function AnnonceDetailPage() {
                       <div className="flex items-center gap-2 text-green-700 mb-2">
                         <CheckCircle className="w-5 h-5" />
                         <span className="font-semibold">Coordonnées débloquées</span>
+                        {hasDiscount && (
+                          <Badge className={`ml-2 text-xs ${getPlanBadgeColor(userPlan)}`}>
+                            <Crown className="w-3 h-3 mr-1" />
+                            {planLabel}
+                          </Badge>
+                        )}
                       </div>
 
                       {annonce.phone && (
@@ -345,7 +367,7 @@ export default function AnnonceDetailPage() {
                       <div className="bg-orange/5 border border-orange/20 rounded-2xl p-5">
                         <p className="text-sm text-gray-600">
                           <Eye className="w-4 h-4 inline mr-1.5 text-orange" />
-                          C&apos;est votre annonce. Les autres utilisateurs paient <strong>1 500 points</strong> pour voir vos coordonnées.
+                          C&apos;est votre annonce. Les autres utilisateurs paient <strong>{unlockCost.toLocaleString('fr-FR')} points</strong> pour voir vos coordonnées.
                         </p>
                         {annonce.phone && (
                           <p className="mt-2 text-sm text-gray-500">Téléphone : {annonce.phone}</p>
@@ -363,9 +385,19 @@ export default function AnnonceDetailPage() {
                         <h3 className="text-xl font-bold text-gray-900 mb-2">
                           Coordonnées verrouillées
                         </h3>
-                        <p className="text-gray-500 mb-4 max-w-sm mx-auto">
-                          Dépensez <strong className="text-orange">1 500 points</strong> pour débloquer le numéro de téléphone et le lien WhatsApp du vendeur.
-                        </p>
+
+                        {/* Dynamic pricing display */}
+                        <div className="mb-4">
+                          <p className="text-gray-500 max-w-sm mx-auto">
+                            Dépensez <strong className="text-orange">{unlockCost.toLocaleString('fr-FR')} points</strong> pour débloquer le numéro de téléphone et le lien WhatsApp du vendeur.
+                          </p>
+                          {hasDiscount && (
+                            <div className={`inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-full text-sm font-medium ${getPlanBadgeColor(userPlan)}`}>
+                              <Crown className="w-4 h-4" />
+                              Abonnement {planLabel} : {((1500 - unlockCost) / 1500 * 100).toFixed(0)}% de réduction
+                            </div>
+                          )}
+                        </div>
 
                         {!user ? (
                           <div className="space-y-3">
@@ -384,13 +416,13 @@ export default function AnnonceDetailPage() {
                             <div className="flex items-center justify-center gap-2 text-sm">
                               <CreditCard className="w-4 h-4 text-orange" />
                               <span className="text-gray-600">
-                                Vous avez <strong className="text-orange">{user.points} points</strong>
+                                Vous avez <strong className="text-orange">{user.points.toLocaleString('fr-FR')} points</strong>
                               </span>
                             </div>
 
                             <Button
                               onClick={handlePurchase}
-                              disabled={purchasing || user.points < 1500}
+                              disabled={purchasing || user.points < unlockCost}
                               className="bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl h-12 px-8 text-base"
                             >
                               {purchasing ? (
@@ -398,24 +430,41 @@ export default function AnnonceDetailPage() {
                                   <Loader2 className="w-4 h-4 animate-spin" />
                                   Débloquage en cours...
                                 </span>
-                              ) : user.points < 1500 ? (
+                              ) : user.points < unlockCost ? (
                                 <span className="flex items-center gap-2">
                                   <AlertCircle className="w-4 h-4" />
-                                  Points insuffisants ({user.points}/1500)
+                                  Points insuffisants ({user.points.toLocaleString('fr-FR')}/{unlockCost.toLocaleString('fr-FR')})
                                 </span>
                               ) : (
                                 <span className="flex items-center gap-2">
                                   <Lock className="w-4 h-4" />
-                                  Débloquer pour 1 500 points
+                                  Débloquer pour {unlockCost.toLocaleString('fr-FR')} points
                                 </span>
                               )}
                             </Button>
 
-                            {user.points < 1500 && (
-                              <p className="text-xs text-gray-400">
-                                Gagnez des points avec le{' '}
-                                <a href="/parrainage" className="text-orange hover:underline font-medium">
-                                  programme de parrainage
+                            {user.points < unlockCost && (
+                              <div className="flex flex-col items-center gap-2">
+                                <a
+                                  href="/acheter-points"
+                                  className="text-orange hover:underline font-medium text-sm"
+                                >
+                                  Acheter des points
+                                </a>
+                                <p className="text-xs text-gray-400">
+                                  Ou gagnez des points avec le{' '}
+                                  <a href="/parrainage" className="text-orange hover:underline font-medium">
+                                    programme de parrainage
+                                  </a>
+                                </p>
+                              </div>
+                            )}
+
+                            {!hasDiscount && (
+                              <p className="text-xs text-gray-400 mt-2">
+                                Économisez avec un{' '}
+                                <a href="/abonnements" className="text-orange hover:underline font-medium">
+                                  abonnement Diambar ou VIP KING
                                 </a>
                               </p>
                             )}
@@ -432,7 +481,7 @@ export default function AnnonceDetailPage() {
                 <div className="flex items-start gap-2 text-xs text-gray-400">
                   <Shield className="w-4 h-4 flex-shrink-0 mt-0.5" />
                   <p>
-                    Les coordonnées du vendeur sont protégées. Le paiement de 1 500 points garantit
+                    Les coordonnées du vendeur sont protégées. Le paiement de {unlockCost.toLocaleString('fr-FR')} points garantit
                     un contact sérieux entre acheteurs et vendeurs sur Wakhma Store.
                   </p>
                 </div>

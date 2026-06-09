@@ -3,8 +3,8 @@ import { z } from 'zod';
 export const registerSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères').max(50, 'Le nom est trop long'),
   email: z.string().email('Email invalide').max(100, 'Email trop long'),
-  phone: z.string().optional().refine(
-    (val) => !val || /^(\+221|0)?[0-9]{9}$/.test(val.replace(/\s/g, '')),
+  phone: z.string().min(1, 'Le numéro de téléphone est obligatoire').refine(
+    (val) => /^(\+221|0)?[0-9]{9}$/.test(val.replace(/\s/g, '')),
     'Numéro de téléphone sénégalais invalide'
   ),
   password: z.string()

@@ -11,6 +11,8 @@ interface User {
   plan: string;
   points: number;
   referralCode: string;
+  avatar?: string;
+  provider: string;
 }
 
 interface AuthState {

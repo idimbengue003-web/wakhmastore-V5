@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       where: { email },
     });
 
-    if (!user) {
+    if (!user || !user.password) {
       return securityHeaders(NextResponse.json(
         { error: 'Email ou mot de passe incorrect' },
         { status: 401 }
@@ -87,6 +87,8 @@ export async function POST(request: NextRequest) {
         plan: user.plan,
         points: user.points,
         referralCode: user.referralCode,
+        avatar: user.avatar,
+        provider: user.provider,
       },
     }));
   } catch (error) {

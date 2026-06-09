@@ -98,3 +98,38 @@ Complete homepage with 5 sections:
 - shadcn/ui components (Button, Card, Badge, Sheet, Input, Select, Label, Textarea, Toaster)
 - Prisma ORM (SQLite)
 - lucide-react icons
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Add Facebook/Google OAuth, phone mandatory, point purchase system, subscription pricing
+
+Work Log:
+- Updated Prisma schema: added provider, providerId, avatar fields to User; made password optional; added PointPurchase and Subscription models
+- Created Google OAuth flow: /api/auth/google (init) and /api/auth/google/callback (callback)
+- Created Facebook OAuth flow: /api/auth/facebook (init) and /api/auth/facebook/callback (callback)
+- Created /auth/callback frontend page that receives token from OAuth, stores in localStorage
+- Created /complete-profile page where OAuth users must provide phone number
+- Created /api/auth/phone API to save phone number after OAuth login
+- Updated login page with Google and Facebook OAuth buttons on both login and register tabs
+- Made phone number mandatory on registration (updated validation schema)
+- Created point purchase system: /acheter-points page with 4 pricing tiers (1300f→7000pts, 2500f→17000pts, 5000f→50000pts, 10000f→105000pts)
+- Created /api/points API for purchasing points (GET packages, POST purchase)
+- Created subscription system: /abonnements page with Diambar (1000 pts/annonce) and VIP KING (800 pts/annonce)
+- Created /api/subscriptions API for managing subscriptions
+- Updated /api/annonces/[id] to return unlockCost based on user's plan
+- Updated /api/annonces/[id]/purchase to deduct points based on plan (1500/1000/800)
+- Updated annonce detail page with dynamic pricing, plan badges, discount indicators
+- Updated Navbar with links to Acheter des points and Abonnements
+- Updated /recharge page to be a hub linking to /acheter-points and /abonnements
+- Updated useAuth hook with avatar and provider fields
+- Updated seed data with subscription records
+- Build passes successfully
+
+Stage Summary:
+- Google and Facebook OAuth login implemented (requires env vars GOOGLE_CLIENT_ID/SECRET, FACEBOOK_CLIENT_ID/SECRET)
+- Phone number is mandatory after OAuth login via /complete-profile page
+- Point purchase system with 4 tiers: 1300f→7000, 2500f→17000, 5000f→50000, 10000f→105000
+- Subscription system: Diambar=1000pts/annonce, VIP KING=800pts/annonce, Gratuit=1500pts/annonce
+- Dynamic pricing in annonce detail based on user's subscription plan
+- All pages in French, consistent with Wakhma Store design
