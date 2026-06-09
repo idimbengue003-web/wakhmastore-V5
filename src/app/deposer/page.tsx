@@ -13,6 +13,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
+import { containsPhoneNumber } from '@/lib/validation';
 
 const categoryEmojis: Record<string, string> = {
   'Téléphones': '📱',
@@ -42,6 +43,7 @@ export default function DeposerPage() {
   const { toast } = useToast();
   const { user, token, isLoading, loadFromStorage } = useAuth();
   const [submitting, setSubmitting] = useState(false);
+  const [phoneWarning, setPhoneWarning] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -74,6 +76,20 @@ export default function DeposerPage() {
     }
   }, [user]);
 
+  // Vérification en temps réel des numéros dans titre/description
+  const checkPhoneInFields = (title: string, description: string) => {
+    if (containsPhoneNumber(title)) {
+      setPhoneWarning('Les numéros de téléphone ne sont pas autorisés dans le titre. Utilisez les champs Téléphone/WhatsApp ci-dessous.');
+      return true;
+    }
+    if (description && containsPhoneNumber(description)) {
+      setPhoneWarning('Les numéros de téléphone ne sont pas autorisés dans la description. Utilisez les champs Téléphone/WhatsApp ci-dessous.');
+      return true;
+    }
+    setPhoneWarning(null);
+    return false;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -81,6 +97,16 @@ export default function DeposerPage() {
       toast({
         title: 'Erreur',
         description: 'Veuillez remplir tous les champs obligatoires',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Bloquer les numéros de téléphone dans titre/description
+    if (checkPhoneInFields(form.title, form.description)) {
+      toast({
+        title: 'Numéro de téléphone détecté',
+        description: phoneWarning || 'Les numéros de téléphone ne sont pas autorisés dans le titre ou la description. Utilisez les champs Téléphone/WhatsApp prévus à cet effet.',
         variant: 'destructive',
       });
       return;
@@ -191,10 +217,19 @@ export default function DeposerPage() {
                   id="title"
                   placeholder="Ex: Je cherche un iPhone 15 Pro Max"
                   value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="rounded-lg border-gray-200 h-10"
+                  onChange={(e) => {
+                    setForm({ ...form, title: e.target.value });
+                    checkPhoneInFields(e.target.value, form.description);
+                  }}
+                  className={`rounded-lg border-gray-200 h-10 ${containsPhoneNumber(form.title) ? 'border-red-400 focus:border-red-500' : ''}`}
                   maxLength={100}
                 />
+                {containsPhoneNumber(form.title) && (
+                  <p className="text-xs text-red-500 flex items-center gap-1">
+                    <Info className="w-3 h-3" />
+                    Numéro de téléphone détecté — utilisez les champs Téléphone/WhatsApp ci-dessous
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -254,11 +289,20 @@ export default function DeposerPage() {
                   id="description"
                   placeholder="Décrivez ce que vous cherchez en détail..."
                   value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="rounded-lg border-gray-200 min-h-20"
+                  onChange={(e) => {
+                    setForm({ ...form, description: e.target.value });
+                    checkPhoneInFields(form.title, e.target.value);
+                  }}
+                  className={`rounded-lg border-gray-200 min-h-20 ${form.description && containsPhoneNumber(form.description) ? 'border-red-400 focus:border-red-500' : ''}`}
                   rows={4}
                   maxLength={1000}
                 />
+                {form.description && containsPhoneNumber(form.description) && (
+                  <p className="text-xs text-red-500 flex items-center gap-1">
+                    <Info className="w-3 h-3" />
+                    Numéro de téléphone détecté — utilisez les champs Téléphone/WhatsApp ci-dessous
+                  </p>
+                )}
               </div>
 
               {/* Contact Info Section */}
