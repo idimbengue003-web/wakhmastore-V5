@@ -77,24 +77,39 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      {/* Hero Section — Bleu clair */}
+      {/* Hero Section — Bleu avec objets décoratifs */}
       <section className="relative bg-gradient-to-br from-orange-dark via-orange to-blue-vivid overflow-hidden">
-        {/* Soft background pattern */}
-        <div className="absolute inset-0 opacity-[0.07]">
-          <div className="absolute top-10 left-10 w-40 h-40 border-2 border-white rounded-full" />
-          <div className="absolute bottom-10 right-20 w-28 h-28 border-2 border-white rounded-full" />
-          <div className="absolute top-1/2 left-1/3 w-20 h-20 border-2 border-white rounded-full" />
-          <div className="absolute top-1/4 right-1/4 w-36 h-36 border border-white rounded-full" />
+        {/* Floating category objects — decorative background */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Row 1 — top scattered */}
+          <span className="absolute top-[8%] left-[5%] text-3xl sm:text-4xl opacity-20 animate-float-slow select-none">📱</span>
+          <span className="absolute top-[12%] left-[22%] text-2xl sm:text-3xl opacity-15 animate-float-medium select-none">📺</span>
+          <span className="absolute top-[6%] right-[18%] text-3xl sm:text-4xl opacity-20 animate-float-fast select-none">💻</span>
+          <span className="absolute top-[15%] right-[6%] text-2xl sm:text-3xl opacity-15 animate-float-slow select-none">🧊</span>
+          {/* Row 2 — middle scattered */}
+          <span className="absolute top-[40%] left-[3%] text-4xl sm:text-5xl opacity-10 animate-float-medium select-none">🚗</span>
+          <span className="absolute top-[35%] right-[4%] text-3xl sm:text-4xl opacity-10 animate-float-fast select-none">🏗️</span>
+          {/* Row 3 — bottom scattered */}
+          <span className="absolute bottom-[18%] left-[8%] text-2xl sm:text-3xl opacity-15 animate-float-fast select-none">❄️</span>
+          <span className="absolute bottom-[12%] left-[30%] text-3xl sm:text-4xl opacity-10 animate-float-slow select-none">🔊</span>
+          <span className="absolute bottom-[15%] right-[25%] text-2xl sm:text-3xl opacity-15 animate-float-medium select-none">👗</span>
+          <span className="absolute bottom-[10%] right-[8%] text-3xl sm:text-4xl opacity-20 animate-float-fast select-none">🛋️</span>
+          {/* Extra scattered */}
+          <span className="absolute top-[55%] left-[15%] text-2xl opacity-10 animate-float-slow select-none">⚡</span>
+          <span className="absolute top-[50%] right-[15%] text-2xl opacity-10 animate-float-medium select-none">🔧</span>
+          {/* Soft circles */}
+          <div className="absolute top-[20%] left-[45%] w-48 h-48 border border-white/10 rounded-full" />
+          <div className="absolute bottom-[5%] left-[50%] -translate-x-1/2 w-64 h-64 border border-white/[0.07] rounded-full" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 text-center animate-fade-in-up">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-2 tracking-tight heading-compact">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18 md:py-22 text-center animate-fade-in-up">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-3 tracking-tight heading-compact">
             Wakhma Store
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 font-medium">
-            Les bonnes affaires à Dakar 🇸🇳
+          <p className="text-xl sm:text-2xl md:text-3xl text-white/90 mb-4 font-semibold">
+            Les bonnes affaires à Dakar
           </p>
-          <p className="text-white/70 mb-6 max-w-xl mx-auto text-sm">
+          <p className="text-white/70 mb-8 max-w-xl mx-auto text-base sm:text-lg font-medium">
             Poste ce que tu veux. Les vendeurs te le trouvent rapidement.
           </p>
 

@@ -156,3 +156,24 @@ a, button, input, select, textarea {
 .stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
 .stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
 .stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
+
+/* Floating animations for hero decorative objects */
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(3deg); }
+}
+@keyframes floatMedium {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(-2deg); }
+  66% { transform: translateY(4px) rotate(2deg); }
+}
+@keyframes floatFast {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-10px) rotate(2deg); }
+  50% { transform: translateY(2px) rotate(-1deg); }
+  75% { transform: translateY(-6px) rotate(1deg); }
+}
+
+.animate-float-slow { animation: floatSlow 8s ease-in-out infinite; }
+.animate-float-medium { animation: floatMedium 6s ease-in-out infinite; }
+.animate-float-fast { animation: floatFast 4.5s ease-in-out infinite; }
