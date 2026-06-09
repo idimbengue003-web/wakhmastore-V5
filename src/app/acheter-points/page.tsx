@@ -3,17 +3,21 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Coins, CreditCard, Check, Loader2, Award, AlertCircle,
-  Smartphone, Building2, Wallet
+  Coins, Check, Award, AlertCircle,
+  Smartphone, Building2, Wallet, MessageCircle, Send, Copy
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
+
+const WHATSAPP_NUMBER = '221789271296';
 
 const POINT_PACKAGES = [
   { id: 'starter', amountFcfa: 1300, points: 7000, label: 'Starter', popular: false },
@@ -23,18 +27,39 @@ const POINT_PACKAGES = [
 ];
 
 const PAYMENT_METHODS = [
-  { id: 'wave', label: 'Wave', icon: Wallet, color: 'text-blue-600' },
-  { id: 'orange_money', label: 'Orange Money', icon: Smartphone, color: 'text-orange' },
-  { id: 'bank_transfer', label: 'Virement bancaire', icon: Building2, color: 'text-gray-600' },
+  {
+    id: 'wave',
+    label: 'Wave',
+    icon: Wallet,
+    color: 'text-blue-600',
+    number: '78 927 12 96',
+    instructions: 'Envoyez le montant au numéro Wave ci-dessus, puis envoyez la capture d\'écran de la confirmation via WhatsApp.',
+  },
+  {
+    id: 'orange_money',
+    label: 'Orange Money',
+    icon: Smartphone,
+    color: 'text-orange',
+    number: '78 927 12 96',
+    instructions: 'Envoyez le montant au numéro Orange Money ci-dessus, puis envoyez la capture d\'écran de la confirmation via WhatsApp.',
+  },
+  {
+    id: 'bank_transfer',
+    label: 'Virement bancaire',
+    icon: Building2,
+    color: 'text-gray-600',
+    number: 'Demandez les coordonnées bancaires via WhatsApp',
+    instructions: 'Contactez-nous sur WhatsApp pour recevoir nos coordonnées bancaires. Envoyez ensuite la preuve de virement.',
+  },
 ];
 
 export default function AcheterPointsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { user, token, loadFromStorage, login } = useAuth();
+  const { user, token, loadFromStorage } = useAuth();
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<string>('wave');
-  const [loading, setLoading] = useState(false);
+  const [proofRef, setProofRef] = useState('');
 
   useEffect(() => {
     loadFromStorage();
@@ -46,57 +71,25 @@ export default function AcheterPointsPage() {
     }
   }, [token, router]);
 
-  async function handlePurchase() {
-    if (!selectedPackage || !selectedPayment || !token) return;
+  function getWhatsAppLink() {
+    const pkg = POINT_PACKAGES.find(p => p.id === selectedPackage);
+    const method = PAYMENT_METHODS.find(m => m.id === selectedPayment);
+    const message = `Bonjour Wakhma Store !\n\nJe souhaite acheter le pack *${pkg?.label}* (${pkg?.points.toLocaleString('fr-FR')} points - ${pkg?.amountFcfa.toLocaleString('fr-FR')} FCFA).\n\nMéthode de paiement : *${method?.label}*\nRéférence / ID transaction : ${proofRef || '(à compléter)'}\n\nMerci de confirmer la réception du paiement !`;
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  }
 
-    setLoading(true);
-    try {
-      const res = await fetch('/api/points', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          packageId: selectedPackage,
-          paymentMethod: selectedPayment,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        // Update user points in auth store
-        if (user) {
-          const updatedUser = { ...user, points: data.newBalance };
-          login(token, updatedUser);
-        }
-
-        toast({
-          title: 'Achat réussi !',
-          description: data.message,
-        });
-
-        setSelectedPackage(null);
-      } else {
-        toast({
-          title: 'Erreur',
-          description: data.error || 'Erreur lors de l\'achat',
-          variant: 'destructive',
-        });
-      }
-    } catch {
-      toast({
-        title: 'Erreur',
-        description: 'Erreur de connexion',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+  function copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text.replace(/\s/g, ''));
+    toast({
+      title: 'Copié !',
+      description: 'Numéro copié dans le presse-papier',
+    });
   }
 
   if (!user) return null;
+
+  const selectedPkg = POINT_PACKAGES.find(p => p.id === selectedPackage);
+  const selectedMethod = PAYMENT_METHODS.find(m => m.id === selectedPayment);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -162,89 +155,143 @@ export default function AcheterPointsPage() {
           ))}
         </div>
 
-        {/* Payment Method & Purchase */}
+        {/* Payment Instructions */}
         {selectedPackage && (
           <Card className="border-gray-100 rounded-lg max-w-lg mx-auto">
             <CardHeader>
               <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-orange" />
-                Méthode de paiement
+                <MessageCircle className="w-5 h-5 text-green-600" />
+                Instructions de paiement
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                {PAYMENT_METHODS.map((method) => {
-                  const Icon = method.icon;
-                  return (
-                    <button
-                      key={method.id}
-                      type="button"
-                      className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
-                        selectedPayment === method.id
-                          ? 'border-orange bg-orange/5'
-                          : 'border-gray-100 hover:border-gray-200'
-                      }`}
-                      onClick={() => setSelectedPayment(method.id)}
-                    >
-                      <Icon className={`w-5 h-5 ${method.color}`} />
-                      <span className="font-medium text-gray-700">{method.label}</span>
-                      {selectedPayment === method.id && (
-                        <Check className="w-5 h-5 text-orange ml-auto" />
-                      )}
-                    </button>
-                  );
-                })}
+              {/* Step 1: Choose method */}
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-orange text-white text-[10px] flex items-center justify-center font-bold">1</span>
+                  Choisissez votre méthode de paiement
+                </p>
+                <div className="space-y-2">
+                  {PAYMENT_METHODS.map((method) => {
+                    const Icon = method.icon;
+                    return (
+                      <button
+                        key={method.id}
+                        type="button"
+                        className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
+                          selectedPayment === method.id
+                            ? 'border-orange bg-orange/5'
+                            : 'border-gray-100 hover:border-gray-200'
+                        }`}
+                        onClick={() => setSelectedPayment(method.id)}
+                      >
+                        <Icon className={`w-5 h-5 ${method.color}`} />
+                        <span className="font-medium text-gray-700">{method.label}</span>
+                        {selectedPayment === method.id && (
+                          <Check className="w-5 h-5 text-orange ml-auto" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              <Separator className="my-4" />
+              <Separator />
+
+              {/* Step 2: Send payment */}
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-orange text-white text-[10px] flex items-center justify-center font-bold">2</span>
+                  Envoyez le paiement
+                </p>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-2">
+                  <p className="text-xs text-green-800 font-medium">
+                    {selectedMethod?.instructions}
+                  </p>
+                  <div className="flex items-center justify-between bg-white rounded-md px-3 py-2 border border-green-100">
+                    <div>
+                      <p className="text-[10px] text-gray-500">Numéro {selectedMethod?.label}</p>
+                      <p className="text-sm font-bold text-gray-900">{selectedMethod?.number}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-green-600 hover:text-green-700 hover:bg-green-50 h-8 px-2"
+                      onClick={() => copyToClipboard(selectedMethod?.number || '')}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
 
               {/* Order summary */}
               <div className="bg-gray-50 rounded-lg p-3 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Pack</span>
-                  <span className="font-medium text-gray-900">
-                    {POINT_PACKAGES.find(p => p.id === selectedPackage)?.label}
-                  </span>
+                  <span className="font-medium text-gray-900">{selectedPkg?.label}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Points</span>
-                  <span className="font-medium text-orange">
-                    +{POINT_PACKAGES.find(p => p.id === selectedPackage)?.points.toLocaleString('fr-FR')}
-                  </span>
+                  <span className="font-medium text-orange">+{selectedPkg?.points.toLocaleString('fr-FR')}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
-                  <span className="font-medium text-gray-700">Total</span>
+                  <span className="font-medium text-gray-700">Montant à envoyer</span>
                   <span className="text-lg font-bold text-gray-900">
-                    {POINT_PACKAGES.find(p => p.id === selectedPackage)?.amountFcfa.toLocaleString('fr-FR')} FCFA
+                    {selectedPkg?.amountFcfa.toLocaleString('fr-FR')} FCFA
                   </span>
                 </div>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-800">
-                  Le paiement est simulé en mode démo. En production, vous seriez redirigé vers {PAYMENT_METHODS.find(m => m.id === selectedPayment)?.label} pour finaliser.
+              <Separator />
+
+              {/* Step 3: Reference */}
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-orange text-white text-[10px] flex items-center justify-center font-bold">3</span>
+                  Indiquez la référence du paiement
+                </p>
+                <div className="space-y-1.5">
+                  <Label htmlFor="proof-ref" className="text-xs text-gray-600">
+                    ID de transaction ou référence (optionnel)
+                  </Label>
+                  <Input
+                    id="proof-ref"
+                    type="text"
+                    placeholder="Ex: TXN123456 ou réf. Orange Money"
+                    value={proofRef}
+                    onChange={(e) => setProofRef(e.target.value)}
+                    className="rounded-lg border-gray-200 h-10 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-blue-800">
+                  Après avoir envoyé le paiement, cliquez sur le bouton ci-dessous pour nous envoyer la preuve via WhatsApp. Votre solde sera crédité dès validation (sous 30 min).
                 </p>
               </div>
 
-              <Button
-                className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg h-10 text-sm"
-                disabled={loading}
-                onClick={handlePurchase}
+              {/* Step 4: Send proof via WhatsApp */}
+              <a
+                href={getWhatsAppLink()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
               >
-                {loading ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Traitement en cours...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <CreditCard className="w-5 h-5" />
-                    Acheter {POINT_PACKAGES.find(p => p.id === selectedPackage)?.points.toLocaleString('fr-FR')} points
-                  </span>
-                )}
-              </Button>
+                <Button
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg h-11 text-sm"
+                  type="button"
+                >
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  Envoyer la preuve via WhatsApp
+                  <Send className="w-4 h-4 ml-2" />
+                </Button>
+              </a>
             </CardContent>
           </Card>
         )}

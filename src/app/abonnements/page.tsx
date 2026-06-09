@@ -3,17 +3,21 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Crown, Star, Zap, Check, Loader2, Shield, Award,
-  Smartphone, Building2, Wallet, CreditCard, AlertCircle
+  Crown, Star, Zap, Check, Award,
+  Smartphone, Building2, Wallet, MessageCircle, Send, Copy, AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
+
+const WHATSAPP_NUMBER = '221789271296';
 
 const SUBSCRIPTION_PLANS = [
   {
@@ -80,18 +84,39 @@ const SUBSCRIPTION_PLANS = [
 ];
 
 const PAYMENT_METHODS = [
-  { id: 'wave', label: 'Wave', icon: Wallet, color: 'text-blue-600' },
-  { id: 'orange_money', label: 'Orange Money', icon: Smartphone, color: 'text-orange' },
-  { id: 'bank_transfer', label: 'Virement bancaire', icon: Building2, color: 'text-gray-600' },
+  {
+    id: 'wave',
+    label: 'Wave',
+    icon: Wallet,
+    color: 'text-blue-600',
+    number: '78 927 12 96',
+    instructions: 'Envoyez le montant au numéro Wave ci-dessus, puis envoyez la capture d\'écran de la confirmation via WhatsApp.',
+  },
+  {
+    id: 'orange_money',
+    label: 'Orange Money',
+    icon: Smartphone,
+    color: 'text-orange',
+    number: '78 927 12 96',
+    instructions: 'Envoyez le montant au numéro Orange Money ci-dessus, puis envoyez la capture d\'écran de la confirmation via WhatsApp.',
+  },
+  {
+    id: 'bank_transfer',
+    label: 'Virement bancaire',
+    icon: Building2,
+    color: 'text-gray-600',
+    number: 'Demandez les coordonnées bancaires via WhatsApp',
+    instructions: 'Contactez-nous sur WhatsApp pour recevoir nos coordonnées bancaires. Envoyez ensuite la preuve de virement.',
+  },
 ];
 
 export default function AbonnementsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { user, token, loadFromStorage, login } = useAuth();
+  const { user, token, loadFromStorage } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<string>('wave');
-  const [loading, setLoading] = useState(false);
+  const [proofRef, setProofRef] = useState('');
 
   useEffect(() => {
     loadFromStorage();
@@ -103,55 +128,23 @@ export default function AbonnementsPage() {
     }
   }, [token, router]);
 
-  async function handleSubscribe() {
-    if (!selectedPlan || selectedPlan === 'gratuit' || !selectedPayment || !token) return;
-
-    setLoading(true);
-    try {
-      const res = await fetch('/api/subscriptions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          planId: selectedPlan,
-          paymentMethod: selectedPayment,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        // Update user plan in auth store
-        if (user) {
-          const updatedUser = { ...user, plan: data.newPlan };
-          login(token, updatedUser);
-        }
-
-        toast({
-          title: 'Abonnement activé !',
-          description: data.message,
-        });
-
-        setSelectedPlan(null);
-      } else {
-        toast({
-          title: 'Erreur',
-          description: data.error || 'Erreur lors de l\'abonnement',
-          variant: 'destructive',
-        });
-      }
-    } catch {
-      toast({
-        title: 'Erreur',
-        description: 'Erreur de connexion',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+  function getWhatsAppLink() {
+    const plan = SUBSCRIPTION_PLANS.find(p => p.id === selectedPlan);
+    const method = PAYMENT_METHODS.find(m => m.id === selectedPayment);
+    const message = `Bonjour Wakhma Store !\n\nJe souhaite souscrire à l\'abonnement *${plan?.name}* (${plan?.priceFcfa.toLocaleString('fr-FR')} FCFA/mois).\n\nMéthode de paiement : *${method?.label}*\nRéférence / ID transaction : ${proofRef || '(à compléter)'}\n\nMerci de confirmer la réception du paiement !`;
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
   }
+
+  function copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text.replace(/\s/g, ''));
+    toast({
+      title: 'Copié !',
+      description: 'Numéro copié dans le presse-papier',
+    });
+  }
+
+  const selectedPlanData = SUBSCRIPTION_PLANS.find(p => p.id === selectedPlan);
+  const selectedMethod = PAYMENT_METHODS.find(m => m.id === selectedPayment);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -281,96 +274,152 @@ export default function AbonnementsPage() {
           })}
         </div>
 
-        {/* Payment Modal (inline) */}
+        {/* Payment Instructions */}
         {selectedPlan && selectedPlan !== 'gratuit' && (
           <Card className="border-gray-100 rounded-lg max-w-lg mx-auto">
             <CardHeader>
               <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-orange" />
-                Souscrire à {SUBSCRIPTION_PLANS.find(p => p.id === selectedPlan)?.name}
+                <MessageCircle className="w-5 h-5 text-green-600" />
+                Instructions de paiement — {selectedPlanData?.name}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                {PAYMENT_METHODS.map((method) => {
-                  const Icon = method.icon;
-                  return (
-                    <button
-                      key={method.id}
-                      type="button"
-                      className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
-                        selectedPayment === method.id
-                          ? 'border-orange bg-orange/5'
-                          : 'border-gray-100 hover:border-gray-200'
-                      }`}
-                      onClick={() => setSelectedPayment(method.id)}
-                    >
-                      <Icon className={`w-5 h-5 ${method.color}`} />
-                      <span className="font-medium text-gray-700">{method.label}</span>
-                      {selectedPayment === method.id && (
-                        <Check className="w-5 h-5 text-orange ml-auto" />
-                      )}
-                    </button>
-                  );
-                })}
+              {/* Step 1: Choose method */}
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-orange text-white text-[10px] flex items-center justify-center font-bold">1</span>
+                  Choisissez votre méthode de paiement
+                </p>
+                <div className="space-y-2">
+                  {PAYMENT_METHODS.map((method) => {
+                    const Icon = method.icon;
+                    return (
+                      <button
+                        key={method.id}
+                        type="button"
+                        className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
+                          selectedPayment === method.id
+                            ? 'border-orange bg-orange/5'
+                            : 'border-gray-100 hover:border-gray-200'
+                        }`}
+                        onClick={() => setSelectedPayment(method.id)}
+                      >
+                        <Icon className={`w-5 h-5 ${method.color}`} />
+                        <span className="font-medium text-gray-700">{method.label}</span>
+                        {selectedPayment === method.id && (
+                          <Check className="w-5 h-5 text-orange ml-auto" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              <Separator className="my-4" />
+              <Separator />
 
+              {/* Step 2: Send payment */}
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-orange text-white text-[10px] flex items-center justify-center font-bold">2</span>
+                  Envoyez le paiement
+                </p>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-2">
+                  <p className="text-xs text-green-800 font-medium">
+                    {selectedMethod?.instructions}
+                  </p>
+                  <div className="flex items-center justify-between bg-white rounded-md px-3 py-2 border border-green-100">
+                    <div>
+                      <p className="text-[10px] text-gray-500">Numéro {selectedMethod?.label}</p>
+                      <p className="text-sm font-bold text-gray-900">{selectedMethod?.number}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-green-600 hover:text-green-700 hover:bg-green-50 h-8 px-2"
+                      onClick={() => copyToClipboard(selectedMethod?.number || '')}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Order summary */}
               <div className="bg-gray-50 rounded-lg p-3 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Abonnement</span>
-                  <span className="font-medium text-gray-900">
-                    {SUBSCRIPTION_PLANS.find(p => p.id === selectedPlan)?.name}
-                  </span>
+                  <span className="font-medium text-gray-900">{selectedPlanData?.name}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Débloquage par annonce</span>
                   <span className="font-medium text-orange">
-                    {SUBSCRIPTION_PLANS.find(p => p.id === selectedPlan)?.unlockCost.toLocaleString('fr-FR')} pts
+                    {selectedPlanData?.unlockCost.toLocaleString('fr-FR')} pts
                   </span>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
-                  <span className="font-medium text-gray-700">Total / mois</span>
+                  <span className="font-medium text-gray-700">Montant à envoyer / mois</span>
                   <span className="text-xl font-bold text-gray-900">
-                    {SUBSCRIPTION_PLANS.find(p => p.id === selectedPlan)?.priceFcfa.toLocaleString('fr-FR')} FCFA
+                    {selectedPlanData?.priceFcfa.toLocaleString('fr-FR')} FCFA
                   </span>
                 </div>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-800">
-                  Le paiement est simulé en mode démo. En production, vous seriez redirigé vers {PAYMENT_METHODS.find(m => m.id === selectedPayment)?.label}.
+              <Separator />
+
+              {/* Step 3: Reference */}
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-orange text-white text-[10px] flex items-center justify-center font-bold">3</span>
+                  Indiquez la référence du paiement
+                </p>
+                <div className="space-y-1.5">
+                  <Label htmlFor="proof-ref" className="text-xs text-gray-600">
+                    ID de transaction ou référence (optionnel)
+                  </Label>
+                  <Input
+                    id="proof-ref"
+                    type="text"
+                    placeholder="Ex: TXN123456 ou réf. Orange Money"
+                    value={proofRef}
+                    onChange={(e) => setProofRef(e.target.value)}
+                    className="rounded-lg border-gray-200 h-10 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-blue-800">
+                  Après avoir envoyé le paiement, cliquez sur le bouton ci-dessous pour nous envoyer la preuve via WhatsApp. Votre abonnement sera activé dès validation (sous 30 min).
                 </p>
               </div>
 
               <div className="flex gap-3">
                 <Button
                   variant="outline"
-                  className="flex-1 rounded-lg h-10 text-sm font-semibold"
+                  className="flex-1 rounded-lg h-11 text-sm font-semibold"
                   onClick={() => setSelectedPlan(null)}
                 >
                   Annuler
                 </Button>
-                <Button
-                  className="flex-1 bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg h-10 text-sm"
-                  disabled={loading}
-                  onClick={handleSubscribe}
+                <a
+                  href={getWhatsAppLink()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1"
                 >
-                  {loading ? (
-                    <span className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Traitement...
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <CreditCard className="w-5 h-5" />
-                      Souscrire
-                    </span>
-                  )}
-                </Button>
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg h-11 text-sm"
+                    type="button"
+                  >
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    Envoyer la preuve
+                    <Send className="w-4 h-4 ml-2" />
+                  </Button>
+                </a>
               </div>
             </CardContent>
           </Card>
@@ -392,18 +441,18 @@ export default function AbonnementsPage() {
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-semibold text-gray-900 mb-0.5 text-xs heading-compact">
-                Puis-je changer de plan ?
+                Comment payer via WhatsApp ?
               </h3>
               <p className="text-xs text-gray-600">
-                Oui, vous pouvez upgrader à tout moment. Le nouveau plan sera actif immédiatement et les avantages appliqués dès votre prochain achat de points.
+                Choisissez votre méthode (Wave, Orange Money ou virement), envoyez le montant au numéro indiqué, puis cliquez sur « Envoyer la preuve via WhatsApp » pour nous envoyer la capture d\'écran de confirmation. Votre compte sera crédité sous 30 minutes après validation.
               </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-semibold text-gray-900 mb-0.5 text-xs heading-compact">
-                Comment puis-je payer ?
+                Puis-je changer de plan ?
               </h3>
               <p className="text-xs text-gray-600">
-                Nous acceptons Wave, Orange Money et les transferts bancaires. Contactez-nous sur WhatsApp pour finaliser votre paiement.
+                Oui, vous pouvez upgrader à tout moment. Le nouveau plan sera actif immédiatement après validation de votre paiement et les avantages appliqués dès confirmation.
               </p>
             </div>
           </div>
