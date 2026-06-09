@@ -164,7 +164,7 @@ export default function CGUPage() {
                 <strong className="text-gray-800">Diambar :</strong> 2 000 FCFA par mois — 15 annonces par mois — 1 000 points par débloquage de coordonnées.
               </li>
               <li>
-                <strong className="text-gray-800">VIP KING :</strong> 5 000 FCFA par mois — annonces illimitées — 800 points par débloquage de coordonnées.
+                <strong className="text-gray-800">VIP KING :</strong> 9 900 FCFA par mois — 5 annonces « Je vends » par semaine — 800 points par débloquage de coordonnées.
               </li>
             </ul>
             <p className="text-xs text-gray-600 leading-relaxed mb-2">

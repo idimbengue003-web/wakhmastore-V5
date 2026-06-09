@@ -66,11 +66,11 @@ const SUBSCRIPTION_PLANS = [
     period: '/mois',
     unlockCost: 800,
     pointsIncluded: 50000,
-    annoncesVends: null,
+    annoncesVends: 5,
     description: 'Pour les pros de la vente',
     features: [
       '50 000 points inclus',
-      'Annonces « Je vends » illimitées',
+      '5 annonces « Je vends » par semaine',
       'Débloque une annonce à 800 points (au lieu de 1 500)',
       'Badge VIP KING',
       'Annonces en tête de liste',
@@ -428,7 +428,7 @@ export default function AbonnementsPage() {
                 Comment fonctionne l&apos;abonnement ?
               </h3>
               <p className="text-xs text-gray-600">
-                L&apos;abonnement réduit le coût de débloquage des annonces. Avec Diambar (5 000 FCFA), vous recevez 30 000 points, 3 annonces « Je vends » et payez 1 000 points par débloquage. Avec VIP KING (9 900 FCFA), vous recevez 50 000 points, des annonces « Je vends » illimitées et payez seulement 800 points par débloquage. L&apos;abonnement dure 30 jours et se renouvelle automatiquement.
+                L&apos;abonnement réduit le coût de débloquage des annonces. Avec Diambar (5 000 FCFA), vous recevez 30 000 points, 3 annonces « Je vends » et payez 1 000 points par débloquage. Avec VIP KING (9 900 FCFA), vous recevez 50 000 points, 5 annonces « Je vends » par semaine et payez seulement 800 points par débloquage. L&apos;abonnement dure 30 jours et se renouvelle automatiquement.
               </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">

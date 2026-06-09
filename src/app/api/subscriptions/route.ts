@@ -30,10 +30,10 @@ export const SUBSCRIPTION_PLANS = [
     period: '/mois',
     unlockCost: 800, // Cost per annonce unlock
     pointsIncluded: 50000,
-    annoncesVends: null, // unlimited
+    annoncesVends: 5, // 5 per week
     features: [
       '50 000 points inclus',
-      'Annonces « Je vends » illimitées',
+      '5 annonces « Je vends » par semaine',
       'Débloque une annonce à 800 points au lieu de 1 500',
       'Badge VIP KING',
       'Annonces en tête de liste',
