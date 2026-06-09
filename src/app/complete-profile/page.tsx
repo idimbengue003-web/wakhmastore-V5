@@ -95,23 +95,23 @@ function CompleteProfileContent() {
 
       <main className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          <Card className="border-gray-100 rounded-2xl">
+          <Card className="border-gray-100 rounded-lg">
             <CardHeader className="text-center">
-              <div className="w-16 h-16 bg-orange-bg rounded-2xl flex items-center justify-center mx-auto mb-3">
-                <Phone className="w-8 h-8 text-orange" />
+              <div className="w-12 h-12 bg-orange-bg rounded-lg flex items-center justify-center mx-auto mb-3">
+                <Phone className="w-6 h-6 text-orange" />
               </div>
-              <CardTitle className="text-2xl font-bold text-gray-900">
+              <CardTitle className="text-lg font-bold heading-compact text-gray-900">
                 Numéro de téléphone requis
               </CardTitle>
-              <p className="text-gray-500 text-sm mt-2">
+              <p className="text-gray-500 text-xs mt-2">
                 Pour utiliser Wakhma Store, vous devez obligatoirement renseigner votre numéro de téléphone.
                 Cela permet aux acheteurs de vous contacter après avoir débloqué vos annonces.
               </p>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="font-medium text-gray-700">
+                  <Label htmlFor="phone" className="font-medium text-gray-700 text-xs">
                     Numéro de téléphone *
                   </Label>
                   <Input
@@ -120,7 +120,7 @@ function CompleteProfileContent() {
                     placeholder="+221 77 123 4567"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="rounded-xl border-gray-200 h-12"
+                    className="rounded-lg border-gray-200 h-10"
                     autoFocus
                   />
                   <p className="text-xs text-gray-400">
@@ -128,10 +128,10 @@ function CompleteProfileContent() {
                   </p>
                 </div>
 
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                   <div className="flex items-start gap-2">
                     <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-amber-800">
+                    <div className="text-xs text-amber-800">
                       <p className="font-semibold mb-1">Pourquoi ce numéro ?</p>
                       <p>Sur Wakhma Store, les vendeurs paient pour voir votre numéro. C&apos;est le cœur du marketplace inversé. Sans numéro, vous ne pouvez pas recevoir de contacts.</p>
                     </div>
@@ -140,7 +140,7 @@ function CompleteProfileContent() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl h-12 text-base"
+                  className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg h-10 text-sm"
                   disabled={loading || !phone}
                 >
                   {loading ? (
@@ -172,7 +172,7 @@ export default function CompleteProfilePage() {
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-orange animate-spin" />
+          <Loader2 className="w-6 h-6 text-orange animate-spin" />
         </main>
         <Footer />
       </div>
