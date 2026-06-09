@@ -49,19 +49,19 @@ export default function AnnonceCard({
       <CardContent className="p-0">
         {/* Emoji area */}
         <div className="relative">
-          <div className="bg-gradient-to-br from-orange-bg to-blue-vivid-bg h-32 flex items-center justify-center transition-all duration-300">
-            <span className="text-5xl transition-transform duration-300 hover:scale-110">{emoji}</span>
+          <div className="bg-gradient-to-br from-orange-bg to-blue-vivid-bg h-40 flex items-center justify-center transition-all duration-300">
+            <span className="text-6xl transition-transform duration-300 hover:scale-110">{emoji}</span>
           </div>
           {/* Category badge */}
           <Badge
             variant="secondary"
-            className="absolute top-1.5 left-1.5 bg-white/90 text-gray-700 text-[10px] font-medium backdrop-blur-sm px-1.5 py-0"
+            className="absolute top-2 left-2 bg-white/90 text-gray-700 text-xs font-medium backdrop-blur-sm px-2 py-0.5"
           >
             {category}
           </Badge>
           {/* VIP badge */}
           {isVip && (
-            <Badge className="absolute top-1.5 right-1.5 bg-yellow-400 text-yellow-900 text-[10px] font-bold border-0 px-1.5 py-0">
+            <Badge className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold border-0 px-2 py-0.5">
               ⭐ {vipType === 'vip_king' ? 'VIP KING' : 'DIAMBAR'}
             </Badge>
           )}

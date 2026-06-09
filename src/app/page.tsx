@@ -82,24 +82,28 @@ export default function HomePage() {
         {/* Floating category objects — decorative background */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {/* Row 1 — top scattered */}
-          <span className="absolute top-[8%] left-[5%] text-3xl sm:text-4xl opacity-20 animate-float-slow select-none">📱</span>
-          <span className="absolute top-[12%] left-[22%] text-2xl sm:text-3xl opacity-15 animate-float-medium select-none">📺</span>
-          <span className="absolute top-[6%] right-[18%] text-3xl sm:text-4xl opacity-20 animate-float-fast select-none">💻</span>
-          <span className="absolute top-[15%] right-[6%] text-2xl sm:text-3xl opacity-15 animate-float-slow select-none">🧊</span>
+          <span className="absolute top-[8%] left-[5%] text-4xl sm:text-5xl opacity-35 animate-float-slow select-none">📱</span>
+          <span className="absolute top-[12%] left-[22%] text-3xl sm:text-4xl opacity-30 animate-float-medium select-none">📺</span>
+          <span className="absolute top-[6%] right-[18%] text-4xl sm:text-5xl opacity-35 animate-float-fast select-none">💻</span>
+          <span className="absolute top-[15%] right-[6%] text-3xl sm:text-4xl opacity-30 animate-float-slow select-none">🧊</span>
           {/* Row 2 — middle scattered */}
-          <span className="absolute top-[40%] left-[3%] text-4xl sm:text-5xl opacity-10 animate-float-medium select-none">🚗</span>
-          <span className="absolute top-[35%] right-[4%] text-3xl sm:text-4xl opacity-10 animate-float-fast select-none">🏗️</span>
+          <span className="absolute top-[40%] left-[3%] text-5xl sm:text-6xl opacity-25 animate-float-medium select-none">🚗</span>
+          <span className="absolute top-[35%] right-[4%] text-4xl sm:text-5xl opacity-25 animate-float-fast select-none">🏗️</span>
           {/* Row 3 — bottom scattered */}
-          <span className="absolute bottom-[18%] left-[8%] text-2xl sm:text-3xl opacity-15 animate-float-fast select-none">❄️</span>
-          <span className="absolute bottom-[12%] left-[30%] text-3xl sm:text-4xl opacity-10 animate-float-slow select-none">🔊</span>
-          <span className="absolute bottom-[15%] right-[25%] text-2xl sm:text-3xl opacity-15 animate-float-medium select-none">👗</span>
-          <span className="absolute bottom-[10%] right-[8%] text-3xl sm:text-4xl opacity-20 animate-float-fast select-none">🛋️</span>
+          <span className="absolute bottom-[18%] left-[8%] text-3xl sm:text-4xl opacity-30 animate-float-fast select-none">❄️</span>
+          <span className="absolute bottom-[12%] left-[30%] text-4xl sm:text-5xl opacity-25 animate-float-slow select-none">🔊</span>
+          <span className="absolute bottom-[15%] right-[25%] text-3xl sm:text-4xl opacity-30 animate-float-medium select-none">👗</span>
+          <span className="absolute bottom-[10%] right-[8%] text-4xl sm:text-5xl opacity-35 animate-float-fast select-none">🛋️</span>
           {/* Extra scattered */}
-          <span className="absolute top-[55%] left-[15%] text-2xl opacity-10 animate-float-slow select-none">⚡</span>
-          <span className="absolute top-[50%] right-[15%] text-2xl opacity-10 animate-float-medium select-none">🔧</span>
+          <span className="absolute top-[55%] left-[15%] text-3xl sm:text-4xl opacity-25 animate-float-slow select-none">⚡</span>
+          <span className="absolute top-[50%] right-[15%] text-3xl sm:text-4xl opacity-25 animate-float-medium select-none">🔧</span>
+          {/* More category emojis */}
+          <span className="absolute top-[25%] left-[42%] text-3xl sm:text-4xl opacity-20 animate-float-slow select-none">📦</span>
+          <span className="absolute top-[65%] left-[50%] text-3xl sm:text-4xl opacity-20 animate-float-medium select-none">📲</span>
+          <span className="absolute bottom-[25%] right-[40%] text-3xl sm:text-4xl opacity-20 animate-float-fast select-none">🏠</span>
           {/* Soft circles */}
-          <div className="absolute top-[20%] left-[45%] w-48 h-48 border border-white/10 rounded-full" />
-          <div className="absolute bottom-[5%] left-[50%] -translate-x-1/2 w-64 h-64 border border-white/[0.07] rounded-full" />
+          <div className="absolute top-[20%] left-[45%] w-48 h-48 border border-white/15 rounded-full" />
+          <div className="absolute bottom-[5%] left-[50%] -translate-x-1/2 w-64 h-64 border border-white/10 rounded-full" />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18 md:py-22 text-center animate-fade-in-up">
@@ -169,7 +173,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="animate-pulse rounded-lg border border-gray-100 overflow-hidden">
-                <div className="bg-orange-bg h-32" />
+                <div className="bg-orange-bg h-40" />
                 <div className="p-4 space-y-2">
                   <div className="h-3 bg-gray-200 rounded w-3/4" />
                   <div className="h-5 bg-gray-200 rounded w-1/2" />
