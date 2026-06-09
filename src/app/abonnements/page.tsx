@@ -37,13 +37,16 @@ const SUBSCRIPTION_PLANS = [
     id: 'diambar',
     name: 'Diambar',
     icon: Star,
-    priceFcfa: 2000,
+    priceFcfa: 5000,
     period: '/mois',
     unlockCost: 1000,
+    pointsIncluded: 30000,
+    annoncesVends: 3,
     description: 'Pour les vendeurs actifs',
     features: [
+      '30 000 points inclus',
+      '3 annonces « Je vends » incluses',
       'Débloque une annonce à 1 000 points (au lieu de 1 500)',
-      '15 annonces par mois',
       'Badge Diambar',
       'Annonces mises en avant',
       'Support prioritaire WhatsApp',
@@ -55,13 +58,16 @@ const SUBSCRIPTION_PLANS = [
     id: 'vip_king',
     name: 'VIP KING',
     icon: Crown,
-    priceFcfa: 5000,
+    priceFcfa: 9900,
     period: '/mois',
     unlockCost: 800,
+    pointsIncluded: 50000,
+    annoncesVends: null,
     description: 'Pour les pros de la vente',
     features: [
+      '50 000 points inclus',
+      'Annonces « Je vends » illimitées',
       'Débloque une annonce à 800 points (au lieu de 1 500)',
-      'Annonces illimitées',
       'Badge VIP KING',
       'Annonces en tête de liste',
       'Support prioritaire WhatsApp',
@@ -381,7 +387,7 @@ export default function AbonnementsPage() {
                 Comment fonctionne l&apos;abonnement ?
               </h3>
               <p className="text-xs text-gray-600">
-                L&apos;abonnement réduit le coût de débloquage des annonces. Avec Diambar, vous payez 1 000 points au lieu de 1 500, et avec VIP KING seulement 800 points. L&apos;abonnement dure 30 jours et se renouvelle automatiquement.
+                L&apos;abonnement réduit le coût de débloquage des annonces. Avec Diambar (5 000 FCFA), vous recevez 30 000 points, 3 annonces « Je vends » et payez 1 000 points par débloquage. Avec VIP KING (9 900 FCFA), vous recevez 50 000 points, des annonces « Je vends » illimitées et payez seulement 800 points par débloquage. L&apos;abonnement dure 30 jours et se renouvelle automatiquement.
               </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">

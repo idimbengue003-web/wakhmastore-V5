@@ -112,7 +112,7 @@ export default function AcheterPointsPage() {
             Acheter des points
           </h1>
           <p className="text-gray-500 text-xs mt-1 max-w-xl mx-auto">
-            Rechargez votre compte pour débloquer les coordonnées des vendeurs et faire des affaires sur Wakhma Store
+            Rechargez votre solde de points pour débloquer les coordonnées des ACHETEURS et faire des affaires sur Wakhma Store
           </p>
           <div className="inline-flex items-center gap-2 mt-4 bg-orange/10 text-orange font-semibold px-3 py-1.5 rounded-full text-xs">
             <Award className="w-5 h-5" />

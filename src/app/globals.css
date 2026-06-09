@@ -177,3 +177,28 @@ a, button, input, select, textarea {
 .animate-float-slow { animation: floatSlow 8s ease-in-out infinite; }
 .animate-float-medium { animation: floatMedium 6s ease-in-out infinite; }
 .animate-float-fast { animation: floatFast 4.5s ease-in-out infinite; }
+
+/* Hero text floating animations */
+@keyframes heroFloatTitle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes heroFloatSubtitle {
+  0%, 100% { transform: translateY(0); }
+  33% { transform: translateY(-5px); }
+  66% { transform: translateY(3px); }
+}
+@keyframes heroFloatDesc {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-hero-float-title {
+  animation: heroFloatTitle 4s ease-in-out infinite;
+}
+.animate-hero-float-subtitle {
+  animation: heroFloatSubtitle 5s ease-in-out infinite;
+}
+.animate-hero-float-desc {
+  animation: heroFloatDesc 6s ease-in-out infinite;
+}

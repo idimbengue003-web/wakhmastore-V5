@@ -107,13 +107,13 @@ export default function HomePage() {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18 md:py-22 text-center animate-fade-in-up">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-3 tracking-tight heading-compact">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-3 tracking-tight heading-compact animate-hero-float-title">
             Wakhma Store
           </h1>
-          <p className="text-xl sm:text-2xl md:text-3xl text-white/90 mb-4 font-semibold">
+          <p className="text-xl sm:text-2xl md:text-3xl text-white/90 mb-4 font-semibold animate-hero-float-subtitle">
             Les bonnes affaires à Dakar
           </p>
-          <p className="text-white/70 mb-8 max-w-xl mx-auto text-base sm:text-lg font-medium">
+          <p className="text-white/70 mb-8 max-w-xl mx-auto text-base sm:text-lg font-medium animate-hero-float-desc">
             Poste ce que tu veux. Les vendeurs te le trouvent rapidement.
           </p>
 

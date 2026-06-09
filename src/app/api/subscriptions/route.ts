@@ -9,12 +9,15 @@ export const SUBSCRIPTION_PLANS = [
   {
     id: 'diambar',
     name: 'Diambar',
-    priceFcfa: 2000,
+    priceFcfa: 5000,
     period: '/mois',
     unlockCost: 1000, // Cost per annonce unlock
+    pointsIncluded: 30000,
+    annoncesVends: 3,
     features: [
+      '30 000 points inclus',
+      '3 annonces « Je vends » incluses',
       'Débloque une annonce à 1 000 points au lieu de 1 500',
-      '15 annonces par mois',
       'Badge Diambar',
       'Annonces mises en avant',
       'Support prioritaire WhatsApp',
@@ -23,12 +26,15 @@ export const SUBSCRIPTION_PLANS = [
   {
     id: 'vip_king',
     name: 'VIP KING',
-    priceFcfa: 5000,
+    priceFcfa: 9900,
     period: '/mois',
     unlockCost: 800, // Cost per annonce unlock
+    pointsIncluded: 50000,
+    annoncesVends: null, // unlimited
     features: [
+      '50 000 points inclus',
+      'Annonces « Je vends » illimitées',
       'Débloque une annonce à 800 points au lieu de 1 500',
-      'Annonces illimitées',
       'Badge VIP KING',
       'Annonces en tête de liste',
       'Support prioritaire WhatsApp',
@@ -93,6 +99,14 @@ export async function POST(request: NextRequest) {
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + 30);
 
+    // Get current user points
+    const currentUser = await db.user.findUnique({
+      where: { id: payload.userId },
+      select: { points: true },
+    });
+    const currentPoints = currentUser?.points ?? 0;
+    const newPointsBalance = currentPoints + (plan as { pointsIncluded?: number }).pointsIncluded!;
+
     // Create subscription record
     const subscription = await db.subscription.create({
       data: {
@@ -105,25 +119,30 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Update user plan
+    // Update user plan and credit included points
     await db.user.update({
       where: { id: user.id },
-      data: { plan: plan.id },
+      data: {
+        plan: plan.id,
+        points: newPointsBalance,
+      },
     });
 
     return securityHeaders(NextResponse.json({
       success: true,
-      message: `Abonnement ${plan.name} activé avec succès !`,
+      message: `Abonnement ${plan.name} activé avec succès ! ${(plan as { pointsIncluded?: number }).pointsIncluded?.toLocaleString('fr-FR')} points crédités.`,
       subscription: {
         id: subscription.id,
         plan: plan.name,
         priceFcfa: plan.priceFcfa,
         unlockCost: plan.unlockCost,
+        pointsIncluded: (plan as { pointsIncluded?: number }).pointsIncluded,
         startDate,
         endDate,
         status: 'active',
       },
       newPlan: plan.id,
+      newPointsBalance,
     }));
   } catch (error) {
     console.error('Error creating subscription:', error);
