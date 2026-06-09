@@ -78,7 +78,7 @@ export default function HomePage() {
       <Navbar />
 
       {/* Hero Section — Bleu clair */}
-      <section className="relative bg-gradient-to-br from-orange-dark via-orange to-blue-400 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-orange-dark via-orange to-blue-vivid overflow-hidden">
         {/* Soft background pattern */}
         <div className="absolute inset-0 opacity-[0.07]">
           <div className="absolute top-10 left-10 w-40 h-40 border-2 border-white rounded-full" />
@@ -210,7 +210,7 @@ export default function HomePage() {
       </section>
 
       {/* Features - Rapide/Fiable/Efficace */}
-      <section className="bg-gradient-to-br from-orange-dark via-orange to-blue-500 py-8 sm:py-10">
+      <section className="bg-gradient-to-br from-orange-dark via-orange to-blue-vivid py-8 sm:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-5 sm:mb-6">
             <h2 className="text-lg sm:text-xl font-bold text-white heading-compact">

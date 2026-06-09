@@ -1,14 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Parrainage — Gagnez 400 points par filleul",
-  description:
-    "Invitez vos amis sur Wakhma Store et gagnez 400 points par filleul, jusqu'à 30 000 points ! Partagez votre code de parrainage maintenant.",
-  alternates: { canonical: "/parrainage" },
+  title: 'Parrainage — Gagnez 400 points par filleul',
+  description: 'Parrainez vos amis sur Wakhma Store et gagnez 400 points par filleul, jusqu\'à 30 000 points. Programme de parrainage gratuit et sans engagement.',
+  alternates: { canonical: '/parrainage' },
   openGraph: {
-    title: "Programme de parrainage — Wakhma Store",
-    description:
-      "Gagnez 400 points par filleul sur Wakhma Store. Jusqu'à 30 000 points !",
+    title: 'Parrainage — Wakhma Store',
+    description: 'Invitez vos amis et gagnez des points gratuits sur Wakhma Store.',
   },
 };
 

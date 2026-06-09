@@ -1,14 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Annonces — Parcourez les demandes à Dakar",
-  description:
-    "Parcourez les annonces de Dakar. Téléphones, TV, électroménager, immobilier, meubles et plus. Trouvez ce que vous cherchez sur Wakhma Store.",
-  alternates: { canonical: "/annonces" },
+  title: 'Annonces — Trouvez ce que vous cherchez',
+  description: 'Parcourez les annonces de Wakhma Store. Téléphones, TV, électroménager, immobilier à Dakar. Postez votre besoin gratuitement et laissez les vendeurs vous trouver.',
+  alternates: { canonical: '/annonces' },
   openGraph: {
-    title: "Annonces — Wakhma Store Dakar",
-    description:
-      "Parcourez les annonces de Dakar. Trouvez ce que vous cherchez sur Wakhma Store.",
+    title: 'Annonces — Wakhma Store',
+    description: 'Parcourez les annonces à Dakar. Trouvez ce que vous cherchez sur le marketplace inversé #1 du Sénégal.',
   },
 };
 

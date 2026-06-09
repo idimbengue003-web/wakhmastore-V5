@@ -41,10 +41,12 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  /* Custom Wakhma colors — Bleu vif & fluide */
-  --color-orange: #2563EB;
-  --color-orange-dark: #1E40AF;
+  /* Custom Wakhma colors — 2 Bleus vivants & fluides */
+  --color-orange: #1D4ED8;
+  --color-orange-dark: #1E3A8A;
   --color-orange-bg: #DBEAFE;
+  --color-blue-vivid: #06B6D4;
+  --color-blue-vivid-bg: #CFFAFE;
 }
 
 :root {
@@ -55,7 +57,7 @@
   --card-foreground: oklch(0.145 0.02 255);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0.02 255);
-  --primary: oklch(0.546 0.245 262.881); /* blue-600 */
+  --primary: oklch(0.488 0.243 264.376); /* blue-700 — deeper vivid blue */
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0.005 255);
   --secondary-foreground: oklch(0.205 0.02 255);
@@ -66,20 +68,20 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.925 0.005 255);
   --input: oklch(0.925 0.005 255);
-  --ring: oklch(0.546 0.245 262.881);
-  --chart-1: oklch(0.546 0.245 262.881);
+  --ring: oklch(0.488 0.243 264.376);
+  --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0.005 255);
   --sidebar-foreground: oklch(0.145 0.02 255);
-  --sidebar-primary: oklch(0.546 0.245 262.881);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.975 0.005 255);
   --sidebar-accent-foreground: oklch(0.205 0.02 255);
   --sidebar-border: oklch(0.925 0.005 255);
-  --sidebar-ring: oklch(0.546 0.245 262.881);
+  --sidebar-ring: oklch(0.488 0.243 264.376);
 }
 
 @layer base {
@@ -114,7 +116,7 @@ a, button, input, select, textarea {
 
 /* Custom search bar shadow */
 .search-bar-shadow {
-  box-shadow: 0 4px 24px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 4px 24px rgba(29, 78, 216, 0.15);
 }
 
 /* Annonce card hover effect */
@@ -123,7 +125,7 @@ a, button, input, select, textarea {
 }
 .annonce-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.12);
+  box-shadow: 0 8px 25px rgba(29, 78, 216, 0.12);
 }
 
 /* Smooth page fade-in */

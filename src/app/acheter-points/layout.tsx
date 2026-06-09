@@ -1,14 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Acheter des points — Rechargez votre compte",
-  description:
-    "Achetez des points Wakhma Store pour débloquer les coordonnées des vendeurs. Packs Starter, Standard, Premium et Ultimate. Paiement Wave, Orange Money, virement.",
-  alternates: { canonical: "/acheter-points" },
+  title: 'Acheter des points — Débloquez les contacts',
+  description: 'Rechargez votre compte en points sur Wakhma Store. Paiement par Wave, Orange Money ou virement bancaire. Débloquez les coordonnées des chercheurs.',
+  alternates: { canonical: '/acheter-points' },
   openGraph: {
-    title: "Acheter des points — Wakhma Store",
-    description:
-      "Rechargez votre compte pour débloquer les coordonnées des vendeurs à Dakar.",
+    title: 'Acheter des points — Wakhma Store',
+    description: 'Rechargez vos points et débloquez les contacts des chercheurs sur Wakhma Store.',
   },
 };
 

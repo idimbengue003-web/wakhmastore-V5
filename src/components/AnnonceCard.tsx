@@ -49,7 +49,7 @@ export default function AnnonceCard({
       <CardContent className="p-0">
         {/* Emoji area */}
         <div className="relative">
-          <div className="bg-gradient-to-br from-orange-bg to-blue-50 h-20 flex items-center justify-center transition-all duration-300">
+          <div className="bg-gradient-to-br from-orange-bg to-blue-vivid-bg h-20 flex items-center justify-center transition-all duration-300">
             <span className="text-3xl transition-transform duration-300 hover:scale-110">{emoji}</span>
           </div>
           {/* Category badge */}
