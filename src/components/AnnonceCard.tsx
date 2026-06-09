@@ -49,8 +49,8 @@ export default function AnnonceCard({
       <CardContent className="p-0">
         {/* Emoji area */}
         <div className="relative">
-          <div className="bg-orange-bg h-28 flex items-center justify-center">
-            <span className="text-4xl">{emoji}</span>
+          <div className="bg-gradient-to-br from-orange-bg to-blue-50 h-28 flex items-center justify-center transition-all duration-300">
+            <span className="text-4xl transition-transform duration-300 hover:scale-110">{emoji}</span>
           </div>
           {/* Category badge */}
           <Badge
@@ -72,7 +72,7 @@ export default function AnnonceCard({
           <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
             {title}
           </h3>
-          <p className="text-lg font-bold text-orange">{formatPrice(price)}</p>
+          <p className="text-lg font-bold text-orange transition-colors duration-200">{formatPrice(price)}</p>
           <div className="flex items-center gap-3 text-xs text-gray-500">
             <span className="flex items-center gap-1">
               <MapPin className="w-3 h-3" />
@@ -86,7 +86,7 @@ export default function AnnonceCard({
           <Link href={`/annonces/${id}`}>
             <Button
               variant="ghost"
-              className="w-full mt-2 text-orange hover:text-orange-dark hover:bg-orange-bg font-semibold text-sm rounded-lg"
+              className="w-full mt-2 text-orange hover:text-orange-dark hover:bg-orange-bg font-semibold text-sm rounded-lg transition-all duration-200"
             >
               <MessageCircle className="w-4 h-4 mr-2" />
               Voir l&apos;annonce

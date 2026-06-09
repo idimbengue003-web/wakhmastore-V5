@@ -75,7 +75,7 @@ const SUBSCRIPTION_PLANS = [
 
 const PAYMENT_METHODS = [
   { id: 'wave', label: 'Wave', icon: Wallet, color: 'text-blue-600' },
-  { id: 'orange_money', label: 'Orange Money', icon: Smartphone, color: 'text-orange-500' },
+  { id: 'orange_money', label: 'Orange Money', icon: Smartphone, color: 'text-orange' },
   { id: 'bank_transfer', label: 'Virement bancaire', icon: Building2, color: 'text-gray-600' },
 ];
 

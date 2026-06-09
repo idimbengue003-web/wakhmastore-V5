@@ -41,66 +41,105 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  /* Custom Wakhma colors */
-  --color-orange: #EA580C;
-  --color-orange-dark: #C2410C;
-  --color-orange-bg: #FFF7ED;
+  /* Custom Wakhma colors — Bleu clair */
+  --color-orange: #3B82F6;
+  --color-orange-dark: #2563EB;
+  --color-orange-bg: #EFF6FF;
 }
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.995 0.002 250);
+  --foreground: oklch(0.145 0.02 255);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.145 0.02 255);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.637 0.237 25.338); /* orange-600 darker */
+  --popover-foreground: oklch(0.145 0.02 255);
+  --primary: oklch(0.623 0.214 259.815); /* blue-500 */
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.97 0.005 255);
+  --secondary-foreground: oklch(0.205 0.02 255);
+  --muted: oklch(0.975 0.005 255);
+  --muted-foreground: oklch(0.5 0.02 255);
+  --accent: oklch(0.975 0.005 255);
+  --accent-foreground: oklch(0.205 0.02 255);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.637 0.237 25.338);
-  --chart-1: oklch(0.637 0.237 25.338);
+  --border: oklch(0.925 0.005 255);
+  --input: oklch(0.925 0.005 255);
+  --ring: oklch(0.623 0.214 259.815);
+  --chart-1: oklch(0.623 0.214 259.815);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.637 0.237 25.338);
+  --sidebar: oklch(0.985 0.005 255);
+  --sidebar-foreground: oklch(0.145 0.02 255);
+  --sidebar-primary: oklch(0.623 0.214 259.815);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.637 0.237 25.338);
+  --sidebar-accent: oklch(0.975 0.005 255);
+  --sidebar-accent-foreground: oklch(0.205 0.02 255);
+  --sidebar-border: oklch(0.925 0.005 255);
+  --sidebar-ring: oklch(0.623 0.214 259.815);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+}
+
+/* Smooth transitions globally */
+a, button, input, select, textarea {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Custom search bar shadow */
 .search-bar-shadow {
-  box-shadow: 0 4px 24px rgba(234, 88, 12, 0.15);
+  box-shadow: 0 4px 24px rgba(59, 130, 246, 0.12);
 }
 
 /* Annonce card hover effect */
 .annonce-card {
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .annonce-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.1);
 }
+
+/* Smooth page fade-in */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Staggered children animation */
+.stagger-children > * {
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.4s; }

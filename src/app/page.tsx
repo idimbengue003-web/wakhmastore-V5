@@ -77,16 +77,17 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-orange-dark to-orange overflow-hidden">
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-32 h-32 border-2 border-white rounded-full" />
-          <div className="absolute bottom-10 right-20 w-24 h-24 border-2 border-white rounded-full" />
-          <div className="absolute top-1/2 left-1/3 w-16 h-16 border-2 border-white rounded-full" />
+      {/* Hero Section — Bleu clair */}
+      <section className="relative bg-gradient-to-br from-orange-dark via-orange to-blue-400 overflow-hidden">
+        {/* Soft background pattern */}
+        <div className="absolute inset-0 opacity-[0.07]">
+          <div className="absolute top-10 left-10 w-40 h-40 border-2 border-white rounded-full" />
+          <div className="absolute bottom-10 right-20 w-28 h-28 border-2 border-white rounded-full" />
+          <div className="absolute top-1/2 left-1/3 w-20 h-20 border-2 border-white rounded-full" />
+          <div className="absolute top-1/4 right-1/4 w-36 h-36 border border-white rounded-full" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-28 text-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-28 text-center animate-fade-in-up">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4 tracking-tight">
             Wakhma Store
           </h1>
@@ -113,7 +114,7 @@ export default function HomePage() {
               <Link
                 href={searchQuery ? `/annonces?search=${encodeURIComponent(searchQuery)}` : '/annonces'}
               >
-                <Button className="bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg px-6 h-12">
+                <Button className="bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg px-6 h-12 transition-all duration-200">
                   Rechercher
                 </Button>
               </Link>
@@ -124,7 +125,7 @@ export default function HomePage() {
           <div className="flex flex-wrap justify-center gap-2">
             {quickCategories.map((cat) => (
               <Link key={cat} href={`/annonces?category=${encodeURIComponent(cat)}`}>
-                <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/15 text-white text-sm font-medium backdrop-blur-sm hover:bg-white/25 transition-colors cursor-pointer">
+                <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/15 text-white text-sm font-medium backdrop-blur-sm hover:bg-white/25 transition-all duration-200 cursor-pointer hover:scale-105">
                   {categories.find((c) => c.name === cat)?.emoji} {cat}
                 </span>
               </Link>
@@ -143,7 +144,7 @@ export default function HomePage() {
             <p className="text-gray-500 mt-1">Les dernières demandes postées sur Wakhma Store</p>
           </div>
           <Link href="/annonces">
-            <Button variant="ghost" className="text-orange hover:text-orange-dark hover:bg-orange-bg font-semibold">
+            <Button variant="ghost" className="text-orange hover:text-orange-dark hover:bg-orange-bg font-semibold transition-all duration-200">
               Voir tout <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </Link>
@@ -166,13 +167,13 @@ export default function HomePage() {
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">Aucune annonce pour le moment</p>
             <Link href="/deposer">
-              <Button className="mt-4 bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg">
+              <Button className="mt-4 bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg transition-all duration-200">
                 Déposer la première annonce
               </Button>
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 stagger-children">
             {annonces.slice(0, 8).map((annonce) => (
               <AnnonceCard key={annonce.id} {...annonce} />
             ))}
@@ -181,7 +182,7 @@ export default function HomePage() {
       </section>
 
       {/* Catégories */}
-      <section className="bg-gray-50 py-12 sm:py-16">
+      <section className="bg-orange-bg/50 py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-10">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
@@ -194,12 +195,12 @@ export default function HomePage() {
               <Link
                 key={cat.name}
                 href={`/annonces?category=${encodeURIComponent(cat.name)}`}
-                className="group flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl bg-white border border-gray-100 hover:border-orange/30 hover:shadow-md transition-all"
+                className="group flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl bg-white border border-gray-100 hover:border-orange/30 hover:shadow-md transition-all duration-300 hover:-translate-y-1"
               >
-                <span className="text-2xl sm:text-3xl group-hover:scale-110 transition-transform">
+                <span className="text-2xl sm:text-3xl group-hover:scale-110 transition-transform duration-300">
                   {cat.emoji}
                 </span>
-                <span className="text-xs sm:text-sm font-medium text-gray-700 group-hover:text-orange transition-colors text-center leading-tight">
+                <span className="text-xs sm:text-sm font-medium text-gray-700 group-hover:text-orange transition-colors duration-200 text-center leading-tight">
                   {cat.name}
                 </span>
               </Link>
@@ -209,7 +210,7 @@ export default function HomePage() {
       </section>
 
       {/* Features - Rapide/Fiable/Efficace */}
-      <section className="bg-gradient-to-br from-orange to-orange-dark py-12 sm:py-16">
+      <section className="bg-gradient-to-br from-orange-dark via-orange to-blue-500 py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-10">
             <h2 className="text-2xl sm:text-3xl font-bold text-white">
@@ -218,7 +219,7 @@ export default function HomePage() {
             <p className="text-white/80 mt-1">Rapide, fiable et efficace</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl p-6 sm:p-8 text-center shadow-lg">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="w-14 h-14 bg-orange/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Zap className="w-7 h-7 text-orange" />
               </div>
@@ -227,7 +228,7 @@ export default function HomePage() {
                 Postez votre demande en quelques secondes et recevez des réponses rapidement.
               </p>
             </div>
-            <div className="bg-white rounded-2xl p-6 sm:p-8 text-center shadow-lg">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="w-14 h-14 bg-orange/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-7 h-7 text-orange" />
               </div>
@@ -236,7 +237,7 @@ export default function HomePage() {
                 Des vendeurs vérifiés et un système de confiance pour vos transactions.
               </p>
             </div>
-            <div className="bg-white rounded-2xl p-6 sm:p-8 text-center shadow-lg">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 sm:p-8 text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="w-14 h-14 bg-orange/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <TrendingUp className="w-7 h-7 text-orange" />
               </div>
@@ -251,7 +252,7 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="bg-orange-bg rounded-2xl p-8 sm:p-12 text-center border border-orange/10">
+        <div className="bg-orange-bg rounded-2xl p-8 sm:p-12 text-center border border-orange/10 transition-all duration-300 hover:shadow-lg">
           <Sparkles className="w-10 h-10 text-orange mx-auto mb-4" />
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
             Tu cherches un objet introuvable ou budget limité ?
@@ -260,7 +261,7 @@ export default function HomePage() {
             Dépose une annonce gratuitement et laisse les vendeurs de Dakar te trouver la meilleure offre !
           </p>
           <Link href="/deposer">
-            <Button className="bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg px-8 py-3 text-base h-auto">
+            <Button className="bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg px-8 py-3 text-base h-auto transition-all duration-200 hover:scale-105">
               Déposer une annonce
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>

@@ -57,7 +57,7 @@ export default function RechargePage() {
               </div>
 
               <div className="flex gap-2 mb-4 justify-center">
-                <Smartphone className="w-5 h-5 text-orange-500" />
+                <Smartphone className="w-5 h-5 text-orange" />
                 <Wallet className="w-5 h-5 text-blue-600" />
                 <Building2 className="w-5 h-5 text-gray-500" />
               </div>
@@ -114,7 +114,7 @@ export default function RechargePage() {
               Wave
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Smartphone className="w-5 h-5 text-orange-500" />
+              <Smartphone className="w-5 h-5 text-orange" />
               Orange Money
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-600">
