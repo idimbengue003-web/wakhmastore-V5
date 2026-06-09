@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Coins, Check, Award, AlertCircle,
-  Smartphone, Building2, Wallet, MessageCircle, Send, Copy
+  Smartphone, Wallet, MessageCircle, Send, Copy
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,14 +42,6 @@ const PAYMENT_METHODS = [
     color: 'text-orange',
     number: '78 927 12 96',
     instructions: 'Envoyez le montant au numéro Orange Money ci-dessus, puis envoyez la capture d\'écran de la confirmation via WhatsApp.',
-  },
-  {
-    id: 'bank_transfer',
-    label: 'Virement bancaire',
-    icon: Building2,
-    color: 'text-gray-600',
-    number: 'Demandez les coordonnées bancaires via WhatsApp',
-    instructions: 'Contactez-nous sur WhatsApp pour recevoir nos coordonnées bancaires. Envoyez ensuite la preuve de virement.',
   },
 ];
 
