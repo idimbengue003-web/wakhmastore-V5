@@ -30,7 +30,7 @@ const SUBSCRIPTION_PLANS = [
     description: 'Pour découvrir Wakhma Store',
     features: [
       'Débloque une annonce à 1 500 points',
-      '3 annonces par mois',
+      'Poster des annonces gratuitement',
       'Visibilité standard',
       'Support par email',
     ],
