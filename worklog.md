@@ -133,3 +133,29 @@ Stage Summary:
 - Subscription system: Diambar=1000pts/annonce, VIP KING=800pts/annonce, Gratuit=1500pts/annonce
 - Dynamic pricing in annonce detail based on user's subscription plan
 - All pages in French, consistent with Wakhma Store design
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Create GitHub repo wakhmastore-V5 and prepare for Vercel deployment
+
+Work Log:
+- Created GitHub repository: idimbengue003-web/wakhmastore-V5
+- Switched Prisma database provider from SQLite to PostgreSQL for Vercel compatibility
+- Removed `output: "standalone"` from next.config.ts (not needed on Vercel)
+- Added image remote patterns for Google and Facebook OAuth avatars
+- Added `postinstall: "prisma generate"` script for automatic Prisma client generation on Vercel
+- Updated build command: `prisma generate && prisma db push --accept-data-loss && next build`
+- Created .env.example with all required environment variables
+- Updated .gitignore for Vercel deployment
+- Removed strict Content-Security-Policy header for OAuth compatibility
+- Optimized Prisma logging (query logs in dev only, error logs in production)
+- Renamed package to "wakhmastore"
+- Build test passed successfully
+- Initialized git and pushed to https://github.com/idimbengue003-web/wakhmastore-V5.git
+
+Stage Summary:
+- Repository: https://github.com/idimbengue003-web/wakhmastore-V5
+- Database: PostgreSQL (required for Vercel serverless)
+- Build command: prisma generate && prisma db push --accept-data-loss && next build
+- Next steps for Vercel: Create Vercel Postgres database, set env vars, deploy
