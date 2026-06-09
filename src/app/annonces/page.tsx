@@ -177,11 +177,11 @@ function AnnoncesContent() {
             )}
 
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="animate-pulse rounded-xl border border-gray-100 overflow-hidden">
-                    <div className="bg-orange-bg h-24" />
-                    <div className="p-3 space-y-2">
+                  <div key={i} className="animate-pulse rounded-lg border border-gray-100 overflow-hidden">
+                    <div className="bg-orange-bg h-32" />
+                    <div className="p-4 space-y-2">
                       <div className="h-4 bg-gray-200 rounded w-3/4" />
                       <div className="h-5 bg-gray-200 rounded w-1/2" />
                       <div className="h-3 bg-gray-200 rounded w-2/3" />
@@ -195,7 +195,7 @@ function AnnoncesContent() {
                 <p className="text-gray-400 text-sm">Essayez de modifier vos filtres</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                 {annonces.map((annonce) => (
                   <AnnonceCard key={annonce.id} {...annonce} />
                 ))}

@@ -49,8 +49,8 @@ export default function AnnonceCard({
       <CardContent className="p-0">
         {/* Emoji area */}
         <div className="relative">
-          <div className="bg-gradient-to-br from-orange-bg to-blue-vivid-bg h-20 flex items-center justify-center transition-all duration-300">
-            <span className="text-3xl transition-transform duration-300 hover:scale-110">{emoji}</span>
+          <div className="bg-gradient-to-br from-orange-bg to-blue-vivid-bg h-32 flex items-center justify-center transition-all duration-300">
+            <span className="text-5xl transition-transform duration-300 hover:scale-110">{emoji}</span>
           </div>
           {/* Category badge */}
           <Badge
@@ -68,18 +68,18 @@ export default function AnnonceCard({
         </div>
 
         {/* Content */}
-        <div className="p-3 space-y-1.5">
-          <h3 className="font-semibold text-gray-900 text-xs leading-tight line-clamp-2">
+        <div className="p-4 space-y-2">
+          <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
             {title}
           </h3>
-          <p className="text-sm font-bold text-orange transition-colors duration-200">{formatPrice(price)}</p>
-          <div className="flex items-center gap-2 text-[10px] text-gray-500">
+          <p className="text-base font-bold text-orange transition-colors duration-200">{formatPrice(price)}</p>
+          <div className="flex items-center gap-2 text-xs text-gray-500">
             <span className="flex items-center gap-0.5">
-              <MapPin className="w-2.5 h-2.5" />
+              <MapPin className="w-3 h-3" />
               {location}
             </span>
             <span className="flex items-center gap-0.5">
-              <Clock className="w-2.5 h-2.5" />
+              <Clock className="w-3 h-3" />
               {timeAgo(createdAt)}
             </span>
           </div>
@@ -87,7 +87,7 @@ export default function AnnonceCard({
             <Button
               variant="ghost"
               size="sm"
-              className="w-full mt-1 text-orange hover:text-orange-dark hover:bg-orange-bg font-semibold text-[10px] rounded-md transition-all duration-200 h-7"
+              className="w-full mt-1 text-orange hover:text-orange-dark hover:bg-orange-bg font-semibold text-xs rounded-md transition-all duration-200 h-8"
             >
               <MessageCircle className="w-3 h-3 mr-1" />
               Voir l&apos;annonce
