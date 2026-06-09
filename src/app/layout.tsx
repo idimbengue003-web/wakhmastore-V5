@@ -101,7 +101,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://vercel.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
       </head>
-      <body className={`${geistSans.variable} antialiased min-h-screen flex flex-col bg-white text-gray-900`}>
+      <body className={`${geistSans.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}>
         {children}
         <Toaster />
       </body>
