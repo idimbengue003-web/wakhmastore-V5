@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// SQL statements to create all tables — each executed separately
+// SQL statements to create all tables
 const SQL_STATEMENTS: { name: string; sql: string }[] = [
   {
     name: 'User',
@@ -111,7 +111,7 @@ const SQL_STATEMENTS: { name: string; sql: string }[] = [
   },
 ];
 
-// Foreign keys — errors ignored (may already exist)
+// Foreign keys
 const FK_STATEMENTS: { name: string; sql: string }[] = [
   {
     name: 'Annonce_authorId_fkey',
@@ -143,30 +143,45 @@ const FK_STATEMENTS: { name: string; sql: string }[] = [
   },
 ];
 
+// Tables to drop in reverse order (respecting foreign keys)
+const DROP_ORDER = [
+  'Subscription', 'PointPurchase', 'Referral', 'Purchase', 'Annonce', 'User',
+];
+
 // This route initializes the database
-// Call it once after deployment: GET /api/init-db
+// GET /api/init-db → create tables if missing
+// GET /api/init-db?reset=true → drop all tables and recreate (⚠️ deletes all data)
 export async function GET(request: NextRequest) {
   const results: { step: string; status: string; error?: string }[] = [];
+  const resetMode = request.nextUrl.searchParams.get('reset') === 'true';
 
   try {
-    // Try to check if User table exists
-    try {
-      await db.user.findFirst();
-      results.push({ step: 'check', status: 'User table exists' });
+    // If reset mode, drop all tables first
+    if (resetMode) {
+      for (const table of DROP_ORDER) {
+        try {
+          await db.$executeRawUnsafe(`DROP TABLE IF EXISTS "${table}" CASCADE`);
+          results.push({ step: `drop_${table}`, status: 'ok' });
+        } catch (err: unknown) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          results.push({ step: `drop_${table}`, status: 'error', error: errMsg });
+        }
+      }
+    }
 
-      // Check if all other tables exist too
+    // Check if all tables already exist (skip if reset)
+    if (!resetMode) {
       try {
+        await db.user.findFirst();
         await db.annonce.findFirst();
         await db.purchase.findFirst();
         await db.referral.findFirst();
         await db.pointPurchase.findFirst();
         await db.subscription.findFirst();
-        return NextResponse.json({ status: 'ok', message: 'All database tables already exist', details: results });
+        return NextResponse.json({ status: 'ok', message: 'All database tables already exist' });
       } catch {
-        // Some tables missing, continue to create them
+        // Some tables missing, continue to create
       }
-    } catch {
-      // User table doesn't exist, continue to create all
     }
 
     // Create tables one by one
@@ -180,7 +195,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Add foreign keys one by one (ignore errors)
+    // Add foreign keys one by one
     for (const stmt of FK_STATEMENTS) {
       try {
         await db.$executeRawUnsafe(stmt.sql);
