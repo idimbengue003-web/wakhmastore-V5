@@ -102,30 +102,30 @@ export default function AcheterPointsPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
         {/* Header */}
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-orange-bg rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Coins className="w-8 h-8 text-orange" />
+        <div className="text-center mb-6">
+          <div className="w-12 h-12 bg-orange-bg rounded-lg flex items-center justify-center mx-auto mb-3">
+            <Coins className="w-6 h-6 text-orange" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+          <h1 className="text-lg sm:text-xl font-bold heading-compact text-gray-900">
             Acheter des points
           </h1>
-          <p className="text-gray-500 mt-2 max-w-xl mx-auto">
+          <p className="text-gray-500 text-xs mt-1 max-w-xl mx-auto">
             Rechargez votre compte pour débloquer les coordonnées des vendeurs et faire des affaires sur Wakhma Store
           </p>
-          <div className="inline-flex items-center gap-2 mt-4 bg-orange/10 text-orange font-semibold px-4 py-2 rounded-full">
+          <div className="inline-flex items-center gap-2 mt-4 bg-orange/10 text-orange font-semibold px-3 py-1.5 rounded-full text-xs">
             <Award className="w-5 h-5" />
             Votre solde : {user.points.toLocaleString('fr-FR')} points
           </div>
         </div>
 
         {/* Point Packages */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           {POINT_PACKAGES.map((pkg) => (
             <Card
               key={pkg.id}
-              className={`relative rounded-2xl cursor-pointer transition-all hover:shadow-lg ${
+              className={`relative rounded-lg cursor-pointer transition-all hover:shadow-lg ${
                 selectedPackage === pkg.id
                   ? 'border-2 border-orange shadow-lg scale-[1.02]'
                   : 'border border-gray-100 hover:border-gray-200'
@@ -133,23 +133,23 @@ export default function AcheterPointsPage() {
               onClick={() => setSelectedPackage(pkg.id)}
             >
               {pkg.popular && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange text-white border-0 font-semibold px-3">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange text-white border-0 font-semibold px-2.5">
                   Populaire
                 </Badge>
               )}
-              <CardContent className="p-5 text-center">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 ${
+              <CardContent className="p-4 text-center">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 ${
                   selectedPackage === pkg.id ? 'bg-orange/10' : 'bg-gray-100'
                 }`}>
-                  <Coins className={`w-6 h-6 ${selectedPackage === pkg.id ? 'text-orange' : 'text-gray-400'}`} />
+                  <Coins className={`w-5 h-5 ${selectedPackage === pkg.id ? 'text-orange' : 'text-gray-400'}`} />
                 </div>
-                <h3 className="font-bold text-gray-900 text-lg">{pkg.label}</h3>
-                <p className="text-3xl font-extrabold text-orange mt-2">
+                <h3 className="font-bold text-gray-900 text-sm heading-compact">{pkg.label}</h3>
+                <p className="text-2xl font-extrabold text-orange mt-1">
                   {pkg.points.toLocaleString('fr-FR')}
                 </p>
                 <p className="text-xs text-gray-500 mb-3">points</p>
                 <Separator className="my-3" />
-                <p className="text-xl font-bold text-gray-900">
+                <p className="text-lg font-bold text-gray-900">
                   {pkg.amountFcfa.toLocaleString('fr-FR')} <span className="text-sm font-normal text-gray-500">FCFA</span>
                 </p>
                 {selectedPackage === pkg.id && (
@@ -164,9 +164,9 @@ export default function AcheterPointsPage() {
 
         {/* Payment Method & Purchase */}
         {selectedPackage && (
-          <Card className="border-gray-100 rounded-2xl max-w-lg mx-auto">
+          <Card className="border-gray-100 rounded-lg max-w-lg mx-auto">
             <CardHeader>
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-orange" />
                 Méthode de paiement
               </CardTitle>
@@ -179,7 +179,7 @@ export default function AcheterPointsPage() {
                     <button
                       key={method.id}
                       type="button"
-                      className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
+                      className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
                         selectedPayment === method.id
                           ? 'border-orange bg-orange/5'
                           : 'border-gray-100 hover:border-gray-200'
@@ -199,7 +199,7 @@ export default function AcheterPointsPage() {
               <Separator className="my-4" />
 
               {/* Order summary */}
-              <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+              <div className="bg-gray-50 rounded-lg p-3 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Pack</span>
                   <span className="font-medium text-gray-900">
@@ -215,13 +215,13 @@ export default function AcheterPointsPage() {
                 <Separator />
                 <div className="flex justify-between">
                   <span className="font-medium text-gray-700">Total</span>
-                  <span className="text-xl font-bold text-gray-900">
+                  <span className="text-lg font-bold text-gray-900">
                     {POINT_PACKAGES.find(p => p.id === selectedPackage)?.amountFcfa.toLocaleString('fr-FR')} FCFA
                   </span>
                 </div>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5 flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-800">
                   Le paiement est simulé en mode démo. En production, vous seriez redirigé vers {PAYMENT_METHODS.find(m => m.id === selectedPayment)?.label} pour finaliser.
@@ -229,7 +229,7 @@ export default function AcheterPointsPage() {
               </div>
 
               <Button
-                className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl h-12 text-base"
+                className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg h-10 text-sm"
                 disabled={loading}
                 onClick={handlePurchase}
               >

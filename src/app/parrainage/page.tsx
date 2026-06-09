@@ -128,7 +128,7 @@ export default function ParrainagePage() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <Loader2 className="w-8 h-8 text-orange animate-spin mx-auto mb-4" />
+            <Loader2 className="w-6 h-6 text-orange animate-spin mx-auto mb-4" />
             <p className="text-gray-500">Chargement...</p>
           </div>
         </main>
@@ -147,10 +147,10 @@ export default function ParrainagePage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
         <Button
           variant="ghost"
-          className="mb-6 text-gray-600 hover:text-orange -ml-2"
+          className="mb-6 text-gray-600 hover:text-orange -ml-2 text-xs"
           onClick={() => router.push('/')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -159,29 +159,29 @@ export default function ParrainagePage() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-orange/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Gift className="w-10 h-10 text-orange" />
+          <div className="w-14 h-14 bg-orange/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+            <Gift className="w-7 h-7 text-orange" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+          <h1 className="text-lg sm:text-xl font-bold heading-compact text-gray-900">
             Programme de parrainage
           </h1>
-          <p className="text-gray-500 mt-2 max-w-lg mx-auto">
+          <p className="text-gray-500 text-xs mt-1 max-w-lg mx-auto">
             Invite tes amis sur Wakhma Store et gagne <strong className="text-orange">400 points</strong> par filleul, jusqu&apos;à <strong className="text-orange">30 000 points</strong> !
           </p>
         </div>
 
         {/* Referral Code Card */}
-        <Card className="border-2 border-orange/20 rounded-2xl mb-6 overflow-hidden">
-          <div className="bg-gradient-to-r from-orange to-orange-dark p-6 text-center">
-            <p className="text-white/80 text-sm font-medium mb-2">Ton code de parrainage</p>
-            <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-wider font-mono">
+        <Card className="border-2 border-orange/20 rounded-lg mb-4 overflow-hidden">
+          <div className="bg-gradient-to-r from-orange to-orange-dark p-4 text-center">
+            <p className="text-white/80 text-xs font-medium mb-2">Ton code de parrainage</p>
+            <p className="text-2xl sm:text-3xl font-extrabold text-white tracking-wider font-mono">
               {stats?.referralCode || '...'}
             </p>
             <div className="flex gap-3 mt-4 justify-center">
               <Button
                 onClick={copyCode}
                 variant="secondary"
-                className="bg-white/20 hover:bg-white/30 text-white border-0 rounded-xl"
+                className="bg-white/20 hover:bg-white/30 text-white border-0 rounded-lg text-xs"
               >
                 {copied ? (
                   <><CheckCircle className="w-4 h-4 mr-2" /> Copié !</>
@@ -192,7 +192,7 @@ export default function ParrainagePage() {
               <Button
                 onClick={shareCode}
                 variant="secondary"
-                className="bg-white/20 hover:bg-white/30 text-white border-0 rounded-xl"
+                className="bg-white/20 hover:bg-white/30 text-white border-0 rounded-lg text-xs"
               >
                 <Share2 className="w-4 h-4 mr-2" /> Partager
               </Button>
@@ -201,42 +201,42 @@ export default function ParrainagePage() {
         </Card>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          <Card className="rounded-xl border-gray-100">
-            <CardContent className="p-4 text-center">
-              <Award className="w-6 h-6 text-orange mx-auto mb-2" />
-              <p className="text-2xl font-extrabold text-gray-900">{stats?.points || 0}</p>
-              <p className="text-xs text-gray-500">Points totaux</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
+          <Card className="rounded-lg border-gray-100">
+            <CardContent className="p-3 text-center">
+              <Award className="w-5 h-5 text-orange mx-auto mb-1.5" />
+              <p className="text-lg font-extrabold text-gray-900">{stats?.points || 0}</p>
+              <p className="text-[10px] text-gray-500">Points totaux</p>
             </CardContent>
           </Card>
-          <Card className="rounded-xl border-gray-100">
-            <CardContent className="p-4 text-center">
-              <Users className="w-6 h-6 text-orange mx-auto mb-2" />
-              <p className="text-2xl font-extrabold text-gray-900">{stats?.currentReferralCount || 0}</p>
-              <p className="text-xs text-gray-500">Filleuls</p>
+          <Card className="rounded-lg border-gray-100">
+            <CardContent className="p-3 text-center">
+              <Users className="w-5 h-5 text-orange mx-auto mb-1.5" />
+              <p className="text-lg font-extrabold text-gray-900">{stats?.currentReferralCount || 0}</p>
+              <p className="text-[10px] text-gray-500">Filleuls</p>
             </CardContent>
           </Card>
-          <Card className="rounded-xl border-gray-100">
-            <CardContent className="p-4 text-center">
-              <TrendingUp className="w-6 h-6 text-orange mx-auto mb-2" />
-              <p className="text-2xl font-extrabold text-gray-900">{stats?.totalReferralPoints || 0}</p>
-              <p className="text-xs text-gray-500">Points gagnés</p>
+          <Card className="rounded-lg border-gray-100">
+            <CardContent className="p-3 text-center">
+              <TrendingUp className="w-5 h-5 text-orange mx-auto mb-1.5" />
+              <p className="text-lg font-extrabold text-gray-900">{stats?.totalReferralPoints || 0}</p>
+              <p className="text-[10px] text-gray-500">Points gagnés</p>
             </CardContent>
           </Card>
-          <Card className="rounded-xl border-gray-100">
-            <CardContent className="p-4 text-center">
-              <Star className="w-6 h-6 text-orange mx-auto mb-2" />
-              <p className="text-2xl font-extrabold text-gray-900">{stats?.remainingPoints || 0}</p>
-              <p className="text-xs text-gray-500">Points restants</p>
+          <Card className="rounded-lg border-gray-100">
+            <CardContent className="p-3 text-center">
+              <Star className="w-5 h-5 text-orange mx-auto mb-1.5" />
+              <p className="text-lg font-extrabold text-gray-900">{stats?.remainingPoints || 0}</p>
+              <p className="text-[10px] text-gray-500">Points restants</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Progress Bar */}
-        <Card className="rounded-2xl border-gray-100 mb-6">
-          <CardContent className="p-5">
+        <Card className="rounded-lg border-gray-100 mb-4">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-900">Progression vers la limite</h3>
+              <h3 className="font-semibold text-gray-900 text-xs heading-compact">Progression vers la limite</h3>
               <Badge className={stats?.canEarnMore ? 'bg-green-100 text-green-700 border-0' : 'bg-gray-100 text-gray-500 border-0'}>
                 {stats?.canEarnMore ? 'Actif' : 'Limite atteinte'}
               </Badge>
@@ -255,39 +255,39 @@ export default function ParrainagePage() {
         </Card>
 
         {/* How it works */}
-        <Card className="rounded-2xl border-gray-100 mb-6">
+        <Card className="rounded-lg border-gray-100 mb-4">
           <CardHeader>
-            <CardTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <CardTitle className="text-sm font-bold heading-compact text-gray-900 flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-orange" />
               Comment ça marche ?
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-orange/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-sm font-bold text-orange">1</span>
+              <div className="w-6 h-6 bg-orange/10 rounded-md flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-bold text-orange">1</span>
               </div>
               <div>
-                <p className="font-semibold text-gray-900">Partage ton code</p>
-                <p className="text-sm text-gray-500">Envoie ton code de parrainage unique à tes amis par WhatsApp, SMS ou réseaux sociaux.</p>
+                <p className="font-semibold text-gray-900 text-xs heading-compact">Partage ton code</p>
+                <p className="text-xs text-gray-500">Envoie ton code de parrainage unique à tes amis par WhatsApp, SMS ou réseaux sociaux.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-orange/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-sm font-bold text-orange">2</span>
+              <div className="w-6 h-6 bg-orange/10 rounded-md flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-bold text-orange">2</span>
               </div>
               <div>
-                <p className="font-semibold text-gray-900">Ton ami s&apos;inscrit</p>
-                <p className="text-sm text-gray-500">Ton ami crée un compte sur Wakhma Store en utilisant ton code de parrainage.</p>
+                <p className="font-semibold text-gray-900 text-xs heading-compact">Ton ami s&apos;inscrit</p>
+                <p className="text-xs text-gray-500">Ton ami crée un compte sur Wakhma Store en utilisant ton code de parrainage.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-orange/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-sm font-bold text-orange">3</span>
+              <div className="w-6 h-6 bg-orange/10 rounded-md flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-bold text-orange">3</span>
               </div>
               <div>
-                <p className="font-semibold text-gray-900">Tu gagnes 400 points</p>
-                <p className="text-sm text-gray-500">Dès que ton ami valide son inscription, tu reçois automatiquement 400 points. Tu peux gagner jusqu&apos;à 30 000 points au total !</p>
+                <p className="font-semibold text-gray-900 text-xs heading-compact">Tu gagnes 400 points</p>
+                <p className="text-xs text-gray-500">Dès que ton ami valide son inscription, tu reçois automatiquement 400 points. Tu peux gagner jusqu&apos;à 30 000 points au total !</p>
               </div>
             </div>
           </CardContent>
@@ -295,9 +295,9 @@ export default function ParrainagePage() {
 
         {/* Referral History */}
         {stats?.referrals && stats.referrals.length > 0 && (
-          <Card className="rounded-2xl border-gray-100">
+          <Card className="rounded-lg border-gray-100">
             <CardHeader>
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <CardTitle className="text-sm font-bold heading-compact text-gray-900 flex items-center gap-2">
                 <Users className="w-5 h-5 text-orange" />
                 Historique des filleuls
               </CardTitle>
@@ -307,10 +307,10 @@ export default function ParrainagePage() {
                 {stats.referrals.map((referral) => (
                   <div
                     key={referral.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
+                    className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-orange/10 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-orange/10 rounded-full flex items-center justify-center">
                         <Users className="w-5 h-5 text-orange" />
                       </div>
                       <div>

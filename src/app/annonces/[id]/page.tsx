@@ -202,7 +202,7 @@ export default function AnnonceDetailPage() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <Loader2 className="w-8 h-8 text-orange animate-spin mx-auto mb-4" />
+            <Loader2 className="w-6 h-6 text-orange animate-spin mx-auto mb-4" />
             <p className="text-gray-500">Chargement de l&apos;annonce...</p>
           </div>
         </main>
@@ -223,10 +223,10 @@ export default function AnnonceDetailPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
         <Button
           variant="ghost"
-          className="mb-6 text-gray-600 hover:text-orange -ml-2"
+          className="mb-6 text-gray-600 hover:text-orange -ml-2 text-xs"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -235,15 +235,15 @@ export default function AnnonceDetailPage() {
 
         {/* Annonce Card - Slow reveal */}
         <div className={`transition-all duration-700 ease-out ${revealPhase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <Card className="border-gray-100 rounded-2xl overflow-hidden shadow-lg">
+          <Card className="border-gray-100 rounded-lg overflow-hidden shadow-lg">
             {/* Emoji Header */}
             <div className="relative bg-gradient-to-br from-orange/10 to-orange/5">
-              <div className="h-40 sm:h-48 flex items-center justify-center">
-                <span className="text-7xl sm:text-8xl">{annonce.emoji}</span>
+              <div className="h-28 sm:h-36 flex items-center justify-center">
+                <span className="text-5xl sm:text-6xl">{annonce.emoji}</span>
               </div>
               {/* VIP Badge */}
               {annonce.isVip && (
-                <Badge className="absolute top-4 right-4 bg-yellow-400 text-yellow-900 text-sm font-bold border-0 px-3 py-1">
+                <Badge className="absolute top-4 right-4 bg-yellow-400 text-yellow-900 text-xs font-bold border-0 px-2.5 py-0.5">
                   <Star className="w-4 h-4 mr-1" />
                   {annonce.vipType === 'vip_king' ? 'VIP KING' : 'DIAMBAR'}
                 </Badge>
@@ -251,32 +251,32 @@ export default function AnnonceDetailPage() {
               {/* Category Badge */}
               <Badge
                 variant="secondary"
-                className="absolute top-4 left-4 bg-white/90 text-gray-700 font-medium backdrop-blur-sm"
+                className="absolute top-4 left-4 bg-white/90 text-gray-700 font-medium backdrop-blur-sm text-xs"
               >
                 {annonce.category}
               </Badge>
             </div>
 
             {/* Content - Slow reveal */}
-            <CardContent className={`p-6 sm:p-8 transition-all duration-700 ease-out delay-200 ${revealPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            <CardContent className={`p-4 sm:p-5 transition-all duration-700 ease-out delay-200 ${revealPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
               {/* Title & Price */}
               <div className="space-y-3 mb-6">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight heading-compact">
                   {annonce.title}
                 </h1>
-                <p className="text-3xl sm:text-4xl font-extrabold text-orange">
+                <p className="text-xl sm:text-2xl font-extrabold text-orange">
                   {formatPrice(annonce.price)}
                 </p>
               </div>
 
               {/* Location & Time */}
-              <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
+              <div className="flex items-center gap-4 text-xs text-gray-500 mb-6">
                 <span className="flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-orange" />
+                  <MapPin className="w-3 h-3 text-orange" />
                   {annonce.location}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-orange" />
+                  <Clock className="w-3 h-3 text-orange" />
                   {timeAgo(annonce.createdAt)}
                 </span>
               </div>
@@ -286,8 +286,8 @@ export default function AnnonceDetailPage() {
               {/* Description */}
               {annonce.description && (
                 <div className="mb-6">
-                  <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
-                  <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+                  <h3 className="font-semibold text-gray-900 mb-1 text-xs heading-compact">Description</h3>
+                  <p className="text-gray-600 text-xs leading-relaxed whitespace-pre-line">
                     {annonce.description}
                   </p>
                 </div>
@@ -296,12 +296,12 @@ export default function AnnonceDetailPage() {
               {/* Author */}
               <div className="mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-orange/10 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-orange/10 rounded-full flex items-center justify-center">
                     <User className="w-5 h-5 text-orange" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">{annonce.authorName}</p>
-                    <p className="text-xs text-gray-500">Vendeur sur Wakhma Store</p>
+                    <p className="font-semibold text-gray-900 text-xs">{annonce.authorName}</p>
+                    <p className="text-[10px] text-gray-500">Vendeur sur Wakhma Store</p>
                   </div>
                 </div>
               </div>
@@ -313,7 +313,7 @@ export default function AnnonceDetailPage() {
                 {annonce.hasAccess ? (
                   /* Contact Revealed */
                   <div className={`transition-all duration-1000 ease-out ${revealPhase >= 4 ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-                    <div className="bg-green-50 border border-green-200 rounded-2xl p-5 space-y-4">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-4">
                       <div className="flex items-center gap-2 text-green-700 mb-2">
                         <CheckCircle className="w-5 h-5" />
                         <span className="font-semibold">Coordonnées débloquées</span>
@@ -328,14 +328,14 @@ export default function AnnonceDetailPage() {
                       {annonce.phone && (
                         <a
                           href={`tel:${annonce.phone}`}
-                          className="flex items-center gap-3 p-4 bg-white rounded-xl hover:bg-green-100 transition-colors"
+                          className="flex items-center gap-3 p-3 bg-white rounded-lg hover:bg-green-100 transition-colors"
                         >
-                          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                            <Phone className="w-6 h-6 text-green-600" />
+                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                            <Phone className="w-5 h-5 text-green-600" />
                           </div>
                           <div>
-                            <p className="text-xs text-gray-500">Téléphone</p>
-                            <p className="font-bold text-gray-900 text-lg">{annonce.phone}</p>
+                            <p className="text-[10px] text-gray-500">Téléphone</p>
+                            <p className="font-bold text-gray-900 text-sm">{annonce.phone}</p>
                           </div>
                         </a>
                       )}
@@ -345,14 +345,14 @@ export default function AnnonceDetailPage() {
                           href={`https://wa.me/${annonce.whatsapp.replace(/^(\+221|0)/, '221')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-4 bg-white rounded-xl hover:bg-green-100 transition-colors"
+                          className="flex items-center gap-3 p-3 bg-white rounded-lg hover:bg-green-100 transition-colors"
                         >
-                          <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                            <MessageCircle className="w-6 h-6 text-white" />
+                          <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                            <MessageCircle className="w-5 h-5 text-white" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-xs text-gray-500">WhatsApp</p>
-                            <p className="font-bold text-gray-900 text-lg">{annonce.whatsapp}</p>
+                            <p className="text-[10px] text-gray-500">WhatsApp</p>
+                            <p className="font-bold text-gray-900 text-sm">{annonce.whatsapp}</p>
                           </div>
                           <ExternalLink className="w-5 h-5 text-gray-400" />
                         </a>
@@ -364,35 +364,35 @@ export default function AnnonceDetailPage() {
                   <div className="space-y-4">
                     {isOwner ? (
                       /* Owner view */
-                      <div className="bg-orange/5 border border-orange/20 rounded-2xl p-5">
-                        <p className="text-sm text-gray-600">
-                          <Eye className="w-4 h-4 inline mr-1.5 text-orange" />
+                      <div className="bg-orange/5 border border-orange/20 rounded-lg p-4">
+                        <p className="text-xs text-gray-600">
+                          <Eye className="w-3 h-3 inline mr-1.5 text-orange" />
                           C&apos;est votre annonce. Les autres utilisateurs paient <strong>{unlockCost.toLocaleString('fr-FR')} points</strong> pour voir vos coordonnées.
                         </p>
                         {annonce.phone && (
-                          <p className="mt-2 text-sm text-gray-500">Téléphone : {annonce.phone}</p>
+                          <p className="mt-2 text-xs text-gray-500">Téléphone : {annonce.phone}</p>
                         )}
                         {annonce.whatsapp && (
-                          <p className="text-sm text-gray-500">WhatsApp : {annonce.whatsapp}</p>
+                          <p className="text-xs text-gray-500">WhatsApp : {annonce.whatsapp}</p>
                         )}
                       </div>
                     ) : (
                       /* Locked paywall for non-owners */
                       <div className="bg-gradient-to-br from-gray-50 to-orange/5 border border-orange/20 rounded-2xl p-6 text-center">
-                        <div className="w-16 h-16 bg-orange/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                          <Lock className="w-8 h-8 text-orange" />
+                        <div className="w-12 h-12 bg-orange/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                          <Lock className="w-6 h-6 text-orange" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">
+                        <h3 className="text-sm font-bold text-gray-900 mb-1.5 heading-compact">
                           Coordonnées verrouillées
                         </h3>
 
                         {/* Dynamic pricing display */}
                         <div className="mb-4">
-                          <p className="text-gray-500 max-w-sm mx-auto">
+                          <p className="text-gray-500 max-w-sm mx-auto text-xs">
                             Dépensez <strong className="text-orange">{unlockCost.toLocaleString('fr-FR')} points</strong> pour débloquer le numéro de téléphone et le lien WhatsApp du vendeur.
                           </p>
                           {hasDiscount && (
-                            <div className={`inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-full text-sm font-medium ${getPlanBadgeColor(userPlan)}`}>
+                            <div className={`inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full text-xs font-medium ${getPlanBadgeColor(userPlan)}`}>
                               <Crown className="w-4 h-4" />
                               Abonnement {planLabel} : {((1500 - unlockCost) / 1500 * 100).toFixed(0)}% de réduction
                             </div>
@@ -406,7 +406,7 @@ export default function AnnonceDetailPage() {
                             </p>
                             <Button
                               onClick={() => router.push('/login')}
-                              className="bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl h-12 px-8"
+                              className="bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg h-10 px-6 text-sm"
                             >
                               Se connecter
                             </Button>
@@ -423,7 +423,7 @@ export default function AnnonceDetailPage() {
                             <Button
                               onClick={handlePurchase}
                               disabled={purchasing || user.points < unlockCost}
-                              className="bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl h-12 px-8 text-base"
+                              className="bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg h-10 px-6 text-sm"
                             >
                               {purchasing ? (
                                 <span className="flex items-center gap-2">
@@ -451,7 +451,7 @@ export default function AnnonceDetailPage() {
                                 >
                                   Acheter des points
                                 </a>
-                                <p className="text-xs text-gray-400">
+                                <p className="text-[10px] text-gray-400">
                                   Ou gagnez des points avec le{' '}
                                   <a href="/parrainage" className="text-orange hover:underline font-medium">
                                     programme de parrainage
@@ -461,7 +461,7 @@ export default function AnnonceDetailPage() {
                             )}
 
                             {!hasDiscount && (
-                              <p className="text-xs text-gray-400 mt-2">
+                              <p className="text-[10px] text-gray-400 mt-2">
                                 Économisez avec un{' '}
                                 <a href="/abonnements" className="text-orange hover:underline font-medium">
                                   abonnement Diambar ou VIP KING
@@ -478,8 +478,8 @@ export default function AnnonceDetailPage() {
 
               {/* Security notice */}
               <div className={`mt-6 transition-all duration-700 ${revealPhase >= 3 ? 'opacity-100' : 'opacity-0'}`}>
-                <div className="flex items-start gap-2 text-xs text-gray-400">
-                  <Shield className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2 text-[10px] text-gray-400">
+                  <Shield className="w-3 h-3 flex-shrink-0 mt-0.5" />
                   <p>
                     Les coordonnées du vendeur sont protégées. Le paiement de {unlockCost.toLocaleString('fr-FR')} points garantit
                     un contact sérieux entre acheteurs et vendeurs sur Wakhma Store.

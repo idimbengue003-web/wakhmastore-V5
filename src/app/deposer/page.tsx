@@ -154,26 +154,26 @@ export default function DeposerPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
         <Button
           variant="ghost"
-          className="mb-4 text-gray-600 hover:text-orange -ml-2"
+          className="mb-4 text-gray-600 hover:text-orange -ml-2 text-xs"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour
         </Button>
 
-        <Card className="border-gray-100 rounded-2xl">
+        <Card className="border-gray-100 rounded-lg">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-gray-900">
+            <CardTitle className="text-lg font-bold heading-compact text-gray-900">
               Déposer une annonce
             </CardTitle>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 text-xs">
               Publiez gratuitement ce que vous cherchez. Les vendeurs vous contacteront !
             </p>
             {/* Free posting notice */}
-            <div className="flex items-start gap-2 bg-green-50 border border-green-200 rounded-xl p-3 mt-2">
+            <div className="flex items-start gap-2 bg-green-50 border border-green-200 rounded-lg p-2.5 mt-2">
               <Info className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-green-700">
                 <strong>C&apos;est gratuit !</strong> Sur Wakhma Store, c&apos;est le vendeur qui paye pour voir vos coordonnées.
@@ -182,9 +182,9 @@ export default function DeposerPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="title" className="font-medium text-gray-700">
+                <Label htmlFor="title" className="font-medium text-gray-700 text-xs">
                   Titre de l&apos;annonce *
                 </Label>
                 <Input
@@ -192,20 +192,20 @@ export default function DeposerPage() {
                   placeholder="Ex: Je cherche un iPhone 15 Pro Max"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="rounded-xl border-gray-200 h-12"
+                  className="rounded-lg border-gray-200 h-10"
                   maxLength={100}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category" className="font-medium text-gray-700">
+                <Label htmlFor="category" className="font-medium text-gray-700 text-xs">
                   Catégorie *
                 </Label>
                 <Select
                   value={form.category}
                   onValueChange={(value) => setForm({ ...form, category: value })}
                 >
-                  <SelectTrigger className="rounded-xl border-gray-200 h-12">
+                  <SelectTrigger className="rounded-lg border-gray-200 h-10">
                     <SelectValue placeholder="Choisir une catégorie" />
                   </SelectTrigger>
                   <SelectContent>
@@ -219,7 +219,7 @@ export default function DeposerPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="price" className="font-medium text-gray-700">
+                <Label htmlFor="price" className="font-medium text-gray-700 text-xs">
                   Prix maximum (FCFA) *
                 </Label>
                 <Input
@@ -228,13 +228,13 @@ export default function DeposerPage() {
                   placeholder="Ex: 150000"
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
-                  className="rounded-xl border-gray-200 h-12"
+                  className="rounded-lg border-gray-200 h-10"
                   min={0}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="location" className="font-medium text-gray-700">
+                <Label htmlFor="location" className="font-medium text-gray-700 text-xs">
                   Localisation
                 </Label>
                 <Input
@@ -242,12 +242,12 @@ export default function DeposerPage() {
                   placeholder="Ex: Dakar, Mermoz, Almadies"
                   value={form.location}
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  className="rounded-xl border-gray-200 h-12"
+                  className="rounded-lg border-gray-200 h-10"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description" className="font-medium text-gray-700">
+                <Label htmlFor="description" className="font-medium text-gray-700 text-xs">
                   Description
                 </Label>
                 <Textarea
@@ -255,15 +255,15 @@ export default function DeposerPage() {
                   placeholder="Décrivez ce que vous cherchez en détail..."
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="rounded-xl border-gray-200 min-h-24"
+                  className="rounded-lg border-gray-200 min-h-20"
                   rows={4}
                   maxLength={1000}
                 />
               </div>
 
               {/* Contact Info Section */}
-              <div className="border-t border-gray-100 pt-5 mt-5">
-                <h3 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+              <div className="border-t border-gray-100 pt-4 mt-4">
+                <h3 className="font-semibold text-gray-900 mb-1 text-sm heading-compact flex items-center gap-2">
                   <Phone className="w-4 h-4 text-orange" />
                   Coordonnées de contact
                 </h3>
@@ -273,7 +273,7 @@ export default function DeposerPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="font-medium text-gray-700 flex items-center gap-1.5">
+                    <Label htmlFor="phone" className="font-medium text-gray-700 text-xs flex items-center gap-1.5">
                       <Phone className="w-3.5 h-3.5 text-gray-400" />
                       Téléphone
                     </Label>
@@ -283,12 +283,12 @@ export default function DeposerPage() {
                       placeholder="Ex: 77 123 45 67"
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      className="rounded-xl border-gray-200 h-12"
+                      className="rounded-lg border-gray-200 h-10"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="whatsapp" className="font-medium text-gray-700 flex items-center gap-1.5">
+                    <Label htmlFor="whatsapp" className="font-medium text-gray-700 text-xs flex items-center gap-1.5">
                       <MessageCircle className="w-3.5 h-3.5 text-green-500" />
                       WhatsApp
                     </Label>
@@ -298,7 +298,7 @@ export default function DeposerPage() {
                       placeholder="Ex: 77 123 45 67"
                       value={form.whatsapp}
                       onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
-                      className="rounded-xl border-gray-200 h-12"
+                      className="rounded-lg border-gray-200 h-10"
                     />
                   </div>
                 </div>
@@ -310,7 +310,7 @@ export default function DeposerPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl h-12 text-base"
+                className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg h-10 text-sm"
                 disabled={submitting}
               >
                 {submitting ? (

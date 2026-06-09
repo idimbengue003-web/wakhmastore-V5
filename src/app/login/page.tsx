@@ -240,22 +240,22 @@ function LoginContent() {
         <div className="w-full max-w-md">
           <Button
             variant="ghost"
-            className="mb-4 text-gray-600 hover:text-orange -ml-2"
+            className="mb-4 text-gray-600 hover:text-orange -ml-2 text-xs"
             onClick={() => router.back()}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Retour
           </Button>
 
-          <Card className="border-gray-100 rounded-2xl">
+          <Card className="border-gray-100 rounded-lg">
             <CardHeader className="text-center">
-              <div className="w-16 h-16 bg-orange-bg rounded-2xl flex items-center justify-center mx-auto mb-3">
-                <LogIn className="w-8 h-8 text-orange" />
+              <div className="w-12 h-12 bg-orange-bg rounded-lg flex items-center justify-center mx-auto mb-3">
+                <LogIn className="w-6 h-6 text-orange" />
               </div>
-              <CardTitle className="text-2xl font-bold text-gray-900">
+              <CardTitle className="text-lg font-bold heading-compact text-gray-900">
                 Wakhma Store
               </CardTitle>
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-500 text-xs">
                 Connecte-toi ou crée un compte
               </p>
             </CardHeader>
@@ -274,13 +274,13 @@ function LoginContent() {
 
                 {/* Login Form */}
                 <TabsContent value="login">
-                  <form onSubmit={handleLogin} className="space-y-5">
+                  <form onSubmit={handleLogin} className="space-y-3">
                     {/* OAuth Buttons */}
                     <div className="space-y-3">
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-full rounded-xl h-12 border-gray-200 hover:bg-gray-50 font-medium"
+                        className="w-full rounded-lg h-10 border-gray-200 hover:bg-gray-50 font-medium text-xs"
                         onClick={() => handleOAuthLogin('google')}
                         disabled={oauthLoading !== null}
                       >
@@ -300,7 +300,7 @@ function LoginContent() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-full rounded-xl h-12 border-gray-200 hover:bg-blue-50 font-medium text-[#1877F2]"
+                        className="w-full rounded-lg h-10 border-gray-200 hover:bg-blue-50 font-medium text-[#1877F2] text-xs"
                         onClick={() => handleOAuthLogin('facebook')}
                         disabled={oauthLoading !== null}
                       >
@@ -319,13 +319,13 @@ function LoginContent() {
                       <div className="absolute inset-0 flex items-center">
                         <span className="w-full border-t border-gray-200" />
                       </div>
-                      <div className="relative flex justify-center text-xs uppercase">
+                      <div className="relative flex justify-center text-[10px] uppercase">
                         <span className="bg-white px-2 text-gray-400">ou par email</span>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="login-email" className="font-medium text-gray-700">
+                      <Label htmlFor="login-email" className="font-medium text-gray-700 text-xs">
                         Email
                       </Label>
                       <Input
@@ -334,13 +334,13 @@ function LoginContent() {
                         placeholder="votre@email.com"
                         value={loginForm.email}
                         onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                        className="rounded-xl border-gray-200 h-12"
+                        className="rounded-lg border-gray-200 h-10"
                         autoComplete="email"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="login-password" className="font-medium text-gray-700">
+                      <Label htmlFor="login-password" className="font-medium text-gray-700 text-xs">
                         Mot de passe
                       </Label>
                       <div className="relative">
@@ -350,7 +350,7 @@ function LoginContent() {
                           placeholder="Votre mot de passe"
                           value={loginForm.password}
                           onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                          className="rounded-xl border-gray-200 h-12 pr-12"
+                          className="rounded-lg border-gray-200 h-10 pr-12"
                           autoComplete="current-password"
                         />
                         <Button
@@ -371,7 +371,7 @@ function LoginContent() {
 
                     <Button
                       type="submit"
-                      className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl h-12 text-base"
+                      className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg h-10 text-sm"
                       disabled={loading}
                     >
                       {loading ? (
@@ -381,7 +381,7 @@ function LoginContent() {
                         </span>
                       ) : (
                         <span className="flex items-center gap-2">
-                          <LogIn className="w-5 h-5" />
+                          <LogIn className="w-4 h-4" />
                           Se connecter
                         </span>
                       )}
@@ -397,7 +397,7 @@ function LoginContent() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-full rounded-xl h-12 border-gray-200 hover:bg-gray-50 font-medium"
+                        className="w-full rounded-lg h-10 border-gray-200 hover:bg-gray-50 font-medium text-xs"
                         onClick={() => handleOAuthLogin('google')}
                         disabled={oauthLoading !== null}
                       >
@@ -417,7 +417,7 @@ function LoginContent() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-full rounded-xl h-12 border-gray-200 hover:bg-blue-50 font-medium text-[#1877F2]"
+                        className="w-full rounded-lg h-10 border-gray-200 hover:bg-blue-50 font-medium text-[#1877F2] text-xs"
                         onClick={() => handleOAuthLogin('facebook')}
                         disabled={oauthLoading !== null}
                       >
@@ -436,13 +436,13 @@ function LoginContent() {
                       <div className="absolute inset-0 flex items-center">
                         <span className="w-full border-t border-gray-200" />
                       </div>
-                      <div className="relative flex justify-center text-xs uppercase">
+                      <div className="relative flex justify-center text-[10px] uppercase">
                         <span className="bg-white px-2 text-gray-400">ou par formulaire</span>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="reg-name" className="font-medium text-gray-700">
+                      <Label htmlFor="reg-name" className="font-medium text-gray-700 text-xs">
                         Nom complet *
                       </Label>
                       <Input
@@ -451,12 +451,12 @@ function LoginContent() {
                         placeholder="Votre nom"
                         value={registerForm.name}
                         onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
-                        className="rounded-xl border-gray-200 h-12"
+                        className="rounded-lg border-gray-200 h-10"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="reg-email" className="font-medium text-gray-700">
+                      <Label htmlFor="reg-email" className="font-medium text-gray-700 text-xs">
                         Email *
                       </Label>
                       <Input
@@ -465,13 +465,13 @@ function LoginContent() {
                         placeholder="votre@email.com"
                         value={registerForm.email}
                         onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                        className="rounded-xl border-gray-200 h-12"
+                        className="rounded-lg border-gray-200 h-10"
                         autoComplete="email"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="reg-phone" className="font-medium text-gray-700">
+                      <Label htmlFor="reg-phone" className="font-medium text-gray-700 text-xs">
                         Téléphone * <span className="text-xs text-orange font-normal">(obligatoire)</span>
                       </Label>
                       <Input
@@ -480,12 +480,12 @@ function LoginContent() {
                         placeholder="+221 77 123 4567"
                         value={registerForm.phone}
                         onChange={(e) => setRegisterForm({ ...registerForm, phone: e.target.value })}
-                        className="rounded-xl border-gray-200 h-12"
+                        className="rounded-lg border-gray-200 h-10"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="reg-password" className="font-medium text-gray-700">
+                      <Label htmlFor="reg-password" className="font-medium text-gray-700 text-xs">
                         Mot de passe *
                       </Label>
                       <div className="relative">
@@ -495,7 +495,7 @@ function LoginContent() {
                           placeholder="Min. 8 caractères, 1 majuscule, 1 chiffre"
                           value={registerForm.password}
                           onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                          className="rounded-xl border-gray-200 h-12 pr-12"
+                          className="rounded-lg border-gray-200 h-10 pr-12"
                           autoComplete="new-password"
                         />
                         <Button
@@ -515,7 +515,7 @@ function LoginContent() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="reg-confirm-password" className="font-medium text-gray-700">
+                      <Label htmlFor="reg-confirm-password" className="font-medium text-gray-700 text-xs">
                         Confirmer le mot de passe *
                       </Label>
                       <Input
@@ -524,13 +524,13 @@ function LoginContent() {
                         placeholder="Retapez votre mot de passe"
                         value={registerForm.confirmPassword}
                         onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
-                        className="rounded-xl border-gray-200 h-12"
+                        className="rounded-lg border-gray-200 h-10"
                         autoComplete="new-password"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="reg-referral" className="font-medium text-gray-700 flex items-center gap-2">
+                      <Label htmlFor="reg-referral" className="font-medium text-gray-700 text-xs flex items-center gap-2">
                         <Gift className="w-4 h-4 text-orange" />
                         Code de parrainage
                       </Label>
@@ -540,13 +540,13 @@ function LoginContent() {
                         placeholder="WK-XXXXXX (optionnel)"
                         value={registerForm.referralCode}
                         onChange={(e) => setRegisterForm({ ...registerForm, referralCode: e.target.value.toUpperCase() })}
-                        className="rounded-xl border-gray-200 h-12 font-mono uppercase"
+                        className="rounded-lg border-gray-200 h-10 font-mono uppercase"
                       />
                     </div>
 
                     <Button
                       type="submit"
-                      className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl h-12 text-base"
+                      className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg h-10 text-sm"
                       disabled={loading}
                     >
                       {loading ? (
@@ -556,7 +556,7 @@ function LoginContent() {
                         </span>
                       ) : (
                         <span className="flex items-center gap-2">
-                          <UserPlus className="w-5 h-5" />
+                          <UserPlus className="w-4 h-4" />
                           Créer mon compte
                         </span>
                       )}
@@ -580,7 +580,7 @@ export default function LoginPage() {
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-orange animate-spin" />
+          <Loader2 className="w-6 h-6 text-orange animate-spin" />
         </main>
         <Footer />
       </div>
