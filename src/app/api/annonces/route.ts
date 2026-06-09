@@ -85,9 +85,18 @@ export async function POST(request: NextRequest) {
 
     const { title, description, price, category, location, emoji, phone, whatsapp } = result.data;
 
+    // Check user plan — add "Je vends" prefix for gratuit users
+    const user = await db.user.findUnique({
+      where: { id: payload.userId },
+      select: { plan: true },
+    });
+    const finalTitle = (user?.plan === 'gratuit' || !user?.plan) && !title.toLowerCase().startsWith('je vends')
+      ? `Je vends ${title}`
+      : title;
+
     const annonce = await db.annonce.create({
       data: {
-        title,
+        title: finalTitle,
         description,
         price,
         category,
