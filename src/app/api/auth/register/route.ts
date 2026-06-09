@@ -135,8 +135,9 @@ export async function POST(request: NextRequest) {
     }, { status: 201 }));
   } catch (error) {
     console.error('Error during registration:', error);
+    const message = error instanceof Error ? error.message : 'Erreur lors de l\'inscription';
     return securityHeaders(NextResponse.json(
-      { error: 'Erreur lors de l\'inscription' },
+      { error: message },
       { status: 500 }
     ));
   }
