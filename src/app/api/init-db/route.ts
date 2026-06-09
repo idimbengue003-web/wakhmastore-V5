@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { execSync } from 'child_process';
 
 // This route checks and initializes the database
 // Call it once after deployment: GET /api/init-db
@@ -12,12 +13,25 @@ export async function GET(request: NextRequest) {
     const errorMsg = error instanceof Error ? error.message : String(error);
 
     if (errorMsg.includes('does not exist')) {
-      return NextResponse.json({
-        status: 'error',
-        message: 'Database tables do not exist.',
-        hint: '1) Make sure DATABASE_URL is set in Vercel environment variables. 2) Run: npx prisma db push --accept-data-loss (locally with the Neon DATABASE_URL)',
-        error: errorMsg,
-      }, { status: 500 });
+      try {
+        // Auto-push schema to create tables
+        execSync('npx prisma db push --accept-data-loss', {
+          env: { ...process.env },
+          timeout: 30000,
+        });
+        return NextResponse.json({
+          status: 'ok',
+          message: 'Database tables created successfully via prisma db push',
+        });
+      } catch (pushError: unknown) {
+        const pushErrorMsg = pushError instanceof Error ? pushError.message : String(pushError);
+        return NextResponse.json({
+          status: 'error',
+          message: 'Failed to auto-create tables.',
+          hint: 'Run manually: npx prisma db push --accept-data-loss (with DATABASE_URL set)',
+          error: pushErrorMsg,
+        }, { status: 500 });
+      }
     }
 
     return NextResponse.json({
