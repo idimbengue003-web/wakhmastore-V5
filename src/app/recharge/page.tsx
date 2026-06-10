@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Check, Crown, Star, Zap, Coins, Sparkles, ShieldCheck, ArrowRight, Phone } from 'lucide-react';
+import { Check, Crown, Star, Zap, Coins, Sparkles, ShieldCheck, ArrowRight, Phone, Copy, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,9 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
   const ref = useScrollReveal();
   return <div ref={ref} className={`scroll-reveal ${className}`}>{children}</div>;
 }
+
+const PAYMENT_PHONE = '78 927 12 96';
+const WHATSAPP_LINK = 'https://wa.me/221789271296';
 
 export default function RechargePage() {
   const { user, token, loadFromStorage } = useAuth();
@@ -107,7 +110,7 @@ export default function RechargePage() {
     }
   }
 
-  const planEntries = Object.values(PLANS);
+  const planEntries = Object.values(PLANS).filter(p => p.id !== 'none');
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -256,14 +259,42 @@ export default function RechargePage() {
               <div className="bg-amber-50 rounded-2xl p-6 sm:p-8 border border-amber-200">
                 <div className="flex items-start gap-3">
                   <Phone className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-bold text-gray-900 mb-1">Comment payer ?</h3>
                     <p className="text-sm text-gray-600 mb-3">
-                      Après avoir choisi votre plan, contactez-nous sur WhatsApp pour finaliser le paiement via <strong>Wave</strong> ou <strong>Orange Money</strong>. Votre plan sera activé immédiatement après confirmation.
+                      Envoyez le montant via <strong>Wave</strong> ou <strong>Orange Money</strong> au numéro ci-dessous, puis envoyez la capture d&apos;écran sur WhatsApp pour validation.
                     </p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 mb-3">
                       <Badge className="bg-blue-100 text-blue-700 border-0">Wave</Badge>
                       <Badge className="bg-orange/20 text-orange border-0">Orange Money</Badge>
+                    </div>
+                    <div className="flex items-center justify-between bg-white rounded-xl px-4 py-3 border border-amber-200">
+                      <div>
+                        <p className="text-[10px] text-gray-500">Numéro Wave / Orange Money</p>
+                        <p className="text-lg font-bold text-gray-900">{PAYMENT_PHONE}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 h-9 px-2"
+                          onClick={() => {
+                            navigator.clipboard.writeText(PAYMENT_PHONE.replace(/\s/g, ''));
+                            toast({ title: 'Copié !', description: 'Numéro copié dans le presse-papier' });
+                          }}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                        <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-green-600 hover:text-green-700 hover:bg-green-50 h-9 px-2"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </Button>
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -346,6 +377,49 @@ export default function RechargePage() {
               ))}
             </div>
 
+            {/* Payment Info for Points */}
+            <div className="mt-8 max-w-lg mx-auto">
+              <div className="bg-green-50 rounded-2xl p-5 border border-green-200">
+                <div className="flex items-start gap-3">
+                  <Phone className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="font-bold text-gray-900 mb-1 text-sm">Paiement des points</h3>
+                    <p className="text-xs text-gray-600 mb-3">
+                      Envoyez le montant via <strong>Wave</strong> ou <strong>Orange Money</strong> au numéro ci-dessous, puis envoyez la capture sur WhatsApp.
+                    </p>
+                    <div className="flex items-center justify-between bg-white rounded-xl px-4 py-2.5 border border-green-200">
+                      <div>
+                        <p className="text-[10px] text-gray-500">Numéro</p>
+                        <p className="text-base font-bold text-gray-900">{PAYMENT_PHONE}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-green-600 hover:text-green-700 h-8 px-2"
+                          onClick={() => {
+                            navigator.clipboard.writeText(PAYMENT_PHONE.replace(/\s/g, ''));
+                            toast({ title: 'Copié !', description: 'Numéro copié' });
+                          }}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                        <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-green-600 hover:text-green-700 h-8 px-2"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </Button>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Points FAQ */}
             <div className="mt-10 max-w-2xl mx-auto space-y-4">
               <h3 className="text-lg font-bold text-gray-900 text-center">Comment ça marche ?</h3>
@@ -355,7 +429,7 @@ export default function RechargePage() {
                     <Coins className="w-5 h-5 text-orange" />
                   </div>
                   <p className="text-sm font-semibold text-gray-900">Achetez des points</p>
-                  <p className="text-xs text-gray-500 mt-1">Choisissez un pack et payez via Wave ou Orange Money</p>
+                  <p className="text-xs text-gray-500 mt-1">Envoyez au {PAYMENT_PHONE} via Wave ou Orange Money</p>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-4 text-center">
                   <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-2">
@@ -395,7 +469,7 @@ export default function RechargePage() {
                 Comment puis-je payer ?
               </h3>
               <p className="text-sm text-gray-600">
-                Nous acceptons Wave et Orange Money. Contactez-nous sur WhatsApp pour finaliser votre paiement. L&apos;activation est immédiate après confirmation.
+                Nous acceptons Wave et Orange Money. Envoyez le montant au <strong>{PAYMENT_PHONE}</strong>, puis envoyez la capture d&apos;écran sur <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="text-green-600 font-semibold hover:underline">WhatsApp</a>. L&apos;activation est immédiate après confirmation.
               </p>
             </div>
             <div className="bg-gray-50 rounded-xl p-5 transition-all duration-300 hover:bg-gray-100">

@@ -15,7 +15,7 @@ model User {
   password       String     // Code PIN hashé (4 chiffres)
   image          String?    // Photo de profil
   role           String     @default("user") // user, admin
-  plan           String     @default("gratuit") // gratuit, diambar, vip_king
+  plan           String     @default("none") // none, gratuit, diambar, vip_king
   points         Int        @default(0)
   referralCode   String     @unique @default(cuid())
   referredBy     String?

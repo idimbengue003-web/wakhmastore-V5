@@ -94,13 +94,13 @@ export default function DeposerPage() {
     }
   }, [token]);
 
-  const userPlan = user?.plan ? PLANS[user.plan as keyof typeof PLANS] || PLANS.gratuit : PLANS.gratuit;
-  const maxAnnonces = userPlan.annoncesPerWeek > 0 ? userPlan.annoncesPerWeek : userPlan.annoncesPerMonth;
+  const userPlan = user?.plan ? PLANS[user.plan as keyof typeof PLANS] || PLANS.none : PLANS.none;
+  const isSubscriber = user?.plan === 'gratuit' || user?.plan === 'diambar' || user?.plan === 'vip_king';
+  const maxAnnonces = isSubscriber ? (userPlan.annoncesPerWeek > 0 ? userPlan.annoncesPerWeek : userPlan.annoncesPerMonth) : 0;
   const periodLabel = userPlan.annoncesPerWeek > 0 ? 'semaine' : 'mois';
-  const isAtLimit = maxAnnonces > 0 && annonceCount !== null && annonceCount >= maxAnnonces;
-  const isSubscriber = user?.plan === 'diambar' || user?.plan === 'vip_king';
+  const isAtLimit = isSubscriber && maxAnnonces > 0 && annonceCount !== null && annonceCount >= maxAnnonces;
 
-  // Force "je_cherche" for non-subscribers
+  // Force "je_cherche" for non-subscribers (plan "none")
   useEffect(() => {
     if (!isSubscriber && form.type === 'je_vends') {
       setForm(prev => ({ ...prev, type: 'je_cherche' }));
@@ -225,31 +225,38 @@ export default function DeposerPage() {
             <div className="flex items-start gap-2 bg-green-50 border border-green-200 rounded-xl p-3 mt-2 transition-all duration-300 hover:bg-green-100">
               <Info className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-green-700">
-                <strong>C&apos;est gratuit !</strong> Sur Wakhma Store, c&apos;est le vendeur qui paye pour voir vos coordonnées.
-                Vous postez votre demande gratuitement et les vendeurs intéressés débloquent votre contact pour 1 500 points.
+                <strong>C&apos;est gratuit !</strong> Poster une annonce est 100% gratuit. Ce sont les vendeurs qui paient 1 500 points pour débloquer votre numéro de téléphone.
               </p>
             </div>
 
             {/* Plan limit indicator */}
-            <div className={`flex items-center justify-between gap-3 rounded-xl p-3 mt-2 transition-all duration-300 ${
-              isAtLimit ? 'bg-red-50 border border-red-200' : user.plan === 'vip_king' ? 'bg-amber-50 border border-amber-200' : user.plan === 'diambar' ? 'bg-green-50 border border-green-200' : 'bg-blue-50 border border-blue-200'
-            }`}>
-              <div className="flex items-center gap-2">
-                {user.plan === 'vip_king' ? (
-                  <Crown className="w-4 h-4 text-amber-500" />
-                ) : user.plan === 'diambar' ? (
-                  <Star className="w-4 h-4 text-green-500" />
-                ) : (
-                  <Zap className="w-4 h-4 text-blue-500" />
-                )}
-                <span className="text-xs font-medium text-gray-700">
-                  Plan {userPlan.name} — {maxAnnonces > 0 ? `${maxAnnonces} annonces par ${periodLabel}` : 'Annonces illimitées'}
+            {isSubscriber ? (
+              <div className={`flex items-center justify-between gap-3 rounded-xl p-3 mt-2 transition-all duration-300 ${
+                isAtLimit ? 'bg-red-50 border border-red-200' : user.plan === 'vip_king' ? 'bg-amber-50 border border-amber-200' : user.plan === 'diambar' ? 'bg-green-50 border border-green-200' : 'bg-blue-50 border border-blue-200'
+              }`}>
+                <div className="flex items-center gap-2">
+                  {user.plan === 'vip_king' ? (
+                    <Crown className="w-4 h-4 text-amber-500" />
+                  ) : user.plan === 'diambar' ? (
+                    <Star className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <Zap className="w-4 h-4 text-blue-500" />
+                  )}
+                  <span className="text-xs font-medium text-gray-700">
+                    Plan {userPlan.name} — {maxAnnonces > 0 ? `${maxAnnonces} annonces "Je vends" par ${periodLabel}` : 'Annonces illimitées'}
+                  </span>
+                </div>
+                <span className={`text-xs font-bold ${isAtLimit ? 'text-red-600' : user.plan === 'vip_king' ? 'text-amber-600' : user.plan === 'diambar' ? 'text-green-600' : 'text-blue-600'}`}>
+                  {annonceCount !== null ? `${annonceCount}/${maxAnnonces > 0 ? maxAnnonces : '∞'}` : '...'}
                 </span>
               </div>
-              <span className={`text-xs font-bold ${isAtLimit ? 'text-red-600' : user.plan === 'vip_king' ? 'text-amber-600' : user.plan === 'diambar' ? 'text-green-600' : 'text-blue-600'}`}>
-                {annonceCount !== null ? `${annonceCount}/${maxAnnonces > 0 ? maxAnnonces : '∞'}` : '...'}
-              </span>
-            </div>
+            ) : (
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl p-3 mt-2 transition-all duration-300">
+                <span className="text-xs font-medium text-gray-600">
+                  🔍 Annonces "Je cherche" gratuites & illimitées — <Link href="/abonnements" className="text-orange font-semibold hover:underline">Abonnez-vous</Link> pour vendre
+                </span>
+              </div>
+            )}
 
             {/* Limit reached warning */}
             {isAtLimit && (
@@ -450,7 +457,7 @@ export default function DeposerPage() {
                 ) : (
                   <span className="flex items-center gap-2">
                     <Send className="w-5 h-5" />
-                    Publier gratuitement
+                    {isSubscriber ? 'Publier l\'annonce' : 'Publier gratuitement'}
                   </span>
                 )}
               </Button>

@@ -33,7 +33,7 @@ export default function CGUPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">4. Plans et tarifs</h2>
             <p className="text-gray-600 leading-relaxed">
-              Wakhma Store propose trois plans : BOLT ⚡ (3 annonces "Je vends"/mois, 15 000 points, 2 000 FCFA), DIAMBAR 💪🏽 (5 annonces "Je vends"/mois, 26 000 points, 5 000 FCFA) et VIP KING 👑 (5 annonces "Je vends"/semaine, 49 000 points, 9 900 FCFA). Les tarifs peuvent être modifiés avec un préavis de 30 jours.
+              Wakhma Store propose un accès gratuit (annonces "Je cherche" gratuites et illimitées) et trois plans d'abonnement pour les vendeurs : BOLT ⚡ (3 annonces "Je vends"/mois, 15 000 points, 2 000 FCFA), DIAMBAR 💪🏽 (5 annonces "Je vends"/mois, 26 000 points, 5 000 FCFA) et VIP KING 👑 (5 annonces "Je vends"/semaine, 49 000 points, 9 900 FCFA). Les tarifs peuvent être modifiés avec un préavis de 30 jours.
             </p>
           </section>
 

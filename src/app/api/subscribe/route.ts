@@ -24,9 +24,9 @@ export async function POST(request: NextRequest) {
       ));
     }
 
-    if (plan === 'gratuit') {
+    if (plan === 'none') {
       return securityHeaders(NextResponse.json(
-        { error: 'Vous êtes déjà sur le plan gratuit' },
+        { error: 'Plan invalide' },
         { status: 400 }
       ));
     }
@@ -68,6 +68,12 @@ export async function POST(request: NextRequest) {
         await tx.annonce.updateMany({
           where: { authorId: payload.userId },
           data: { isVip: true, vipType: 'vip_king' },
+        });
+      } else if (plan === 'gratuit') {
+        // BOLT plan: mark annonces as VIP with diambar type
+        await tx.annonce.updateMany({
+          where: { authorId: payload.userId, isVip: false },
+          data: { isVip: true, vipType: 'diambar' },
         });
       }
 

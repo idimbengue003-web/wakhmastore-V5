@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
       ));
     }
 
-    const isSubscriber = user.plan === 'diambar' || user.plan === 'vip_king';
+    const isSubscriber = user.plan === 'gratuit' || user.plan === 'diambar' || user.plan === 'vip_king';
 
     // Non-subscribers can only post "je_cherche"
     if (!isSubscriber && data.type === 'je_vends') {
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
 
     // Check plan limits for "je_vends" annonces
     if (data.type === 'je_vends') {
-      const plan = PLANS[user.plan as keyof typeof PLANS] || PLANS.gratuit;
+      const plan = PLANS[user.plan as keyof typeof PLANS] || PLANS.none;
       const maxAnnonces = plan.annoncesPerWeek > 0 ? plan.annoncesPerWeek : plan.annoncesPerMonth;
 
       if (maxAnnonces > 0) {
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine VIP status
-    const isVip = isSubscriber;
+    const isVip = user.plan === 'diambar' || user.plan === 'vip_king';
     const vipType = user.plan === 'vip_king' ? 'vip_king' : user.plan === 'diambar' ? 'diambar' : null;
 
     // Create annonce

@@ -193,8 +193,8 @@ export default function AbonnementsPage() {
           {user && (
             <div className="inline-flex items-center gap-2 mt-4 bg-amber-50 text-amber-700 font-semibold px-3 py-1.5 rounded-full text-xs">
               <Award className="w-5 h-5" />
-              Plan actuel : <span className="uppercase">{user.plan.replace('_', ' ')}</span>
-              {' '}({user.plan === 'diambar' ? '1 000 pts/annonce' : user.plan === 'vip_king' ? '800 pts/annonce' : '1 500 pts/annonce'})
+              Plan actuel : <span className="uppercase">{user.plan === 'none' ? 'Sans abonnement' : user.plan === 'gratuit' ? 'BOLT ⚡' : user.plan.replace('_', ' ')}</span>
+              {' '}{user.plan !== 'none' && `(${user.plan === 'diambar' ? '1 000 pts/annonce' : user.plan === 'vip_king' ? '800 pts/annonce' : '1 500 pts/annonce'})`}
             </div>
           )}
         </div>
@@ -246,7 +246,7 @@ export default function AbonnementsPage() {
                     </p>
                     {plan.id !== 'gratuit' && (
                       <p className="text-xs text-green-600 font-medium mt-1">
-                        Économisez {((1500 - plan.unlockCost) / 1500 * 100).toFixed(0)}% vs gratuit
+                        Économisez {((1500 - plan.unlockCost) / 1500 * 100).toFixed(0)}% vs BOLT
                       </p>
                     )}
                   </div>

@@ -1,7 +1,23 @@
 // ============ WAKHMA STORE — SHARED CONSTANTS ============
 
-// --- Plans (for sellers) ---
+// --- Plans ---
 export const PLANS = {
+  none: {
+    id: 'none',
+    name: 'Sans abonnement',
+    price: 0,
+    period: '',
+    description: 'Postez vos demandes gratuitement',
+    color: 'gray',
+    annoncesPerMonth: 0, // unlimited "Je cherche", 0 "Je vends"
+    annoncesPerWeek: 0,
+    points: 0,
+    badge: null,
+    features: [
+      'Annonces "Je cherche" gratuites & illimitées',
+      'Les vendeurs paient pour voir votre numéro',
+    ],
+  },
   gratuit: {
     id: 'gratuit',
     name: 'BOLT ⚡',

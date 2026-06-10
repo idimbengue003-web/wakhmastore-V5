@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
     return securityHeaders(NextResponse.json({
       user: {
         ...user,
-        planLabel: plan === 'vip_king' ? 'VIP KING 👑' : plan === 'diambar' ? 'DIAMBAR 💪🏽' : 'BOLT ⚡',
+        planLabel: plan === 'vip_king' ? 'VIP KING 👑' : plan === 'diambar' ? 'DIAMBAR 💪🏽' : plan === 'gratuit' ? 'BOLT ⚡' : 'Sans abonnement',
       },
       stats: {
         totalAnnonces,
