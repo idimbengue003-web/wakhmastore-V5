@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const result = phoneSchema.safeParse(body);
     if (!result.success) {
-      const errors = (result.error.issues || result.error.errors || []).map((e: { message: string }) => e.message).join(', ');
+      const errors = result.error.issues.map((e: { message: string }) => e.message).join(', ');
       return securityHeaders(NextResponse.json(
         { error: errors },
         { status: 400 }

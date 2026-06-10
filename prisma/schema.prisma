@@ -19,6 +19,7 @@ model User {
   points         Int        @default(0)
   referralCode   String     @unique @default(cuid())
   referredBy     String?
+  emailVerified  DateTime?  // When email was verified
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   annonces       Annonce[]
@@ -27,6 +28,29 @@ model User {
   referredByR    Referral?  @relation("Referred")
   pointPurchases PointPurchase[]
   subscriptions  Subscription[]
+  accounts       Account[]
+}
+
+model Account {
+  id                String    @id @default(cuid())
+  userId            String
+  type              String    // oauth provider type (e.g., "google", "facebook")
+  provider          String    // Provider name (e.g., "google", "facebook")
+  providerAccountId String    // Provider-specific user ID
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Annonce {
@@ -47,6 +71,12 @@ model Annonce {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   purchases   Purchase[]
+
+  @@index([authorId])
+  @@index([category])
+  @@index([type])
+  @@index([createdAt])
+  @@index([isVip])
 }
 
 model Purchase {
@@ -60,6 +90,8 @@ model Purchase {
   annonce    Annonce  @relation(fields: [annonceId], references: [id])
 
   @@unique([userId, annonceId]) // Un utilisateur ne paie qu'une fois par annonce
+  @@index([userId])
+  @@index([annonceId])
 }
 
 model Referral {
@@ -73,6 +105,7 @@ model Referral {
   referred   User     @relation("Referred", fields: [referredId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([referredId])
+  @@index([referrerId])
 }
 
 model PointPurchase {
@@ -80,11 +113,14 @@ model PointPurchase {
   userId        String
   amountFcfa    Int
   pointsAdded   Int
-  status        String   @default("pending")
+  status        String   @default("pending") // pending, completed, rejected
   paymentMethod String?
   createdAt     DateTime @default(now())
 
   user          User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
 }
 
 model Subscription {
@@ -92,10 +128,14 @@ model Subscription {
   userId     String
   plan       String
   priceFcfa  Int
-  status     String    @default("active")
+  status     String    @default("pending") // pending, active, expired, cancelled
   startDate  DateTime  @default(now())
   endDate    DateTime?
   createdAt  DateTime  @default(now())
 
   user       User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([endDate])
 }

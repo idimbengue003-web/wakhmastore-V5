@@ -115,3 +115,73 @@ export const POINTS_TO_UNLOCK = 1500;
 // --- Referral ---
 export const POINTS_PER_REFERRAL = 400;
 export const MAX_REFERRAL_POINTS = 30000;
+
+// --- Categories (single source of truth) ---
+export const CATEGORIES = [
+  { name: 'Téléphones', emoji: '📱' },
+  { name: 'TV & Écrans', emoji: '📺' },
+  { name: 'Frigo & Congélateur', emoji: '🧊' },
+  { name: 'Climatiseur & Ventilateur', emoji: '❄️' },
+  { name: 'Ordinateurs', emoji: '💻' },
+  { name: 'Tablettes', emoji: '📲' },
+  { name: 'Audio & Son', emoji: '🔊' },
+  { name: 'Électroménager', emoji: '🏠' },
+  { name: 'Plomberie', emoji: '🔧' },
+  { name: 'Électricité', emoji: '⚡' },
+  { name: 'Meubles', emoji: '🛋️' },
+  { name: 'Mode & Vetements', emoji: '👗' },
+  { name: 'Cosmétiques', emoji: '💄' },
+  { name: 'Alimentation', emoji: '🍜' },
+  { name: 'Services', emoji: '🤝' },
+  { name: 'Transport', emoji: '🚗' },
+  { name: 'Immobilier', emoji: '🏗️' },
+  { name: 'Autre', emoji: '📦' },
+] as const;
+
+// Category emoji lookup map
+export const CATEGORY_EMOJIS: Record<string, string> = Object.fromEntries(
+  CATEGORIES.map(c => [c.name, c.emoji])
+);
+
+// Quick categories shown in hero
+export const QUICK_CATEGORIES = ['Téléphones', 'TV & Écrans', 'Ordinateurs', 'Meubles', 'Transport', 'Immobilier'];
+
+// --- Payment info (env vars with fallbacks) ---
+export const PAYMENT_PHONE = process.env.NEXT_PUBLIC_PAYMENT_PHONE || '78 927 12 96';
+export const WHATSAPP_LINK = process.env.NEXT_PUBLIC_WHATSAPP_LINK || 'https://wa.me/221789271296';
+export const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '221789271296';
+
+// --- Helper: Is user a subscriber? ---
+export function isSubscriber(plan: string): boolean {
+  return plan === 'gratuit' || plan === 'diambar' || plan === 'vip_king';
+}
+
+// --- Helper: Is user VIP? ---
+export function isVip(plan: string): boolean {
+  return plan === 'diambar' || plan === 'vip_king';
+}
+
+// --- Helper: Format price ---
+export function formatPrice(price: number): string {
+  return new Intl.NumberFormat('fr-FR').format(price) + ' FCFA';
+}
+
+// --- Helper: Time ago ---
+export function timeAgo(dateStr: string): string {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (diff < 60) return "À l'instant";
+  if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)}h`;
+  if (diff < 604800) return `Il y a ${Math.floor(diff / 86400)}j`;
+  return date.toLocaleDateString('fr-FR');
+}
+
+// --- Helper: Plan label ---
+export function getPlanLabel(plan: string): string {
+  if (plan === 'vip_king') return 'VIP KING 👑';
+  if (plan === 'diambar') return 'DIAMBAR 💪🏽';
+  if (plan === 'gratuit') return 'BOLT ⚡';
+  return 'Sans abonnement';
+}

@@ -10,16 +10,13 @@ import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useScrollReveal } from '@/hooks/use-scroll-reveal';
-import { PLANS, POINT_PACKAGES } from '@/lib/constants';
+import { PLANS, POINT_PACKAGES, PAYMENT_PHONE, WHATSAPP_LINK } from '@/lib/constants';
 import type { PlanId } from '@/lib/constants';
 
 function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   const ref = useScrollReveal();
   return <div ref={ref} className={`scroll-reveal ${className}`}>{children}</div>;
 }
-
-const PAYMENT_PHONE = '78 927 12 96';
-const WHATSAPP_LINK = 'https://wa.me/221789271296';
 
 export default function RechargePage() {
   const { user, token, loadFromStorage } = useAuth();

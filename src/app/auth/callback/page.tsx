@@ -2,39 +2,40 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
-  const sessionResult = useSession();
-  const data = sessionResult?.data;
-  const status = sessionResult?.status ?? 'loading';
-  const session = data;
   const { login } = useAuth();
 
   useEffect(() => {
-    if (status === 'authenticated' && session?.customToken && session?.customUser) {
-      // Store the custom JWT token in our Zustand auth store
-      login(session.customToken, {
-        id: session.customUser.id,
-        name: session.customUser.name || '',
-        email: session.customUser.email,
-        phone: session.customUser.phone || undefined,
-        role: session.customUser.role,
-        plan: session.customUser.plan,
-        points: session.customUser.points,
-        referralCode: session.customUser.referralCode,
-        image: session.customUser.image || undefined,
-      });
+    // Read OAuth data from cookies set by the server-side callback
+    async function processOAuth() {
+      try {
+        const res = await fetch('/api/auth/oauth-exchange', {
+          method: 'POST',
+          credentials: 'include', // Include cookies
+        });
 
-      // Redirect to home
-      router.push('/');
-    } else if (status === 'unauthenticated') {
-      router.push('/login');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.token && data.user) {
+            login(data.token, data.user);
+            router.push('/');
+          } else {
+            router.push('/login?oauth=error');
+          }
+        } else {
+          router.push('/login?oauth=error');
+        }
+      } catch {
+        router.push('/login?oauth=error');
+      }
     }
-  }, [status, session, login, router]);
+
+    processOAuth();
+  }, [login, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     // Input validation
     const result = loginSchema.safeParse(body);
     if (!result.success) {
-      const errors = (result.error.issues || result.error.errors || []).map((e: { message: string }) => e.message).join(', ');
+      const errors = result.error.issues.map((e: { message: string }) => e.message).join(', ');
       return securityHeaders(NextResponse.json(
         { error: errors },
         { status: 400 }
@@ -50,16 +50,8 @@ export async function POST(request: NextRequest) {
     try {
       isValid = await verifyPassword(password, user.password);
     } catch {
-      // Fallback for legacy plain-text passwords (migration support)
-      isValid = user.password === password;
-      if (isValid) {
-        // Auto-upgrade to hashed password
-        const hashed = await hashPassword(password);
-        await db.user.update({
-          where: { id: user.id },
-          data: { password: hashed },
-        });
-      }
+      // If bcrypt fails (corrupted hash), deny login — do NOT fall back to plain text
+      isValid = false;
     }
 
     if (!isValid) {

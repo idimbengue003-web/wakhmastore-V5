@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
     // Simple monthly data
     const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
     const now = new Date();
-    const monthlyData = [];
+    const monthlyData: { month: string; annonces: number; ventes: number }[] = [];
     for (let i = 5; i >= 0; i--) {
       const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
       monthlyData.push({

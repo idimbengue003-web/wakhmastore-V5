@@ -75,45 +75,37 @@ export async function POST(
       }));
     }
 
-    // Check user points
-    const user = await db.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, points: true },
-    });
+    // Check user points (inside transaction for consistency)
+    const result = await db.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: payload.userId },
+        select: { id: true, points: true },
+      });
 
-    if (!user) {
-      return securityHeaders(NextResponse.json(
-        { error: 'Utilisateur non trouvé' },
-        { status: 404 }
-      ));
-    }
+      if (!user) {
+        throw new Error('USER_NOT_FOUND');
+      }
 
-    if (user.points < POINTS_TO_UNLOCK) {
-      return securityHeaders(NextResponse.json(
-        {
-          error: 'Points insuffisants',
-          currentPoints: user.points,
-          requiredPoints: POINTS_TO_UNLOCK,
-          missingPoints: POINTS_TO_UNLOCK - user.points,
-        },
-        { status: 400 }
-      ));
-    }
+      if (user.points < POINTS_TO_UNLOCK) {
+        throw new Error('INSUFFICIENT_POINTS');
+      }
 
-    // Deduct points and create purchase record
-    await db.$transaction([
-      db.purchase.create({
+      // Create purchase and deduct points atomically
+      const purchase = await tx.purchase.create({
         data: {
           userId: payload.userId,
           annonceId: id,
           points: POINTS_TO_UNLOCK,
         },
-      }),
-      db.user.update({
+      });
+
+      const updatedUser = await tx.user.update({
         where: { id: payload.userId },
-        data: { points: user.points - POINTS_TO_UNLOCK },
-      }),
-    ]);
+        data: { points: { decrement: POINTS_TO_UNLOCK } },
+      });
+
+      return { purchase, updatedUser };
+    });
 
     return securityHeaders(NextResponse.json({
       success: true,
@@ -121,9 +113,27 @@ export async function POST(
       phone: annonce.phone,
       whatsapp: annonce.whatsapp,
       pointsDeducted: POINTS_TO_UNLOCK,
-      remainingPoints: user.points - POINTS_TO_UNLOCK,
+      remainingPoints: result.updatedUser.points,
     }));
   } catch (error) {
+    // Handle custom transaction errors
+    if (error instanceof Error) {
+      if (error.message === 'USER_NOT_FOUND') {
+        return securityHeaders(NextResponse.json(
+          { error: 'Utilisateur non trouvé' },
+          { status: 404 }
+        ));
+      }
+      if (error.message === 'INSUFFICIENT_POINTS') {
+        return securityHeaders(NextResponse.json(
+          {
+            error: 'Points insuffisants',
+            requiredPoints: POINTS_TO_UNLOCK,
+          },
+          { status: 400 }
+        ));
+      }
+    }
     console.error('Error purchasing annonce access:', error);
     return securityHeaders(NextResponse.json(
       { error: 'Erreur lors du débloquage de l\'annonce' },

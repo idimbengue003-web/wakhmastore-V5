@@ -14,30 +14,7 @@ import Footer from '@/components/Footer';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import Link from 'next/link';
-import { PLANS } from '@/lib/constants';
-
-const categoryEmojis: Record<string, string> = {
-  'Téléphones': '📱',
-  'TV & Écrans': '📺',
-  'Frigo & Congélateur': '🧊',
-  'Climatiseur & Ventilateur': '❄️',
-  'Ordinateurs': '💻',
-  'Tablettes': '📲',
-  'Audio & Son': '🔊',
-  'Électroménager': '🏠',
-  'Plomberie': '🔧',
-  'Électricité': '⚡',
-  'Meubles': '🛋️',
-  'Mode & Vetements': '👗',
-  'Cosmétiques': '💄',
-  'Alimentation': '🍜',
-  'Services': '🤝',
-  'Transport': '🚗',
-  'Immobilier': '🏗️',
-  'Autre': '📦',
-};
-
-const categoryNames = Object.keys(categoryEmojis);
+import { PLANS, CATEGORY_EMOJIS, CATEGORIES, isSubscriber as checkSubscriber } from '@/lib/constants';
 
 export default function DeposerPage() {
   const router = useRouter();
@@ -95,7 +72,7 @@ export default function DeposerPage() {
   }, [token]);
 
   const userPlan = user?.plan ? PLANS[user.plan as keyof typeof PLANS] || PLANS.none : PLANS.none;
-  const isSubscriber = user?.plan === 'gratuit' || user?.plan === 'diambar' || user?.plan === 'vip_king';
+  const isSubscriber = user?.plan ? checkSubscriber(user.plan) : false;
   const maxAnnonces = isSubscriber ? (userPlan.annoncesPerWeek > 0 ? userPlan.annoncesPerWeek : userPlan.annoncesPerMonth) : 0;
   const periodLabel = userPlan.annoncesPerWeek > 0 ? 'semaine' : 'mois';
   const isAtLimit = isSubscriber && maxAnnonces > 0 && annonceCount !== null && annonceCount >= maxAnnonces;
@@ -139,7 +116,7 @@ export default function DeposerPage() {
         body: JSON.stringify({
           ...form,
           price: parseInt(form.price),
-          emoji: categoryEmojis[form.category] || '📦',
+          emoji: CATEGORY_EMOJIS[form.category] || '📦',
           type: isSubscriber ? form.type : 'je_cherche',
         }),
       });
@@ -340,9 +317,9 @@ export default function DeposerPage() {
                     <SelectValue placeholder="Choisir une catégorie" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categoryNames.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {categoryEmojis[cat]} {cat}
+                    {CATEGORIES.map((cat) => (
+                      <SelectItem key={cat.name} value={cat.name}>
+                        {cat.emoji} {cat.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

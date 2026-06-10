@@ -93,10 +93,9 @@ async function sendViaCloudAPI(
     const data = await response.json();
 
     if (response.ok && data.messages) {
-      console.log(`[WhatsApp Cloud API] OTP sent to ${phoneNumber}, message ID: ${data.messages[0]?.id}`);
       return { success: true };
     } else {
-      console.error('[WhatsApp Cloud API] Error:', JSON.stringify(data));
+      console.error('[WhatsApp Cloud API] Error: message not sent');
       return { success: false, error: data.error?.message || 'WhatsApp API error' };
     }
   } catch (error) {
@@ -130,7 +129,7 @@ export async function sendWhatsAppOTP(
     }
 
     // If Cloud API fails and we're in production, still try wa.me fallback
-    console.warn(`[WhatsApp] Cloud API failed: ${result.error}. Falling back to wa.me link.`);
+    console.warn('[WhatsApp] Cloud API failed. Falling back to wa.me link.');
   }
 
   // Fallback: Generate wa.me link
@@ -139,7 +138,7 @@ export async function sendWhatsAppOTP(
   const whatsappMessage = `Wakhma Store - Votre code de vérification est : ${code}\n\nCe code expire dans 5 minutes. Ne le partagez avec personne.`;
   const whatsappLink = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`;
 
-  console.log(`[WhatsApp Fallback] wa.me link generated for ${phoneNumber}`);
+  // No logging of sensitive data (phone numbers, OTP codes) in production
 
   return {
     success: true,

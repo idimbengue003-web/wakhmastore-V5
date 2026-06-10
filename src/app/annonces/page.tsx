@@ -9,27 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AnnonceCard from '@/components/AnnonceCard';
+import { CATEGORIES } from '@/lib/constants';
 
 const categories = [
   { name: 'Toutes', value: 'all' },
-  { name: '📱 Téléphones', value: 'Téléphones' },
-  { name: '📺 TV & Écrans', value: 'TV & Écrans' },
-  { name: '🧊 Frigo & Congélateur', value: 'Frigo & Congélateur' },
-  { name: '❄️ Climatiseur & Ventilateur', value: 'Climatiseur & Ventilateur' },
-  { name: '💻 Ordinateurs', value: 'Ordinateurs' },
-  { name: '📲 Tablettes', value: 'Tablettes' },
-  { name: '🔊 Audio & Son', value: 'Audio & Son' },
-  { name: '🏠 Électroménager', value: 'Électroménager' },
-  { name: '🔧 Plomberie', value: 'Plomberie' },
-  { name: '⚡ Électricité', value: 'Électricité' },
-  { name: '🛋️ Meubles', value: 'Meubles' },
-  { name: '👗 Mode & Vetements', value: 'Mode & Vetements' },
-  { name: '💄 Cosmétiques', value: 'Cosmétiques' },
-  { name: '🍜 Alimentation', value: 'Alimentation' },
-  { name: '🤝 Services', value: 'Services' },
-  { name: '🚗 Transport', value: 'Transport' },
-  { name: '🏗️ Immobilier', value: 'Immobilier' },
-  { name: '📦 Autre', value: 'Autre' },
+  ...CATEGORIES.map(c => ({ name: `${c.emoji} ${c.name}`, value: c.name })),
 ];
 
 interface Annonce {
@@ -55,9 +39,12 @@ function AnnoncesContent() {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
 
-  const fetchAnnonces = useCallback(async () => {
-    setLoading(true);
+  const fetchAnnonces = useCallback(async (pageNum: number = 1, append: boolean = false) => {
+    if (!append) setLoading(true);
     try {
       const params = new URLSearchParams();
       if (selectedCategory && selectedCategory !== 'all') {
@@ -66,10 +53,19 @@ function AnnoncesContent() {
       if (searchQuery) {
         params.set('search', searchQuery);
       }
+      params.set('page', String(pageNum));
       const res = await fetch(`/api/annonces?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
-        setAnnonces(data);
+        const total = parseInt(res.headers.get('X-Total-Count') || '0');
+        setTotalCount(total);
+        setHasMore(pageNum * 20 < total);
+        if (append) {
+          setAnnonces(prev => [...prev, ...data]);
+        } else {
+          setAnnonces(data);
+        }
+        setPage(pageNum);
       }
     } catch (error) {
       console.error('Error fetching annonces:', error);
@@ -79,7 +75,7 @@ function AnnoncesContent() {
   }, [selectedCategory, searchQuery]);
 
   useEffect(() => {
-    fetchAnnonces();
+    fetchAnnonces(1, false);
   }, [fetchAnnonces]);
 
   return (
@@ -196,13 +192,30 @@ function AnnoncesContent() {
                 <p className="text-gray-400 text-sm">Essayez de modifier vos filtres</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 stagger-children">
-                {annonces.map((annonce) => (
-                  <div key={annonce.id} className="stagger-item">
-                    <AnnonceCard {...annonce} />
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 stagger-children">
+                  {annonces.map((annonce) => (
+                    <div key={annonce.id} className="stagger-item">
+                      <AnnonceCard {...annonce} />
+                    </div>
+                  ))}
+                </div>
+                {/* Load more button */}
+                {hasMore && (
+                  <div className="text-center mt-8">
+                    <Button
+                      onClick={() => fetchAnnonces(page + 1, true)}
+                      variant="outline"
+                      className="rounded-xl border-orange/30 text-orange hover:bg-orange-bg font-semibold px-8"
+                    >
+                      Voir plus d&apos;annonces
+                    </Button>
+                    <p className="text-xs text-gray-400 mt-2">
+                      {annonces.length} / {totalCount} annonces affichées
+                    </p>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </div>
         </div>

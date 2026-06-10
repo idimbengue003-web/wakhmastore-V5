@@ -3,63 +3,19 @@ import { db } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/get-user';
 import { rateLimit } from '@/lib/rate-limit';
 import { securityHeaders } from '@/lib/security-headers';
+import { PLANS } from '@/lib/constants';
 
-// Subscription plans
-export const SUBSCRIPTION_PLANS = [
-  {
-    id: 'gratuit',
-    name: 'BOLT ⚡',
-    priceFcfa: 2000,
-    period: '/mois',
-    unlockCost: 1500, // Cost per annonce unlock
-    pointsIncluded: 15000,
-    annoncesVends: 3,
-    features: [
-      '15 000 points offerts',
-      '3 annonces « Je vends » par mois',
-      'Débloque une annonce à 1 500 points',
-      'Badge ⚡ DIAMBAR',
-      'Visibilité standard',
-      'Support par email',
-    ],
-  },
-  {
-    id: 'diambar',
-    name: 'DIAMBAR 💪🏽',
-    priceFcfa: 5000,
-    period: '/mois',
-    unlockCost: 1000, // Cost per annonce unlock
-    pointsIncluded: 26000,
-    annoncesVends: 5,
-    features: [
-      '26 000 points inclus',
-      '5 annonces « Je vends » par mois',
-      'Débloque une annonce à 1 000 points au lieu de 1 500',
-      'Badge 💪🏽 DIAMBAR',
-      'Annonces mises en avant',
-      'Support prioritaire WhatsApp',
-    ],
-  },
-  {
-    id: 'vip_king',
-    name: 'VIP KING 👑',
-    priceFcfa: 9900,
-    period: '/mois',
-    unlockCost: 800, // Cost per annonce unlock
-    pointsIncluded: 49000,
-    annoncesVends: 5, // 5 per week
-    features: [
-      '49 000 points inclus',
-      '5 annonces « Je vends » par semaine',
-      'Débloque une annonce à 800 points au lieu de 1 500',
-      'Badge VIP KING',
-      'Annonces en tête de liste',
-      'Support prioritaire WhatsApp',
-      'Statistiques détaillées',
-      'Mise en avant hebdomadaire',
-    ],
-  },
-] as const;
+// Subscription plans from centralized constants
+export const SUBSCRIPTION_PLANS = Object.values(PLANS).filter(p => p.id !== 'none').map(plan => ({
+  id: plan.id,
+  name: plan.name,
+  priceFcfa: plan.price,
+  period: plan.period,
+  unlockCost: plan.id === 'vip_king' ? 800 : plan.id === 'diambar' ? 1000 : 1500,
+  pointsIncluded: plan.points,
+  annoncesVends: plan.annoncesPerWeek > 0 ? plan.annoncesPerWeek : plan.annoncesPerMonth,
+  features: [...plan.features],
+}));
 
 export async function POST(request: NextRequest) {
   try {
@@ -116,50 +72,32 @@ export async function POST(request: NextRequest) {
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + 30);
 
-    // Get current user points
-    const currentUser = await db.user.findUnique({
-      where: { id: payload.userId },
-      select: { points: true },
-    });
-    const currentPoints = currentUser?.points ?? 0;
-    const newPointsBalance = currentPoints + (plan as { pointsIncluded?: number }).pointsIncluded!;
-
-    // Create subscription record
+    // Create subscription record with PENDING status — admin must verify payment
     const subscription = await db.subscription.create({
       data: {
         userId: user.id,
         plan: plan.id,
         priceFcfa: plan.priceFcfa,
-        status: 'active', // Auto-activate for demo
+        status: 'pending', // Wait for admin to confirm payment before activating
         startDate,
         endDate,
       },
     });
 
-    // Update user plan and credit included points
-    await db.user.update({
-      where: { id: user.id },
-      data: {
-        plan: plan.id,
-        points: newPointsBalance,
-      },
-    });
+    // Do NOT auto-credit points or change plan — wait for admin approval
+    // The admin will approve via a separate endpoint
 
     return securityHeaders(NextResponse.json({
       success: true,
-      message: `Abonnement ${plan.name} activé avec succès ! ${(plan as { pointsIncluded?: number }).pointsIncluded?.toLocaleString('fr-FR')} points crédités.`,
+      message: `Demande d'abonnement ${plan.name} envoyée ! Envoyez ${plan.priceFcfa.toLocaleString('fr-FR')} FCFA via Wave ou Orange Money au ${process.env.PAYMENT_PHONE || '78 927 12 96'}, puis envoyez la capture sur WhatsApp pour validation.`,
       subscription: {
         id: subscription.id,
         plan: plan.name,
         priceFcfa: plan.priceFcfa,
-        unlockCost: plan.unlockCost,
-        pointsIncluded: (plan as { pointsIncluded?: number }).pointsIncluded,
+        status: 'pending',
         startDate,
         endDate,
-        status: 'active',
       },
-      newPlan: plan.id,
-      newPointsBalance,
     }));
   } catch (error) {
     console.error('Error creating subscription:', error);
@@ -174,7 +112,8 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const payload = getUserFromRequest(request);
 
-  let currentSubscription = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let currentSubscription: any = null;
   if (payload) {
     const sub = await db.subscription.findFirst({
       where: { userId: payload.userId, status: 'active' },

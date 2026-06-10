@@ -10,35 +10,7 @@ import Footer from '@/components/Footer';
 import AnnonceCard from '@/components/AnnonceCard';
 import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 
-const categories = [
-  { name: 'Téléphones', emoji: '📱' },
-  { name: 'TV & Écrans', emoji: '📺' },
-  { name: 'Frigo & Congélateur', emoji: '🧊' },
-  { name: 'Climatiseur & Ventilateur', emoji: '❄️' },
-  { name: 'Ordinateurs', emoji: '💻' },
-  { name: 'Tablettes', emoji: '📲' },
-  { name: 'Audio & Son', emoji: '🔊' },
-  { name: 'Électroménager', emoji: '🏠' },
-  { name: 'Plomberie', emoji: '🔧' },
-  { name: 'Électricité', emoji: '⚡' },
-  { name: 'Meubles', emoji: '🛋️' },
-  { name: 'Mode & Vetements', emoji: '👗' },
-  { name: 'Cosmétiques', emoji: '💄' },
-  { name: 'Alimentation', emoji: '🍜' },
-  { name: 'Services', emoji: '🤝' },
-  { name: 'Transport', emoji: '🚗' },
-  { name: 'Immobilier', emoji: '🏗️' },
-  { name: 'Autre', emoji: '📦' },
-];
-
-const quickCategories = [
-  'Téléphones',
-  'TV & Écrans',
-  'Ordinateurs',
-  'Meubles',
-  'Transport',
-  'Immobilier',
-];
+import { CATEGORIES, QUICK_CATEGORIES } from '@/lib/constants';
 
 interface Annonce {
   id: string;
@@ -114,7 +86,7 @@ export default function HomePage() {
             Wakhma Store
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-4 font-medium">
-            Les bonnes affaires à Dakar 🇸🇳
+            Les bonnes affaires à Dakar
           </p>
           <p className="text-white/70 mb-8 max-w-xl mx-auto text-sm sm:text-base">
             Poste ce que tu veux. Les vendeurs te le trouvent rapidement.
@@ -145,10 +117,10 @@ export default function HomePage() {
 
           {/* Quick category pills */}
           <div className="flex flex-wrap justify-center gap-2">
-            {quickCategories.map((cat) => (
+            {QUICK_CATEGORIES.map((cat) => (
               <Link key={cat} href={`/annonces?category=${encodeURIComponent(cat)}`}>
                 <span className="category-pill inline-flex items-center px-4 py-2 rounded-full bg-white/15 text-white text-sm font-medium backdrop-blur-sm cursor-pointer">
-                  {categories.find((c) => c.name === cat)?.emoji} {cat}
+                  {CATEGORIES.find((c) => c.name === cat)?.emoji} {cat}
                 </span>
               </Link>
             ))}
@@ -215,7 +187,7 @@ export default function HomePage() {
             <p className="text-gray-500 mt-1">Trouvez ce que vous cherchez en un clic</p>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-3 sm:gap-4 stagger-children">
-            {categories.map((cat) => (
+            {CATEGORIES.map((cat) => (
               <Link
                 key={cat.name}
                 href={`/annonces?category=${encodeURIComponent(cat.name)}`}

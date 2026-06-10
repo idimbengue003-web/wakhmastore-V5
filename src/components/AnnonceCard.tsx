@@ -5,6 +5,7 @@ import { MessageCircle, MapPin, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { formatPrice, timeAgo } from '@/lib/constants';
 
 interface AnnonceCardProps {
   id: string;
@@ -17,21 +18,6 @@ interface AnnonceCardProps {
   isVip: boolean;
   vipType?: string | null;
   createdAt: string;
-}
-
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('fr-FR').format(price) + ' FCFA';
-}
-
-function timeAgo(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-  if (diff < 60) return "À l'instant";
-  if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)}h`;
-  if (diff < 604800) return `Il y a ${Math.floor(diff / 86400)}j`;
-  return date.toLocaleDateString('fr-FR');
 }
 
 export default function AnnonceCard({

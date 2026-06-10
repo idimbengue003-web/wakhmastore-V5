@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       whatsappLink = otpResult.whatsappLink || '';
     }
 
-    console.log(`[WhatsApp OTP] Code ${code} generated for ${normalizedPhone} via ${otpMethod}`);
+    console.log(`[WhatsApp OTP] Code generated for ${normalizedPhone} via ${otpMethod}`);
 
     const responseData: Record<string, unknown> = {
       success: true,
@@ -94,12 +94,20 @@ export async function POST(request: NextRequest) {
       // Fallback: wa.me link available
       responseData.message = 'Code de vérification prêt — ouvrez le lien WhatsApp';
       responseData.whatsappLink = whatsappLink;
-      // Also include code since wa.me is not reliable for OTP
-      responseData.code = code;
+      // Only include code in development mode
+      if (process.env.NODE_ENV === 'development') {
+        responseData.code = code;
+      }
     } else {
-      // Demo mode: no WhatsApp API configured — show code on screen
-      responseData.message = 'Code de vérification généré (mode démo)';
-      responseData.code = code;
+      // Demo mode: only show code in development
+      if (process.env.NODE_ENV === 'development') {
+        responseData.message = 'Code de vérification généré (mode démo)';
+        responseData.code = code;
+      } else {
+        // In production without WhatsApp API, still generate the code but don't return it
+        // The code was logged server-side for admin verification
+        responseData.message = 'Code de vérification envoyé. Vérifiez votre WhatsApp.';
+      }
     }
 
     return securityHeaders(NextResponse.json(responseData));

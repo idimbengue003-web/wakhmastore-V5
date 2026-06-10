@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { generateToken, generateReferralCode, hashPassword } from '@/lib/auth';
+import { MAX_REFERRAL_POINTS, POINTS_PER_REFERRAL } from '@/lib/constants';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 const REDIRECT_URI = process.env.NEXT_PUBLIC_BASE_URL
   ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/google/callback`
   : 'http://localhost:3000/api/auth/google/callback';
-const MAX_REFERRAL_POINTS = 30000;
-const POINTS_PER_REFERRAL = 400;
 
 export async function GET(request: NextRequest) {
   try {
@@ -137,11 +136,24 @@ export async function GET(request: NextRequest) {
       image: user.image,
     };
 
-    const callbackUrl = new URL('/auth/callback', request.url);
-    callbackUrl.searchParams.set('token', token);
-    callbackUrl.searchParams.set('user', JSON.stringify(userData));
+    // Set token in httpOnly cookie instead of URL params for security
+    const response = NextResponse.redirect(new URL('/auth/callback', request.url));
+    response.cookies.set('wakhma_oauth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60, // Short-lived: 1 minute to complete callback
+      path: '/',
+    });
+    response.cookies.set('wakhma_oauth_user', JSON.stringify(userData), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60,
+      path: '/',
+    });
 
-    return NextResponse.redirect(callbackUrl.toString());
+    return response;
   } catch (error) {
     console.error('Google OAuth callback error:', error);
     return NextResponse.redirect(new URL('/login?oauth=error', request.url));

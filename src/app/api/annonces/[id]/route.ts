@@ -79,3 +79,58 @@ export async function GET(
     ));
   }
 }
+
+// DELETE: Delete an annonce. Only the author or an admin can delete.
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    const payload = getUserFromRequest(request);
+    if (!payload) {
+      return securityHeaders(NextResponse.json(
+        { error: 'Authentification requise' },
+        { status: 401 }
+      ));
+    }
+
+    const annonce = await db.annonce.findUnique({
+      where: { id },
+      select: { id: true, authorId: true },
+    });
+
+    if (!annonce) {
+      return securityHeaders(NextResponse.json(
+        { error: 'Annonce non trouvée' },
+        { status: 404 }
+      ));
+    }
+
+    // Only author or admin can delete
+    if (annonce.authorId !== payload.userId && payload.role !== 'admin') {
+      return securityHeaders(NextResponse.json(
+        { error: 'Vous n\'êtes pas autorisé à supprimer cette annonce' },
+        { status: 403 }
+      ));
+    }
+
+    // Delete purchases first (due to foreign key constraints), then the annonce
+    await db.$transaction([
+      db.purchase.deleteMany({ where: { annonceId: id } }),
+      db.annonce.delete({ where: { id } }),
+    ]);
+
+    return securityHeaders(NextResponse.json({
+      success: true,
+      message: 'Annonce supprimée avec succès',
+    }));
+  } catch (error) {
+    console.error('Error deleting annonce:', error);
+    return securityHeaders(NextResponse.json(
+      { error: 'Erreur lors de la suppression' },
+      { status: 500 }
+    ));
+  }
+}

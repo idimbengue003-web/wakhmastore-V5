@@ -15,6 +15,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import { formatPrice, timeAgo } from '@/lib/constants';
 
 interface AnnonceDetail {
   id: string;
@@ -24,6 +25,7 @@ interface AnnonceDetail {
   category: string;
   location: string;
   emoji: string;
+  type: string;
   isVip: boolean;
   vipType: string | null;
   authorId: string;
@@ -35,20 +37,7 @@ interface AnnonceDetail {
   unlockCost: number;
 }
 
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('fr-FR').format(price) + ' FCFA';
-}
 
-function timeAgo(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-  if (diff < 60) return "À l'instant";
-  if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)}h`;
-  if (diff < 604800) return `Il y a ${Math.floor(diff / 86400)}j`;
-  return date.toLocaleDateString('fr-FR');
-}
 
 export default function AnnonceDetailPage() {
   const router = useRouter();

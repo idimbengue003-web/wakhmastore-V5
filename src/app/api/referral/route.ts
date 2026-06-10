@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/get-user';
 import { securityHeaders } from '@/lib/security-headers';
-
-const MAX_REFERRAL_POINTS = 30000;
-const POINTS_PER_REFERRAL = 400;
+import { MAX_REFERRAL_POINTS, POINTS_PER_REFERRAL } from '@/lib/constants';
 
 // GET: Get referral stats and history
 export async function GET(request: NextRequest) {

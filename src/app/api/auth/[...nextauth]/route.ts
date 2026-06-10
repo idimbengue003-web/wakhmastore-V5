@@ -49,11 +49,15 @@ export const authOptions: NextAuthOptions = {
               await db.account.create({
                 data: {
                   userId: existingUser.id,
+                  type: account.type,
                   provider: account.provider,
                   providerAccountId: account.providerAccountId,
-                  accessToken: account.access_token,
-                  refreshToken: account.refresh_token,
-                  expiresAt: account.expires_at,
+                  access_token: account.access_token,
+                  refresh_token: account.refresh_token,
+                  expires_at: account.expires_at,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
                 },
               });
             } else {
@@ -61,9 +65,9 @@ export const authOptions: NextAuthOptions = {
               await db.account.update({
                 where: { id: existingAccount.id },
                 data: {
-                  accessToken: account.access_token,
-                  refreshToken: account.refresh_token,
-                  expiresAt: account.expires_at,
+                  access_token: account.access_token,
+                  refresh_token: account.refresh_token,
+                  expires_at: account.expires_at,
                 },
               });
             }
@@ -84,6 +88,7 @@ export const authOptions: NextAuthOptions = {
               image: user.image,
               emailVerified: new Date(),
               referralCode,
+              password: await (await import('@/lib/auth')).hashPassword(Math.random().toString(36).slice(-16) + 'A1!'),
             },
           });
 
@@ -92,11 +97,15 @@ export const authOptions: NextAuthOptions = {
             await db.account.create({
               data: {
                 userId: newUser.id,
+                type: account.type,
                 provider: account.provider,
                 providerAccountId: account.providerAccountId,
-                accessToken: account.access_token,
-                refreshToken: account.refresh_token,
-                expiresAt: account.expires_at,
+                access_token: account.access_token,
+                refresh_token: account.refresh_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
               },
             });
           }

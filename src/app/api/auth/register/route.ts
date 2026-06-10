@@ -5,9 +5,7 @@ import { registerSchema } from '@/lib/validation';
 import { rateLimit } from '@/lib/rate-limit';
 import { getClientIp } from '@/lib/get-user';
 import { securityHeaders } from '@/lib/security-headers';
-
-const MAX_REFERRAL_POINTS = 30000;
-const POINTS_PER_REFERRAL = 400;
+import { MAX_REFERRAL_POINTS, POINTS_PER_REFERRAL } from '@/lib/constants';
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,7 +24,7 @@ export async function POST(request: NextRequest) {
     // Input validation
     const result = registerSchema.safeParse(body);
     if (!result.success) {
-      const errors = (result.error.issues || result.error.errors || []).map((e: { message: string }) => e.message).join(', ');
+      const errors = result.error.issues.map((e: { message: string }) => e.message).join(', ');
       return securityHeaders(NextResponse.json(
         { error: errors },
         { status: 400 }

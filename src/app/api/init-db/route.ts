@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getUserFromRequest } from '@/lib/get-user';
 
-// This route initializes the database
+// This route initializes the database — ADMIN ONLY
 // GET /api/init-db → verify database connection and tables
-// GET /api/init-db?seed=true → seed demo data
-// GET /api/init-db?reset=true → drop all tables and recreate (⚠️ deletes all data)
+// GET /api/init-db?seed=true → seed demo data (admin only)
+// GET /api/init-db?reset=true → drop all tables and recreate (admin only, ⚠️ deletes all data)
 export async function GET(request: NextRequest) {
+  // SECURITY: Require admin authentication for ALL operations
+  const payload = getUserFromRequest(request);
+  if (!payload || payload.role !== 'admin') {
+    return NextResponse.json(
+      { error: 'Accès refusé. Réservé aux administrateurs.' },
+      { status: 403 }
+    );
+  }
+
   const results: { step: string; status: string; error?: string }[] = [];
   const seedMode = request.nextUrl.searchParams.get('seed') === 'true';
   const resetMode = request.nextUrl.searchParams.get('reset') === 'true';
@@ -36,7 +46,7 @@ export async function GET(request: NextRequest) {
             "password" TEXT NOT NULL,
             "image" TEXT,
             "role" TEXT NOT NULL DEFAULT 'user',
-            "plan" TEXT NOT NULL DEFAULT 'gratuit',
+            "plan" TEXT NOT NULL DEFAULT 'none',
             "points" INTEGER NOT NULL DEFAULT 0,
             "referralCode" TEXT NOT NULL,
             "referredBy" TEXT,
@@ -67,6 +77,7 @@ export async function GET(request: NextRequest) {
             "whatsapp" TEXT,
             "isVip" BOOLEAN NOT NULL DEFAULT false,
             "vipType" TEXT,
+            "type" TEXT NOT NULL DEFAULT 'je_cherche',
             "authorId" TEXT NOT NULL,
             "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
             "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -33,19 +33,25 @@ export async function POST(request: NextRequest) {
       ));
     }
 
-    // Add points to user
-    const updatedUser = await db.user.update({
-      where: { id: payload.userId },
+    // Create a PointPurchase record with PENDING status — admin must verify payment
+    const pointPurchase = await db.pointPurchase.create({
       data: {
-        points: { increment: pkg.points },
+        userId: payload.userId,
+        amountFcfa: pkg.price,
+        pointsAdded: pkg.points,
+        status: 'pending', // Wait for admin to confirm payment
+        paymentMethod: body.paymentMethod || null,
       },
     });
 
+    // Do NOT auto-credit points — wait for admin approval
     return securityHeaders(NextResponse.json({
       success: true,
-      pointsAdded: pkg.points,
-      newBalance: updatedUser.points,
-      message: `${pkg.points.toLocaleString('fr-FR')} points ajoutés à votre compte !`,
+      message: `Demande d'achat envoyée ! Envoyez ${pkg.price.toLocaleString('fr-FR')} FCFA via Wave ou Orange Money au ${process.env.PAYMENT_PHONE || '78 927 12 96'}, puis envoyez la capture sur WhatsApp pour validation.`,
+      purchaseId: pointPurchase.id,
+      pointsRequested: pkg.points,
+      amountFcfa: pkg.price,
+      status: 'pending',
     }));
   } catch (error) {
     console.error('Error purchasing points:', error);
