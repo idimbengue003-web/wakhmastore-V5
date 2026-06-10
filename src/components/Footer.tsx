@@ -12,7 +12,7 @@ export default function Footer() {
               <div className="w-9 h-9 bg-orange rounded-xl flex items-center justify-center">
                 <Store className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-white">Wakhma Store</span>
+              <span className="text-lg font-bold text-white">Wakhma Store</span>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed">
               Poste ce que tu veux. Les vendeurs te le trouvent rapidement. Le marketplace #1 de Dakar, Sénégal.

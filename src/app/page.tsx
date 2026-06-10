@@ -91,7 +91,7 @@ export default function HomePage() {
       <section className="relative bg-gradient-to-br from-orange-dark via-orange to-orange-dark overflow-hidden">
 
         <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 text-center">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-6 tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tight">
             Wakhma Store
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-4 font-medium">

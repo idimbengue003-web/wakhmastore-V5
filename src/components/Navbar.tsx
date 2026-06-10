@@ -49,7 +49,7 @@ export default function Navbar() {
             <div className="w-9 h-9 bg-orange rounded-xl flex items-center justify-center group-hover:bg-orange-dark transition-colors">
               <Store className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-orange">Wakhma Store</span>
+            <span className="text-base font-bold text-orange">Wakhma Store</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -189,7 +189,7 @@ export default function Navbar() {
                     <div className="w-8 h-8 bg-orange rounded-xl flex items-center justify-center">
                       <Store className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-lg font-bold text-orange">Wakhma Store</span>
+                    <span className="text-sm font-bold text-orange">Wakhma Store</span>
                   </div>
                   <SheetClose asChild>
                     <Button variant="ghost" size="icon">
