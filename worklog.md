@@ -98,3 +98,34 @@ Complete homepage with 5 sections:
 - shadcn/ui components (Button, Card, Badge, Sheet, Input, Select, Label, Textarea, Toaster)
 - Prisma ORM (SQLite)
 - lucide-react icons
+---
+Task ID: 1
+Agent: Main Agent
+Task: Migrate Wakhma Store from SQLite to PostgreSQL and deploy on Vercel
+
+Work Log:
+- Migrated Prisma schema from sqlite to postgresql provider
+- Added PointPurchase and Subscription models to Prisma schema
+- Added directUrl for Neon connection pooling
+- Removed better-sqlite3, @prisma/adapter-better-sqlite3, @types/better-sqlite3 from dependencies
+- Removed db-direct.ts and db-mutex.ts files
+- Rewrote db.ts to use standard PrismaClient without driver adapters
+- Rewrote all 13 API routes to use Prisma instead of raw SQL queries
+- Removed withDbLock mutex from all routes (PostgreSQL handles concurrency natively)
+- Fixed Zod v4 compatibility: error.errors → error.issues
+- Fixed OAuth routes: avatar → image, removed provider/providerId
+- Fixed auth/callback prerendering error with dynamic layout
+- Fixed JWT_SECRET build-time crash with fallback
+- Fixed cmdk version (1.4.2 → 1.1.1)
+- Added PostgreSQL migration file
+- Created vercel.json with prisma migrate baseline commands
+- Reset and recreated database tables on Neon PostgreSQL
+- Seeded demo data (3 users: demo@wakhma.sn, fatou@test.sn, mamadou@test.sn)
+- Successfully deployed to https://www.wakhmastore.com
+
+Stage Summary:
+- App fully migrated from SQLite to PostgreSQL (Neon)
+- All API endpoints tested and working on Vercel
+- Login: ✅ Register: ✅ Profile: ✅ Annonces: ✅ Points: ✅
+- Demo accounts: demo@wakhma.sn / 1234, fatou@test.sn / 1234, mamadou@test.sn / 1234
+- Production URL: https://www.wakhmastore.com
