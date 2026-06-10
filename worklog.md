@@ -129,3 +129,48 @@ Stage Summary:
 - Login: ✅ Register: ✅ Profile: ✅ Annonces: ✅ Points: ✅
 - Demo accounts: demo@wakhma.sn / 1234, fatou@test.sn / 1234, mamadou@test.sn / 1234
 - Production URL: https://www.wakhmastore.com
+---
+Task ID: 1
+Agent: Main
+Task: Production hardening - fix all critical security issues and long-term readiness
+
+Work Log:
+- Removed 🇸🇳 emoji from tagline "Les bonnes affaires à Dakar"
+- Protected /api/init-db with admin-only authentication (C1)
+- Made JWT_SECRET mandatory in production, fallback only for dev/build (C2)
+- Removed plain-text password fallback in login route (C3)
+- Fixed OAuth token exposure in URL params - now uses httpOnly cookies (C4)
+- Created /api/auth/oauth-exchange endpoint to read OAuth cookies securely
+- Changed payment routes to "pending" status instead of auto-completing (C5)
+- Created admin approval endpoints: /api/admin/approve-subscription, /api/admin/approve-points
+- Added Account model and emailVerified field to Prisma schema (C6/H13)
+- Created src/middleware.ts with security headers (C7)
+- Removed OTP code from API responses in production mode (H1)
+- Fixed race conditions in purchase endpoint using decrement inside transaction (H4/H5)
+- Added database indexes for Annonce, Purchase, Referral, PointPurchase, Subscription (H9)
+- Fixed next.config.ts: removed ignoreBuildErrors, enabled reactStrictMode (H10)
+- Created /api/admin/check-expired endpoint for subscription expiry checking (H14)
+- Centralized all duplicate constants: CATEGORIES, CATEGORY_EMOJIS, QUICK_CATEGORIES, formatPrice, timeAgo, isSubscriber, PAYMENT_PHONE, WHATSAPP_LINK (M1-M5)
+- Added admin role checks to all admin API routes (M8)
+- Added DELETE endpoint for annonces (author or admin only) (M10)
+- Created ErrorBoundary component and wrapped app in layout (M11)
+- Moved hardcoded payment phone/WhatsApp to env vars with constants fallback (M12)
+- Added pagination UI with "Load more" button on annonces page (M17)
+- Fixed purchase-points API to create PointPurchase record (M18)
+- Fixed package.json name to "wakhma-store" (L7)
+- Removed sensitive console.logs from whatsapp.ts (L12)
+- Fixed init-db SQL: added 'type' column to Annonce, 'none' default plan for User
+- Tightened CSP headers: removed 'unsafe-eval' from script-src
+- Updated subscriptions API to use centralized PLANS constants
+- Fixed NextAuth route to work with new Account model fields
+- Fixed Zod error handling (removed .errors property reference)
+- Fixed TypeScript type errors throughout codebase
+- Build successful, deployed to Vercel
+
+Stage Summary:
+- All 7 Critical issues fixed
+- All 7 High priority issues fixed
+- All 11 Medium priority issues fixed
+- All 3 Low priority issues fixed
+- Production-ready: admin approval for payments, secure OAuth, no plain-text passwords, proper indexes, error boundaries, subscription expiry, annonce deletion, pagination
+- Deployed via git push to main branch
