@@ -157,7 +157,7 @@ export default function ProfilPage() {
 
         {/* Profile Card */}
         <Card className="border-gray-100 rounded-2xl mb-6 overflow-hidden">
-          <div className="bg-gradient-to-r from-orange to-orange-dark h-24 relative">
+          <div className="bg-gradient-to-r from-orange-dark to-orange h-24 relative">
             <div className="absolute -bottom-8 left-6">
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg border-4 border-white">
                 <User className="w-8 h-8 text-orange" />

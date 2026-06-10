@@ -172,7 +172,7 @@ export default function ParrainagePage() {
 
         {/* Referral Code Card */}
         <Card className="border-2 border-orange/20 rounded-2xl mb-6 overflow-hidden">
-          <div className="bg-gradient-to-r from-orange to-orange-dark p-6 text-center">
+          <div className="bg-gradient-to-r from-orange-dark to-orange p-6 text-center">
             <p className="text-white/80 text-sm font-medium mb-2">Ton code de parrainage</p>
             <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-wider font-mono">
               {stats?.referralCode || '...'}

@@ -441,7 +441,7 @@ export default function DeposerPage() {
 
               {isAtLimit && (
                 <Link href="/recharge" className="block">
-                  <Button type="button" className="btn-press w-full bg-gradient-to-r from-orange to-orange-dark text-white font-semibold rounded-xl h-12 text-base transition-all duration-300 mt-2">
+                  <Button type="button" className="btn-press w-full bg-gradient-to-r from-orange-dark to-orange text-white font-semibold rounded-xl h-12 text-base transition-all duration-300 mt-2">
                     <Crown className="w-5 h-5 mr-2" />
                     Passer à un plan supérieur
                   </Button>

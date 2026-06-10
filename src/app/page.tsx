@@ -60,7 +60,7 @@ export default function HomePage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-orange-dark via-orange to-orange-dark overflow-hidden">
+      <section className="relative bg-gradient-to-r from-orange-dark to-orange overflow-hidden">
         {/* Floating emojis - subtle & transparent */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <span className="floating-emoji opacity-25" style={{ '--float-x': '5%', '--float-delay': '0s', '--float-duration': '14s', '--float-size': '2rem' } as React.CSSProperties}>📱</span>
