@@ -3,6 +3,11 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["cdg1"],
+  "functions": {
+    "src/app/api/admin/check-expired/route.ts": {
+      "maxDuration": 60
+    }
+  },
   "maxDuration": 60,
   "crons": [
     {
