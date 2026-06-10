@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const result = phoneSchema.safeParse(body);
     if (!result.success) {
-      const errors = result.error.errors.map((e) => e.message).join(', ');
+      const errors = (result.error.issues || result.error.errors || []).map((e: { message: string }) => e.message).join(', ');
       return securityHeaders(NextResponse.json(
         { error: errors },
         { status: 400 }
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       where: { id: payload.userId },
       select: {
         id: true, name: true, email: true, phone: true, role: true,
-        plan: true, points: true, referralCode: true, avatar: true, provider: true,
+        plan: true, points: true, referralCode: true, image: true,
       },
     });
 

@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     }
 
     const googleUser = await userInfoRes.json();
-    const { email, name, picture, sub: googleId } = googleUser;
+    const { email, name, picture } = googleUser;
 
     if (!email) {
       return NextResponse.redirect(new URL('/login?oauth=noemail', request.url));
@@ -83,9 +83,7 @@ export async function GET(request: NextRequest) {
           email,
           name: name || email.split('@')[0],
           password: randomPassword,
-          avatar: picture || null,
-          provider: 'google',
-          providerId: googleId,
+          image: picture || null,
           referralCode: userReferralCode,
           referredBy: referredBy,
         },
@@ -112,12 +110,12 @@ export async function GET(request: NextRequest) {
         }
       }
     } else {
-      if (!user.providerId) {
+      if (!user.image) {
         await db.user.update({
           where: { id: user.id },
-          data: { avatar: picture || user.avatar, provider: 'google', providerId: googleId },
+          data: { image: picture || user.image },
         });
-        user = { ...user, avatar: picture || user.avatar, provider: 'google', providerId: googleId };
+        user = { ...user, image: picture || user.image };
       }
     }
 
@@ -136,8 +134,7 @@ export async function GET(request: NextRequest) {
       plan: user.plan,
       points: user.points,
       referralCode: user.referralCode,
-      avatar: user.avatar,
-      provider: user.provider,
+      image: user.image,
     };
 
     const callbackUrl = new URL('/auth/callback', request.url);

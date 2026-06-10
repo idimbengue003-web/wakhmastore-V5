@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     // Input validation
     const result = registerSchema.safeParse(body);
     if (!result.success) {
-      const errors = result.error.errors.map((e) => e.message).join(', ');
+      const errors = (result.error.issues || result.error.errors || []).map((e: { message: string }) => e.message).join(', ');
       return securityHeaders(NextResponse.json(
         { error: errors },
         { status: 400 }

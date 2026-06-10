@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
 
     const fbUser = await userInfoRes.json();
-    const { id: facebookId, name, email, picture } = fbUser;
+    const { name, email, picture } = fbUser;
 
     if (!email) {
       return NextResponse.redirect(new URL('/login?oauth=noemail', request.url));
@@ -81,9 +81,7 @@ export async function GET(request: NextRequest) {
           email,
           name: name || email.split('@')[0],
           password: randomPassword,
-          avatar: avatarUrl,
-          provider: 'facebook',
-          providerId: facebookId,
+          image: avatarUrl,
           referralCode: userReferralCode,
           referredBy: referredBy,
         },
@@ -110,12 +108,12 @@ export async function GET(request: NextRequest) {
         }
       }
     } else {
-      if (!user.providerId) {
+      if (!user.image) {
         await db.user.update({
           where: { id: user.id },
-          data: { avatar: avatarUrl || user.avatar, provider: 'facebook', providerId: facebookId },
+          data: { image: avatarUrl || user.image },
         });
-        user = { ...user, avatar: avatarUrl || user.avatar, provider: 'facebook', providerId: facebookId };
+        user = { ...user, image: avatarUrl || user.image };
       }
     }
 
@@ -134,8 +132,7 @@ export async function GET(request: NextRequest) {
       plan: user.plan,
       points: user.points,
       referralCode: user.referralCode,
-      avatar: user.avatar,
-      provider: user.provider,
+      image: user.image,
     };
 
     const callbackUrl = new URL('/auth/callback', request.url);
