@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Search, SlidersHorizontal, X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,8 @@ const categories = [
   { name: 'Toutes', value: 'all' },
   ...CATEGORIES.map(c => ({ name: `${c.emoji} ${c.name}`, value: c.name })),
 ];
+
+const ITEMS_PER_PAGE = 12;
 
 interface Annonce {
   id: string;
@@ -30,21 +32,23 @@ interface Annonce {
 }
 
 function AnnoncesContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'all';
   const initialSearch = searchParams.get('search') || '';
+  const initialPage = parseInt(searchParams.get('page') || '1');
 
   const [annonces, setAnnonces] = useState<Annonce[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [showFilters, setShowFilters] = useState(false);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialPage);
   const [totalCount, setTotalCount] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
+  const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
 
-  const fetchAnnonces = useCallback(async (pageNum: number = 1, append: boolean = false) => {
-    if (!append) setLoading(true);
+  const fetchAnnonces = useCallback(async (pageNum: number = 1) => {
+    setLoading(true);
     try {
       const params = new URLSearchParams();
       if (selectedCategory && selectedCategory !== 'all') {
@@ -54,29 +58,56 @@ function AnnoncesContent() {
         params.set('search', searchQuery);
       }
       params.set('page', String(pageNum));
+      params.set('limit', String(ITEMS_PER_PAGE));
       const res = await fetch(`/api/annonces?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
         const total = parseInt(res.headers.get('X-Total-Count') || '0');
         setTotalCount(total);
-        setHasMore(pageNum * 20 < total);
-        if (append) {
-          setAnnonces(prev => [...prev, ...data]);
-        } else {
-          setAnnonces(data);
-        }
+        setAnnonces(data);
         setPage(pageNum);
+
+        // Update URL without full reload
+        const urlParams = new URLSearchParams();
+        if (selectedCategory && selectedCategory !== 'all') urlParams.set('category', selectedCategory);
+        if (searchQuery) urlParams.set('search', searchQuery);
+        if (pageNum > 1) urlParams.set('page', String(pageNum));
+        const qs = urlParams.toString();
+        router.replace(`/annonces${qs ? '?' + qs : ''}`, { scroll: false });
       }
     } catch (error) {
       console.error('Error fetching annonces:', error);
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, router]);
 
   useEffect(() => {
-    fetchAnnonces(1, false);
-  }, [fetchAnnonces]);
+    fetchAnnonces(1);
+  }, [selectedCategory, searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const goToPage = (p: number) => {
+    if (p < 1 || p > totalPages) return;
+    fetchAnnonces(p);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | '...')[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (page > 3) pages.push('...');
+      const start = Math.max(2, page - 1);
+      const end = Math.min(totalPages - 1, page + 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (page < totalPages - 2) pages.push('...');
+      pages.push(totalPages);
+    }
+    return pages;
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -87,7 +118,7 @@ function AnnoncesContent() {
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Annonces</h1>
           <p className="text-gray-500 mt-1">
-            {annonces.length} annonce{annonces.length !== 1 ? 's' : ''} trouvée{annonces.length !== 1 ? 's' : ''}
+            {totalCount > 0 ? `${totalCount.toLocaleString('fr-FR')} annonce${totalCount !== 1 ? 's' : ''} trouvée${totalCount !== 1 ? 's' : ''}` : 'Aucune annonce'}
           </p>
         </div>
 
@@ -200,18 +231,67 @@ function AnnoncesContent() {
                     </div>
                   ))}
                 </div>
-                {/* Load more button */}
-                {hasMore && (
-                  <div className="text-center mt-8">
-                    <Button
-                      onClick={() => fetchAnnonces(page + 1, true)}
-                      variant="outline"
-                      className="rounded-xl border-orange/30 text-orange hover:bg-orange-bg font-semibold px-8"
-                    >
-                      Voir plus d&apos;annonces
-                    </Button>
-                    <p className="text-xs text-gray-400 mt-2">
-                      {annonces.length} / {totalCount} annonces affichées
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="mt-8 flex flex-col items-center gap-4">
+                    <div className="flex items-center gap-1.5">
+                      {/* First page */}
+                      <button
+                        onClick={() => goToPage(1)}
+                        disabled={page === 1}
+                        className="p-2 rounded-lg text-gray-500 hover:bg-orange-bg hover:text-orange disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-500 transition-colors"
+                      >
+                        <ChevronsLeft className="w-4 h-4" />
+                      </button>
+                      {/* Previous */}
+                      <button
+                        onClick={() => goToPage(page - 1)}
+                        disabled={page === 1}
+                        className="p-2 rounded-lg text-gray-500 hover:bg-orange-bg hover:text-orange disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-500 transition-colors"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+
+                      {/* Page numbers */}
+                      {getPageNumbers().map((p, i) =>
+                        p === '...' ? (
+                          <span key={`dots-${i}`} className="px-2 text-gray-400 text-sm">...</span>
+                        ) : (
+                          <button
+                            key={p}
+                            onClick={() => goToPage(p)}
+                            className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${
+                              p === page
+                                ? 'bg-orange text-white'
+                                : 'text-gray-600 hover:bg-orange-bg hover:text-orange'
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        )
+                      )}
+
+                      {/* Next */}
+                      <button
+                        onClick={() => goToPage(page + 1)}
+                        disabled={page === totalPages}
+                        className="p-2 rounded-lg text-gray-500 hover:bg-orange-bg hover:text-orange disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-500 transition-colors"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                      {/* Last page */}
+                      <button
+                        onClick={() => goToPage(totalPages)}
+                        disabled={page === totalPages}
+                        className="p-2 rounded-lg text-gray-500 hover:bg-orange-bg hover:text-orange disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-500 transition-colors"
+                      >
+                        <ChevronsRight className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-gray-400">
+                      Page {page} sur {totalPages} — {((page - 1) * ITEMS_PER_PAGE + 1)} à {Math.min(page * ITEMS_PER_PAGE, totalCount)} sur {totalCount} annonces
                     </p>
                   </div>
                 )}

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const type = url.searchParams.get('type');
     const search = url.searchParams.get('search');
     const page = parseInt(url.searchParams.get('page') || '1');
-    const limit = 20;
+    const limit = parseInt(url.searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
 
     // Build where clause using Prisma

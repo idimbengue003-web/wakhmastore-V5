@@ -51,12 +51,18 @@ export const useAuth = create<AuthState>((set, get) => ({
         try {
           const user = JSON.parse(userStr);
           set({ user, isLoading: false });
+          // Also try to refresh in background to get fresh data
+          get().refreshAuth();
+          return;
         } catch {
-          set({ isLoading: false });
+          // Invalid JSON — fall through to refresh
         }
-      } else {
-        set({ isLoading: false });
       }
+      // No user in localStorage — try to refresh from httpOnly cookies
+      // This handles the case where the user logged in before the cookie migration
+      // or where localStorage was cleared but cookies are still valid
+      set({ isLoading: true });
+      get().refreshAuth();
     }
   },
 
