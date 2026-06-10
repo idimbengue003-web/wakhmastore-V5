@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate payment method
-    const validMethods = ['wave', 'orange_money', 'bank_transfer'];
+    const validMethods = ['wave', 'orange_money'];
     if (!paymentMethod || !validMethods.includes(paymentMethod)) {
       return securityHeaders(NextResponse.json(
         { error: 'Méthode de paiement invalide' },

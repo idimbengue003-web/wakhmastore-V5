@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Acheter des points — Débloquez les contacts',
-  description: 'Rechargez votre compte en points sur Wakhma Store. Paiement par Wave, Orange Money ou virement bancaire. Débloquez les coordonnées des chercheurs.',
+  description: 'Rechargez votre compte en points sur Wakhma Store. Paiement par Wave ou Orange Money. Débloquez les coordonnées des chercheurs.',
   alternates: { canonical: '/acheter-points' },
   openGraph: {
     title: 'Acheter des points — Wakhma Store',

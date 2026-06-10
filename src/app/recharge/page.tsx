@@ -259,12 +259,11 @@ export default function RechargePage() {
                   <div>
                     <h3 className="font-bold text-gray-900 mb-1">Comment payer ?</h3>
                     <p className="text-sm text-gray-600 mb-3">
-                      Après avoir choisi votre plan, contactez-nous sur WhatsApp pour finaliser le paiement via <strong>Wave</strong>, <strong>Orange Money</strong> ou <strong>transfert bancaire</strong>. Votre plan sera activé immédiatement après confirmation.
+                      Après avoir choisi votre plan, contactez-nous sur WhatsApp pour finaliser le paiement via <strong>Wave</strong> ou <strong>Orange Money</strong>. Votre plan sera activé immédiatement après confirmation.
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <Badge className="bg-blue-100 text-blue-700 border-0">Wave</Badge>
                       <Badge className="bg-orange/20 text-orange border-0">Orange Money</Badge>
-                      <Badge className="bg-green-100 text-green-700 border-0">Virement bancaire</Badge>
                     </div>
                   </div>
                 </div>
@@ -388,7 +387,7 @@ export default function RechargePage() {
                 C&apos;est gratuit pour les acheteurs ?
               </h3>
               <p className="text-sm text-gray-600">
-                Oui ! Poster une annonce &quot;Je cherche&quot; est 100% gratuit. Ce sont les vendeurs qui paient en points pour débloquer vos coordonnées. Les abonnements Diambâr et VIP KING sont destinés aux vendeurs qui souhaitent publier des annonces &quot;Je vends&quot; et être plus visibles.
+                Oui ! Poster une annonce &quot;Je cherche&quot; est 100% gratuit. Ce sont les vendeurs qui paient en points pour débloquer vos coordonnées. Les abonnements BOLT ⚡ Diambar, Diambar et VIP KING sont destinés aux vendeurs qui souhaitent publier des annonces &quot;Je vends&quot; et être plus visibles.
               </p>
             </div>
             <div className="bg-gray-50 rounded-xl p-5 transition-all duration-300 hover:bg-gray-100">
@@ -396,7 +395,7 @@ export default function RechargePage() {
                 Comment puis-je payer ?
               </h3>
               <p className="text-sm text-gray-600">
-                Nous acceptons Wave, Orange Money et les transferts bancaires. Contactez-nous sur WhatsApp pour finaliser votre paiement. L&apos;activation est immédiate après confirmation.
+                Nous acceptons Wave et Orange Money. Contactez-nous sur WhatsApp pour finaliser votre paiement. L&apos;activation est immédiate après confirmation.
               </p>
             </div>
             <div className="bg-gray-50 rounded-xl p-5 transition-all duration-300 hover:bg-gray-100">

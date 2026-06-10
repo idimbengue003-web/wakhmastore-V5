@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   User, ArrowLeft, Package, ShoppingBag, TrendingUp, Award,
-  Gift, Calendar, BarChart3, Eye, ChevronRight, Crown, Star,
+  Gift, Calendar, BarChart3, Eye, ChevronRight, Crown, Star, Zap,
   Loader2, Phone, Mail, Hash, Wallet
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -107,8 +107,8 @@ export default function ProfilPage() {
 
   function getPlanBadge(plan: string) {
     if (plan === 'vip_king') return <Badge className="bg-amber-500 text-white gap-1"><Crown className="w-3 h-3" />VIP KING</Badge>;
-    if (plan === 'diambar') return <Badge className="bg-green-500 text-white gap-1"><Star className="w-3 h-3" />Diambâr</Badge>;
-    return <Badge className="bg-blue-500 text-white gap-1"><User className="w-3 h-3" />Gratuit</Badge>;
+    if (plan === 'diambar') return <Badge className="bg-green-500 text-white gap-1"><Star className="w-3 h-3" />DIAMBAR</Badge>;
+    return <Badge className="bg-blue-500 text-white gap-1"><Zap className="w-3 h-3" />BOLT ⚡ Diambar</Badge>;
   }
 
   const maxMonthlyValue = profile?.monthlyData

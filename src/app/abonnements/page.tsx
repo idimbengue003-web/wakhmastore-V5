@@ -22,7 +22,7 @@ const WHATSAPP_NUMBER = '221789271296';
 const SUBSCRIPTION_PLANS = [
   {
     id: 'gratuit',
-    name: 'Gratuit',
+    name: 'BOLT ⚡ Diambar',
     icon: Zap,
     priceFcfa: 2000,
     period: '/mois',
@@ -34,6 +34,7 @@ const SUBSCRIPTION_PLANS = [
       '15 000 points offerts',
       '3 annonces « Je vends » par mois',
       'Débloque une annonce à 1 500 points',
+      'Badge ⚡ DIAMBAR',
       'Visibilité standard',
       'Support par email',
     ],
@@ -42,7 +43,7 @@ const SUBSCRIPTION_PLANS = [
   },
   {
     id: 'diambar',
-    name: 'Diambar',
+    name: 'DIAMBAR',
     icon: Star,
     priceFcfa: 5000,
     period: '/mois',
@@ -54,7 +55,7 @@ const SUBSCRIPTION_PLANS = [
       '26 000 points inclus',
       '5 annonces « Je vends » par mois',
       'Débloque une annonce à 1 000 points (au lieu de 1 500)',
-      'Badge Diambar',
+      'Badge ⭐ DIAMBAR',
       'Annonces mises en avant',
       'Support prioritaire WhatsApp',
     ],
@@ -434,7 +435,7 @@ export default function AbonnementsPage() {
                 Comment fonctionne l&apos;abonnement ?
               </h3>
               <p className="text-xs text-gray-600">
-                L&apos;abonnement réduit le coût de débloquage des annonces. Avec le plan Gratuit (2 000 FCFA), vous recevez 15 000 points et 3 annonces « Je vends ». Avec Diambar (5 000 FCFA), vous recevez 26 000 points, 5 annonces « Je vends » et payez 1 000 points par débloquage. Avec VIP KING (9 900 FCFA), vous recevez 49 000 points, 5 annonces « Je vends » par semaine et payez seulement 800 points par débloquage. L&apos;abonnement dure 30 jours et se renouvelle automatiquement.
+                L&apos;abonnement réduit le coût de débloquage des annonces. Avec le plan BOLT ⚡ Diambar (2 000 FCFA), vous recevez 15 000 points, 3 annonces « Je vends » et le badge ⚡ DIAMBAR. Avec Diambar (5 000 FCFA), vous recevez 26 000 points, 5 annonces « Je vends » et payez 1 000 points par débloquage. Avec VIP KING (9 900 FCFA), vous recevez 49 000 points, 5 annonces « Je vends » par semaine et payez seulement 800 points par débloquage. L&apos;abonnement dure 30 jours et se renouvelle automatiquement.
               </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
@@ -442,7 +443,7 @@ export default function AbonnementsPage() {
                 Comment payer via WhatsApp ?
               </h3>
               <p className="text-xs text-gray-600">
-                Choisissez votre méthode (Wave, Orange Money ou virement), envoyez le montant au numéro indiqué, puis cliquez sur « Envoyer la preuve via WhatsApp » pour nous envoyer la capture d&apos;écran de confirmation. Votre compte sera crédité sous 30 minutes après validation.
+                Choisissez votre méthode (Wave ou Orange Money), envoyez le montant au numéro indiqué, puis cliquez sur « Envoyer la preuve via WhatsApp » pour nous envoyer la capture d&apos;écran de confirmation. Votre compte sera crédité sous 30 minutes après validation.
               </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">

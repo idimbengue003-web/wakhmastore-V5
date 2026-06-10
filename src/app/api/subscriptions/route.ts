@@ -8,7 +8,7 @@ import { securityHeaders } from '@/lib/security-headers';
 export const SUBSCRIPTION_PLANS = [
   {
     id: 'gratuit',
-    name: 'Gratuit',
+    name: 'BOLT ⚡ Diambar',
     priceFcfa: 2000,
     period: '/mois',
     unlockCost: 1500, // Cost per annonce unlock
@@ -18,13 +18,14 @@ export const SUBSCRIPTION_PLANS = [
       '15 000 points offerts',
       '3 annonces « Je vends » par mois',
       'Débloque une annonce à 1 500 points',
+      'Badge ⚡ DIAMBAR',
       'Visibilité standard',
       'Support par email',
     ],
   },
   {
     id: 'diambar',
-    name: 'Diambar',
+    name: 'DIAMBAR',
     priceFcfa: 5000,
     period: '/mois',
     unlockCost: 1000, // Cost per annonce unlock
@@ -34,7 +35,7 @@ export const SUBSCRIPTION_PLANS = [
       '26 000 points inclus',
       '5 annonces « Je vends » par mois',
       'Débloque une annonce à 1 000 points au lieu de 1 500',
-      'Badge Diambar',
+      'Badge ⭐ DIAMBAR',
       'Annonces mises en avant',
       'Support prioritaire WhatsApp',
     ],
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
       ));
     }
 
-    const validMethods = ['wave', 'orange_money', 'bank_transfer'];
+    const validMethods = ['wave', 'orange_money'];
     if (!paymentMethod || !validMethods.includes(paymentMethod)) {
       return securityHeaders(NextResponse.json(
         { error: 'Méthode de paiement invalide' },

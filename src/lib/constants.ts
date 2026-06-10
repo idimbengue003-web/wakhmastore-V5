@@ -4,7 +4,7 @@
 export const PLANS = {
   gratuit: {
     id: 'gratuit',
-    name: 'Gratuit',
+    name: 'BOLT ⚡ Diambar',
     price: 2000,
     period: '/mois',
     description: 'Pour commencer à vendre sur Wakhma',
@@ -12,17 +12,18 @@ export const PLANS = {
     annoncesPerMonth: 3, // max "Je vends" annonces per month
     annoncesPerWeek: 0,
     points: 15000,
-    badge: null,
+    badge: '⚡ DIAMBAR',
     features: [
       '15 000 points offerts',
       '3 annonces "Je vends" par mois',
+      'Badge ⚡ DIAMBAR',
       'Visibilité standard',
       'Support par email',
     ],
   },
   diambar: {
     id: 'diambar',
-    name: 'Diambâr',
+    name: 'DIAMBAR',
     price: 5000,
     period: '/mois',
     description: 'Pour les vendeurs actifs',
@@ -30,11 +31,11 @@ export const PLANS = {
     annoncesPerMonth: 5, // 5 "Je vends" annonces per month
     annoncesPerWeek: 0,
     points: 26000,
-    badge: '⭐ Diambâr',
+    badge: '⭐ DIAMBAR',
     features: [
       '5 annonces "Je vends" par mois',
       '26 000 points offerts',
-      'Badge ⭐ Diambâr',
+      'Badge ⭐ DIAMBAR',
       'Annonces spéciales & mises en avant',
       'Faveurs & priorité dans les résultats',
       'Support prioritaire WhatsApp',
