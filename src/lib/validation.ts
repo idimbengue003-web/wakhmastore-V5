@@ -27,6 +27,7 @@ export const annonceSchema = z.object({
   category: z.string().min(1, 'La catégorie est requise'),
   location: z.string().min(1).max(100).default('Dakar'),
   emoji: z.string().default('📦'),
+  type: z.enum(['je_cherche', 'je_vends']).default('je_cherche'),
   phone: z.string().optional().refine(
     (val) => !val || /^(\+221|0)?[0-9]{9}$/.test(val.replace(/\s/g, '')),
     'Numéro de téléphone sénégalais invalide'

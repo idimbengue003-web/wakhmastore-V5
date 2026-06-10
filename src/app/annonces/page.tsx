@@ -39,6 +39,7 @@ interface Annonce {
   category: string;
   emoji: string;
   location: string;
+  type?: string;
   isVip: boolean;
   vipType: string | null;
   createdAt: string;

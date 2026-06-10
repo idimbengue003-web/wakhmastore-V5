@@ -13,6 +13,7 @@ interface AnnonceCardProps {
   category: string;
   emoji: string;
   location: string;
+  type?: string;
   isVip: boolean;
   vipType?: string | null;
   createdAt: string;
@@ -40,16 +41,21 @@ export default function AnnonceCard({
   category,
   emoji,
   location,
+  type,
   isVip,
   vipType,
   createdAt,
 }: AnnonceCardProps) {
+  const isJeVends = type === 'je_vends';
+
   return (
     <Card className="annonce-card group overflow-hidden border border-gray-100 rounded-xl cursor-pointer">
       <CardContent className="p-0">
         {/* Emoji area */}
         <div className="relative">
-          <div className="bg-orange-bg h-28 flex items-center justify-center transition-all duration-500 ease-out group-hover:bg-orange/10">
+          <div className={`h-28 flex items-center justify-center transition-all duration-500 ease-out group-hover:bg-orange/10 ${
+            isJeVends ? 'bg-green-50' : 'bg-orange-bg'
+          }`}>
             <span className="text-4xl transition-transform duration-300 ease-out group-hover:scale-110">{emoji}</span>
           </div>
           {/* Category badge */}
@@ -58,6 +64,14 @@ export default function AnnonceCard({
             className="absolute top-2 left-2 bg-white/90 text-gray-700 text-xs font-medium backdrop-blur-sm"
           >
             {category}
+          </Badge>
+          {/* Type badge */}
+          <Badge className={`absolute bottom-2 left-2 text-xs font-bold border-0 ${
+            isJeVends
+              ? 'bg-green-500 text-white'
+              : 'bg-blue-500 text-white'
+          }`}>
+            {isJeVends ? '💰 Je vends' : '🔍 Je cherche'}
           </Badge>
           {/* VIP badge */}
           {isVip && (

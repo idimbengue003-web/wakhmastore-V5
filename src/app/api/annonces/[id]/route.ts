@@ -57,6 +57,7 @@ export async function GET(
       category: annonce.category,
       location: annonce.location,
       emoji: annonce.emoji,
+      type: annonce.type,
       isVip: annonce.isVip,
       vipType: annonce.vipType,
       authorId: annonce.authorId,

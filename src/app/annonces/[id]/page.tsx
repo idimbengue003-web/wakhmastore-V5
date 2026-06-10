@@ -221,10 +221,18 @@ export default function AnnonceDetailPage() {
         <div className={`transition-all duration-700 ease-out ${revealPhase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <Card className="border-gray-100 rounded-2xl overflow-hidden shadow-lg">
             {/* Emoji Header */}
-            <div className="relative bg-gradient-to-br from-orange/10 to-orange/5">
+            <div className={`relative bg-gradient-to-br ${
+              annonce.type === 'je_vends' ? 'from-green-50 to-green-100/50' : 'from-orange/10 to-orange/5'
+            }`}>
               <div className="h-40 sm:h-48 flex items-center justify-center">
                 <span className="text-7xl sm:text-8xl">{annonce.emoji}</span>
               </div>
+              {/* Type Badge */}
+              <Badge className={`absolute bottom-4 left-4 text-sm font-bold border-0 px-3 py-1 ${
+                annonce.type === 'je_vends' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
+              }`}>
+                {annonce.type === 'je_vends' ? '💰 Je vends' : '🔍 Je cherche'}
+              </Badge>
               {/* VIP Badge */}
               {annonce.isVip && (
                 <Badge className={`absolute top-4 right-4 text-sm font-bold border-0 px-3 py-1 text-white ${

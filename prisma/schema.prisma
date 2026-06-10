@@ -5,7 +5,6 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model User {
@@ -38,6 +37,7 @@ model Annonce {
   category    String
   location    String    @default("Dakar")
   emoji       String    @default("📦")
+  type        String    @default("je_cherche") // je_cherche, je_vends
   phone       String?   // Numéro de téléphone du vendeur
   whatsapp    String?   // Numéro WhatsApp du vendeur
   isVip       Boolean   @default(false)

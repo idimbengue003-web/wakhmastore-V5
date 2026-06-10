@@ -53,6 +53,7 @@ export default function DeposerPage() {
     location: 'Dakar',
     phone: '',
     whatsapp: '',
+    type: 'je_cherche' as 'je_cherche' | 'je_vends',
   });
 
   useEffect(() => {
@@ -97,6 +98,14 @@ export default function DeposerPage() {
   const maxAnnonces = userPlan.annoncesPerWeek > 0 ? userPlan.annoncesPerWeek : userPlan.annoncesPerMonth;
   const periodLabel = userPlan.annoncesPerWeek > 0 ? 'semaine' : 'mois';
   const isAtLimit = maxAnnonces > 0 && annonceCount !== null && annonceCount >= maxAnnonces;
+  const isSubscriber = user?.plan === 'diambar' || user?.plan === 'vip_king';
+
+  // Force "je_cherche" for non-subscribers
+  useEffect(() => {
+    if (!isSubscriber && form.type === 'je_vends') {
+      setForm(prev => ({ ...prev, type: 'je_cherche' }));
+    }
+  }, [isSubscriber]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,6 +140,7 @@ export default function DeposerPage() {
           ...form,
           price: parseInt(form.price),
           emoji: categoryEmojis[form.category] || '📦',
+          type: isSubscriber ? form.type : 'je_cherche',
         }),
       });
 
@@ -257,13 +267,51 @@ export default function DeposerPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Type selector: Je cherche / Je vends */}
+              <div className="space-y-2">
+                <Label className="font-medium text-gray-700">
+                  Type d&apos;annonce *
+                </Label>
+                {isSubscriber ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, type: 'je_cherche' })}
+                      className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all font-semibold text-sm ${
+                        form.type === 'je_cherche'
+                          ? 'border-blue-500 bg-blue-50 text-blue-700'
+                          : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                      }`}
+                    >
+                      🔍 Je cherche
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, type: 'je_vends' })}
+                      className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all font-semibold text-sm ${
+                        form.type === 'je_vends'
+                          ? 'border-green-500 bg-green-50 text-green-700'
+                          : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                      }`}
+                    >
+                      💰 Je vends
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 p-3 rounded-xl border-2 border-blue-500 bg-blue-50">
+                    <span className="text-sm font-semibold text-blue-700">🔍 Je cherche</span>
+                    <span className="text-xs text-blue-500 ml-auto">Abonnez-vous pour vendre</span>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="title" className="font-medium text-gray-700">
                   Titre de l&apos;annonce *
                 </Label>
                 <Input
                   id="title"
-                  placeholder="Ex: Je cherche un iPhone 15 Pro Max"
+                  placeholder={form.type === 'je_vends' ? 'Ex: iPhone 15 Pro Max à vendre' : 'Ex: Je cherche un iPhone 15 Pro Max'}
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   className="rounded-xl border-gray-200 h-12 transition-all duration-300 focus:ring-2 focus:ring-orange/20"
