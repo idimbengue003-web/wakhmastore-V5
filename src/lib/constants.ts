@@ -4,7 +4,7 @@
 export const PLANS = {
   gratuit: {
     id: 'gratuit',
-    name: 'BOLT ⚡ Diambar',
+    name: 'BOLT ⚡',
     price: 2000,
     period: '/mois',
     description: 'Pour commencer à vendre sur Wakhma',

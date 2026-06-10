@@ -22,7 +22,7 @@ const WHATSAPP_NUMBER = '221789271296';
 const SUBSCRIPTION_PLANS = [
   {
     id: 'gratuit',
-    name: 'BOLT ⚡ Diambar',
+    name: 'BOLT ⚡',
     icon: Zap,
     priceFcfa: 2000,
     period: '/mois',
@@ -435,7 +435,7 @@ export default function AbonnementsPage() {
                 Comment fonctionne l&apos;abonnement ?
               </h3>
               <p className="text-xs text-gray-600">
-                L&apos;abonnement réduit le coût de débloquage des annonces. Avec le plan BOLT ⚡ Diambar (2 000 FCFA), vous recevez 15 000 points, 3 annonces « Je vends » et le badge ⚡ DIAMBAR. Avec Diambar (5 000 FCFA), vous recevez 26 000 points, 5 annonces « Je vends » et payez 1 000 points par débloquage. Avec VIP KING (9 900 FCFA), vous recevez 49 000 points, 5 annonces « Je vends » par semaine et payez seulement 800 points par débloquage. L&apos;abonnement dure 30 jours et se renouvelle automatiquement.
+                L&apos;abonnement réduit le coût de débloquage des annonces. Avec le plan BOLT ⚡ (2 000 FCFA), vous recevez 15 000 points, 3 annonces « Je vends » et le badge ⚡ DIAMBAR. Avec DIAMBAR (5 000 FCFA), vous recevez 26 000 points, 5 annonces « Je vends » et payez 1 000 points par débloquage. Avec VIP KING (9 900 FCFA), vous recevez 49 000 points, 5 annonces « Je vends » par semaine et payez seulement 800 points par débloquage. L&apos;abonnement dure 30 jours et se renouvelle automatiquement.
               </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">

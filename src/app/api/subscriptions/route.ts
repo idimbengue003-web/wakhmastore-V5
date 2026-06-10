@@ -8,7 +8,7 @@ import { securityHeaders } from '@/lib/security-headers';
 export const SUBSCRIPTION_PLANS = [
   {
     id: 'gratuit',
-    name: 'BOLT ⚡ Diambar',
+    name: 'BOLT ⚡',
     priceFcfa: 2000,
     period: '/mois',
     unlockCost: 1500, // Cost per annonce unlock
