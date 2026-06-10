@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Check, Crown, Star, Zap, Coins, Sparkles, ShieldCheck, ArrowRight, Phone, Copy, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,13 +20,20 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
 }
 
 export default function RechargePage() {
-  const { user, loadFromStorage, updateUser } = useAuth();
+  const router = useRouter();
+  const { user, isLoading, loadFromStorage, updateUser } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'plans' | 'points'>('plans');
   const [subscribing, setSubscribing] = useState<string | null>(null);
   const [purchasing, setPurchasing] = useState<string | null>(null);
 
   useEffect(() => { loadFromStorage(); }, [loadFromStorage]);
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login?redirect=/recharge');
+    }
+  }, [user, isLoading, router]);
 
   async function handleSubscribe(planId: PlanId) {
     if (!user) {

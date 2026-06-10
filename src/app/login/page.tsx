@@ -22,6 +22,7 @@ function LoginContent() {
   const [activeTab, setActiveTab] = useState('login');
 
   const referralCodeFromUrl = searchParams.get('ref') || '';
+  const redirectUrl = searchParams.get('redirect') || '/';
 
   // Login form — email + 4-digit PIN
   const [loginForm, setLoginForm] = useState({
@@ -49,9 +50,9 @@ function LoginContent() {
 
   useEffect(() => {
     if (user) {
-      router.push('/');
+      router.push(redirectUrl);
     }
-  }, [user]);
+  }, [user, redirectUrl, router]);
 
   useEffect(() => {
     if (referralCodeFromUrl) {
@@ -94,7 +95,7 @@ function LoginContent() {
           title: 'Connexion réussie !',
           description: `Bienvenue, ${data.user.name || data.user.email}`,
         });
-        router.push('/');
+        router.push(redirectUrl);
       } else {
         toast({
           title: 'Erreur de connexion',
@@ -168,7 +169,7 @@ function LoginContent() {
             ? 'Bienvenue ! Le code de parrainage a été appliqué.'
             : `Bienvenue sur Wakhma Store, ${data.user.name} !`,
         });
-        router.push('/');
+        router.push(redirectUrl);
       } else {
         toast({
           title: 'Erreur d\'inscription',

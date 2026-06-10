@@ -44,9 +44,9 @@ export default function DeposerPage() {
         description: 'Vous devez être connecté pour déposer une annonce.',
         variant: 'destructive',
       });
-      router.push('/login');
+      router.push('/login?redirect=/deposer');
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, router]);
 
   // Pre-fill phone from user profile
   useEffect(() => {
@@ -132,7 +132,7 @@ export default function DeposerPage() {
             description: 'Veuillez vous reconnecter.',
             variant: 'destructive',
           });
-          router.push('/login');
+          router.push('/login?redirect=/deposer');
         } else if (res.status === 403) {
           toast({
             title: 'Limite atteinte',

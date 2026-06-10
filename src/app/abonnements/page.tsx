@@ -152,7 +152,7 @@ export default function AbonnementsPage() {
 
   useEffect(() => {
     if (!user) {
-      router.push('/login');
+      router.push('/login?redirect=/abonnements');
     }
   }, [user, router]);
 

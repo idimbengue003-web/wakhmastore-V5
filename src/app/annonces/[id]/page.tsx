@@ -103,7 +103,7 @@ export default function AnnonceDetailPage() {
         description: 'Connectez-vous pour débloquer les coordonnées',
         variant: 'destructive',
       });
-      router.push('/login');
+      router.push(`/login?redirect=/annonces/${params.id}`);
       return;
     }
 
@@ -360,7 +360,7 @@ export default function AnnonceDetailPage() {
                               Connectez-vous pour débloquer les coordonnées
                             </p>
                             <Button
-                              onClick={() => router.push('/login')}
+                              onClick={() => router.push(`/login?redirect=/annonces/${params.id}`)}
                               className="bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl h-12 px-8"
                             >
                               Se connecter

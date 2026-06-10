@@ -47,14 +47,14 @@ export default function ParrainagePage() {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/login');
+      router.push('/login?redirect=/parrainage');
       return;
     }
 
     if (user) {
       fetchStats();
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, router]);
 
   async function fetchStats() {
     try {
@@ -63,7 +63,7 @@ export default function ParrainagePage() {
         const data = await res.json();
         setStats(data);
       } else if (res.status === 401) {
-        router.push('/login');
+        router.push('/login?redirect=/parrainage');
       }
     } catch (error) {
       console.error('Error fetching referral stats:', error);

@@ -71,11 +71,11 @@ export default function ProfilPage() {
 
   useEffect(() => {
     if (!authUser) {
-      router.push('/login');
+      router.push('/login?redirect=/profil');
       return;
     }
     fetchProfile();
-  }, [authUser]);
+  }, [authUser, router]);
 
   async function fetchProfile() {
     try {

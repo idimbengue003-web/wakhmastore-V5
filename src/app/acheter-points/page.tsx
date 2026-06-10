@@ -59,7 +59,7 @@ export default function AcheterPointsPage() {
 
   useEffect(() => {
     if (!user) {
-      router.push('/login');
+      router.push('/login?redirect=/acheter-points');
     }
   }, [user, router]);
 
