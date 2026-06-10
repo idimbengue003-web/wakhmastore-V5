@@ -3,20 +3,30 @@ import { db } from '@/lib/db';
 import { rateLimit } from '@/lib/rate-limit';
 import { securityHeaders } from '@/lib/security-headers';
 import { sendWhatsAppOTP, isWhatsAppAPIConfigured } from '@/lib/whatsapp';
-
-// In-memory store for verification codes (resets on server restart)
-// In production with WhatsApp Cloud API, use Redis or a database table
-const verificationCodes = new Map<string, { code: string; expires: number; attempts: number }>();
-
-export { verificationCodes };
+import redis from '@/lib/redis';
 
 // Max verification attempts per code
 const MAX_VERIFY_ATTEMPTS = 3;
 
+// OTP storage key prefix for Redis
+const OTP_KEY_PREFIX = 'otp:';
+
+// In-memory fallback for local dev (when no Redis configured)
+const verificationCodesFallback = new Map<string, { code: string; expires: number; attempts: number }>();
+
+function getOtpKey(phone: string): string {
+  return `${OTP_KEY_PREFIX}${phone}`;
+}
+
+// Check if Redis is configured
+function isRedisConfigured(): boolean {
+  return !!process.env.UPSTASH_REDIS_REST_URL;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const { allowed } = rateLimit(ip, 'auth');
+    const { allowed } = await rateLimit(ip, 'auth');
     if (!allowed) {
       return securityHeaders(NextResponse.json(
         { error: 'Trop de tentatives. Réessayez plus tard.' },
@@ -49,7 +59,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if a code was recently sent (prevent spam — 60 seconds cooldown)
-    const existing = verificationCodes.get(normalizedPhone);
+    let existing: { code: string; expires: number; attempts: number } | null = null;
+
+    if (isRedisConfigured()) {
+      try {
+        const stored = await redis.get<{ code: string; expires: number; attempts: number }>(getOtpKey(normalizedPhone));
+        existing = stored || null;
+      } catch (error) {
+        console.error('Redis read error, using fallback:', error);
+        existing = verificationCodesFallback.get(normalizedPhone) || null;
+      }
+    } else {
+      existing = verificationCodesFallback.get(normalizedPhone) || null;
+    }
+
     if (existing && Date.now() < existing.expires - 4 * 60 * 1000) {
       const cooldownMs = (existing.expires - 4 * 60 * 1000) - Date.now();
       if (cooldownMs > 0) {
@@ -65,7 +88,18 @@ export async function POST(request: NextRequest) {
     const expires = Date.now() + 5 * 60 * 1000; // 5 minutes
 
     // Store code with attempt counter
-    verificationCodes.set(normalizedPhone, { code, expires, attempts: 0 });
+    const otpData = { code, expires, attempts: 0 };
+
+    if (isRedisConfigured()) {
+      try {
+        await redis.set(getOtpKey(normalizedPhone), JSON.stringify(otpData), { ex: 300 }); // 5 min TTL
+      } catch (error) {
+        console.error('Redis write error, using fallback:', error);
+        verificationCodesFallback.set(normalizedPhone, otpData);
+      }
+    } else {
+      verificationCodesFallback.set(normalizedPhone, otpData);
+    }
 
     // Check if WhatsApp Cloud API is configured
     const isCloudAPI = isWhatsAppAPIConfigured();

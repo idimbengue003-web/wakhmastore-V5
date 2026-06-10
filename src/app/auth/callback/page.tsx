@@ -20,8 +20,8 @@ export default function AuthCallbackPage() {
 
         if (res.ok) {
           const data = await res.json();
-          if (data.token && data.user) {
-            login(data.token, data.user);
+          if (data.user) {
+            login(data.user);
             router.push('/');
           } else {
             router.push('/login?oauth=error');

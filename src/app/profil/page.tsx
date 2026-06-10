@@ -59,7 +59,7 @@ interface ProfileData {
 
 export default function ProfilPage() {
   const router = useRouter();
-  const { token, loadFromStorage } = useAuth();
+  const { user: authUser, loadFromStorage } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,18 +70,16 @@ export default function ProfilPage() {
   }, [loadFromStorage]);
 
   useEffect(() => {
-    if (!token) {
+    if (!authUser) {
       router.push('/login');
       return;
     }
     fetchProfile();
-  }, [token]);
+  }, [authUser]);
 
   async function fetchProfile() {
     try {
-      const res = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch('/api/auth/me');
       if (res.ok) {
         const data = await res.json();
         setProfile(data);

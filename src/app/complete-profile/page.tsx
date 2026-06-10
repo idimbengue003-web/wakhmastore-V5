@@ -15,7 +15,7 @@ import { useAuth } from '@/hooks/use-auth';
 function CompleteProfileContent() {
   const router = useRouter();
   const { toast } = useToast();
-  const { user, token, loadFromStorage, login } = useAuth();
+  const { user, loadFromStorage, updateUser } = useAuth();
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +42,7 @@ function CompleteProfileContent() {
       return;
     }
 
-    if (!token) {
+    if (!user) {
       router.push('/login');
       return;
     }
@@ -53,7 +53,6 @@ function CompleteProfileContent() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ phone: cleanPhone }),
       });
@@ -62,10 +61,7 @@ function CompleteProfileContent() {
 
       if (res.ok) {
         // Update local user state
-        if (user) {
-          const updatedUser = { ...user, phone: cleanPhone };
-          login(token, updatedUser);
-        }
+        updateUser({ phone: cleanPhone });
         toast({
           title: 'Profil complété !',
           description: 'Votre numéro de téléphone a été enregistré avec succès.',

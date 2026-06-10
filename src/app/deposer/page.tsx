@@ -19,7 +19,7 @@ import { PLANS, CATEGORY_EMOJIS, CATEGORIES, isSubscriber as checkSubscriber } f
 export default function DeposerPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { user, token, isLoading, loadFromStorage } = useAuth();
+  const { user, isLoading, loadFromStorage } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [annonceCount, setAnnonceCount] = useState<number | null>(null);
   const [form, setForm] = useState({
@@ -38,7 +38,7 @@ export default function DeposerPage() {
   }, [loadFromStorage]);
 
   useEffect(() => {
-    if (!isLoading && !token) {
+    if (!isLoading && !user) {
       toast({
         title: 'Connexion requise',
         description: 'Vous devez être connecté pour déposer une annonce.',
@@ -46,7 +46,7 @@ export default function DeposerPage() {
       });
       router.push('/login');
     }
-  }, [token, isLoading]);
+  }, [user, isLoading]);
 
   // Pre-fill phone from user profile
   useEffect(() => {
@@ -57,10 +57,8 @@ export default function DeposerPage() {
 
   // Fetch user's annonce count for plan limits
   useEffect(() => {
-    if (token) {
-      fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    if (user) {
+      fetch('/api/auth/me')
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (data?.stats?.totalAnnonces !== undefined) {
@@ -69,7 +67,7 @@ export default function DeposerPage() {
         })
         .catch(() => {});
     }
-  }, [token]);
+  }, [user]);
 
   const userPlan = user?.plan ? PLANS[user.plan as keyof typeof PLANS] || PLANS.none : PLANS.none;
   const isSubscriber = user?.plan ? checkSubscriber(user.plan) : false;
@@ -111,7 +109,6 @@ export default function DeposerPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           ...form,

@@ -1,5 +1,8 @@
+-- Wakhma Store - Initial Migration
+-- Matches prisma/schema.prisma exactly
+
 -- CreateTable
-CREATE TABLE "User" (
+CREATE TABLE IF NOT EXISTS "User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "name" TEXT,
@@ -7,10 +10,11 @@ CREATE TABLE "User" (
     "password" TEXT NOT NULL,
     "image" TEXT,
     "role" TEXT NOT NULL DEFAULT 'user',
-    "plan" TEXT NOT NULL DEFAULT 'gratuit',
+    "plan" TEXT NOT NULL DEFAULT 'none',
     "points" INTEGER NOT NULL DEFAULT 0,
     "referralCode" TEXT NOT NULL,
     "referredBy" TEXT,
+    "emailVerified" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -18,7 +22,27 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
-CREATE TABLE "Annonce" (
+CREATE TABLE IF NOT EXISTS "Account" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "provider" TEXT NOT NULL,
+    "providerAccountId" TEXT NOT NULL,
+    "refresh_token" TEXT,
+    "access_token" TEXT,
+    "expires_at" INTEGER,
+    "token_type" TEXT,
+    "scope" TEXT,
+    "id_token" TEXT,
+    "session_state" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE IF NOT EXISTS "Annonce" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
@@ -26,6 +50,7 @@ CREATE TABLE "Annonce" (
     "category" TEXT NOT NULL,
     "location" TEXT NOT NULL DEFAULT 'Dakar',
     "emoji" TEXT NOT NULL DEFAULT '📦',
+    "type" TEXT NOT NULL DEFAULT 'je_cherche',
     "phone" TEXT,
     "whatsapp" TEXT,
     "isVip" BOOLEAN NOT NULL DEFAULT false,
@@ -38,7 +63,7 @@ CREATE TABLE "Annonce" (
 );
 
 -- CreateTable
-CREATE TABLE "Purchase" (
+CREATE TABLE IF NOT EXISTS "Purchase" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "annonceId" TEXT NOT NULL,
@@ -49,7 +74,7 @@ CREATE TABLE "Purchase" (
 );
 
 -- CreateTable
-CREATE TABLE "Referral" (
+CREATE TABLE IF NOT EXISTS "Referral" (
     "id" TEXT NOT NULL,
     "referrerId" TEXT NOT NULL,
     "referredId" TEXT NOT NULL,
@@ -60,7 +85,7 @@ CREATE TABLE "Referral" (
 );
 
 -- CreateTable
-CREATE TABLE "PointPurchase" (
+CREATE TABLE IF NOT EXISTS "PointPurchase" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "amountFcfa" INTEGER NOT NULL,
@@ -73,12 +98,12 @@ CREATE TABLE "PointPurchase" (
 );
 
 -- CreateTable
-CREATE TABLE "Subscription" (
+CREATE TABLE IF NOT EXISTS "Subscription" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "plan" TEXT NOT NULL,
     "priceFcfa" INTEGER NOT NULL,
-    "status" TEXT NOT NULL DEFAULT 'active',
+    "status" TEXT NOT NULL DEFAULT 'pending',
     "startDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "endDate" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -87,16 +112,64 @@ CREATE TABLE "Subscription" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_referralCode_key" ON "User"("referralCode");
+CREATE UNIQUE INDEX IF NOT EXISTS "User_referralCode_key" ON "User"("referralCode");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Purchase_userId_annonceId_key" ON "Purchase"("userId", "annonceId");
+CREATE INDEX IF NOT EXISTS "Account_userId_idx" ON "Account"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Referral_referredId_key" ON "Referral"("referredId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Account_provider_providerAccountId_key" ON "Account"("provider", "providerAccountId");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Annonce_authorId_idx" ON "Annonce"("authorId");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Annonce_category_idx" ON "Annonce"("category");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Annonce_type_idx" ON "Annonce"("type");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Annonce_createdAt_idx" ON "Annonce"("createdAt");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Annonce_isVip_idx" ON "Annonce"("isVip");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Purchase_userId_idx" ON "Purchase"("userId");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Purchase_annonceId_idx" ON "Purchase"("annonceId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX IF NOT EXISTS "Purchase_userId_annonceId_key" ON "Purchase"("userId", "annonceId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX IF NOT EXISTS "Referral_referredId_key" ON "Referral"("referredId");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Referral_referrerId_idx" ON "Referral"("referrerId");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "PointPurchase_userId_idx" ON "PointPurchase"("userId");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "PointPurchase_status_idx" ON "PointPurchase"("status");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Subscription_userId_idx" ON "Subscription"("userId");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Subscription_status_idx" ON "Subscription"("status");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "Subscription_endDate_idx" ON "Subscription"("endDate");
+
+-- AddForeignKey
+ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Annonce" ADD CONSTRAINT "Annonce_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

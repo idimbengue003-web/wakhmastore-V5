@@ -42,7 +42,7 @@ interface AnnonceDetail {
 export default function AnnonceDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const { user, token, isLoading, loadFromStorage } = useAuth();
+  const { user, isLoading, loadFromStorage, updateUser } = useAuth();
   const { toast } = useToast();
   const [annonce, setAnnonce] = useState<AnnonceDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,16 +58,11 @@ export default function AnnonceDetailPage() {
     if (!isLoading) {
       fetchAnnonce();
     }
-  }, [isLoading, token]);
+  }, [isLoading, user]);
 
   async function fetchAnnonce() {
     try {
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch(`/api/annonces/${params.id}`, { headers });
+      const res = await fetch(`/api/annonces/${params.id}`);
       if (res.ok) {
         const data = await res.json();
         setAnnonce(data);
@@ -102,7 +97,7 @@ export default function AnnonceDetailPage() {
   }
 
   async function handlePurchase() {
-    if (!token || !user) {
+    if (!user) {
       toast({
         title: 'Connexion requise',
         description: 'Connectez-vous pour débloquer les coordonnées',
@@ -116,9 +111,6 @@ export default function AnnonceDetailPage() {
     try {
       const res = await fetch(`/api/annonces/${params.id}/purchase`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
       });
 
       const data = await res.json();
@@ -143,10 +135,7 @@ export default function AnnonceDetailPage() {
         });
 
         // Update user points in auth store
-        if (user) {
-          const updatedUser = { ...user, points: data.remainingPoints };
-          localStorage.setItem('wakhma_user', JSON.stringify(updatedUser));
-        }
+        updateUser({ points: data.remainingPoints });
       } else {
         if (res.status === 400 && data.missingPoints !== undefined) {
           toast({

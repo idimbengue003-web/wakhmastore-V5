@@ -35,7 +35,7 @@ interface ReferralStats {
 
 export default function ParrainagePage() {
   const router = useRouter();
-  const { user, token, isLoading, loadFromStorage } = useAuth();
+  const { user, isLoading, loadFromStorage } = useAuth();
   const { toast } = useToast();
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -46,21 +46,19 @@ export default function ParrainagePage() {
   }, [loadFromStorage]);
 
   useEffect(() => {
-    if (!isLoading && !token) {
+    if (!isLoading && !user) {
       router.push('/login');
       return;
     }
 
-    if (token) {
+    if (user) {
       fetchStats();
     }
-  }, [token, isLoading]);
+  }, [user, isLoading]);
 
   async function fetchStats() {
     try {
-      const res = await fetch('/api/referral', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch('/api/referral');
       if (res.ok) {
         const data = await res.json();
         setStats(data);

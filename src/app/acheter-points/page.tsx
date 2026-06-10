@@ -48,7 +48,7 @@ const PAYMENT_METHODS = [
 export default function AcheterPointsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { user, token, loadFromStorage } = useAuth();
+  const { user, loadFromStorage } = useAuth();
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<string>('wave');
   const [proofRef, setProofRef] = useState('');
@@ -58,10 +58,10 @@ export default function AcheterPointsPage() {
   }, [loadFromStorage]);
 
   useEffect(() => {
-    if (!token) {
+    if (!user) {
       router.push('/login');
     }
-  }, [token, router]);
+  }, [user, router]);
 
   function getWhatsAppLink() {
     const pkg = POINT_PACKAGES.find(p => p.id === selectedPackage);

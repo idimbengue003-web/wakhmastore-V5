@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const { allowed } = rateLimit(ip);
+    const { allowed } = await rateLimit(ip);
     if (!allowed) {
       return securityHeaders(NextResponse.json(
         { error: 'Trop de requêtes. Réessayez plus tard.' },
@@ -66,35 +66,28 @@ export async function POST(request: NextRequest) {
       ));
     }
 
-    // For now, we'll create a pending purchase that gets auto-completed
-    // In production, this would wait for payment confirmation from Wave/OM API
+    // Create a PENDING purchase — admin must verify payment before points are credited
     const purchase = await db.pointPurchase.create({
       data: {
         userId: user.id,
         amountFcfa: pkg.amountFcfa,
         pointsAdded: pkg.points,
         paymentMethod,
-        status: 'completed', // Auto-complete for demo; in production use 'pending'
+        status: 'pending',
       },
     });
 
-    // Credit points to user
-    await db.user.update({
-      where: { id: user.id },
-      data: { points: user.points + pkg.points },
-    });
-
+    // Do NOT auto-credit points — wait for admin approval
     return securityHeaders(NextResponse.json({
       success: true,
-      message: `${pkg.points.toLocaleString('fr-FR')} points ajoutés à votre compte !`,
+      message: `Demande envoyée ! Envoyez ${pkg.amountFcfa.toLocaleString('fr-FR')} FCFA via ${paymentMethod === 'wave' ? 'Wave' : 'Orange Money'} au ${process.env.PAYMENT_PHONE || '78 927 12 96'}, puis envoyez la capture sur WhatsApp pour validation.`,
       purchase: {
         id: purchase.id,
         amountFcfa: pkg.amountFcfa,
         pointsAdded: pkg.points,
         paymentMethod,
-        status: purchase.status,
+        status: 'pending',
       },
-      newBalance: user.points + pkg.points,
     }));
   } catch (error) {
     console.error('Error purchasing points:', error);

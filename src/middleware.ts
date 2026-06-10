@@ -55,17 +55,18 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // Check protected routes — redirect to login if no token
+  // Check protected routes — now we CAN check auth from cookies
   const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
   if (isProtectedRoute) {
-    // Check for token in localStorage (client-side) — middleware can't access localStorage
-    // Instead, we check for the auth cookie as a hint
-    const hasToken = request.cookies.get('wakhma_token')?.value ||
-                     request.headers.get('authorization')?.startsWith('Bearer ');
-
-    // For API routes, the route handlers check auth themselves
-    // For page routes, we let the client-side handle redirect (since we use localStorage)
-    // This middleware mainly adds security headers
+    const hasAccessToken = request.cookies.get('wakhma_access')?.value;
+    const hasRefreshToken = request.cookies.get('wakhma_refresh')?.value;
+    
+    if (!hasAccessToken && !hasRefreshToken) {
+      // No tokens at all — redirect to login
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   return response;

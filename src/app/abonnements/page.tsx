@@ -143,7 +143,7 @@ const PAYMENT_METHODS = [
 export default function AbonnementsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { user, token, loadFromStorage } = useAuth();
+  const { user, loadFromStorage } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<string>('wave');
   const [proofRef, setProofRef] = useState('');
@@ -151,10 +151,10 @@ export default function AbonnementsPage() {
   useEffect(() => { loadFromStorage(); }, [loadFromStorage]);
 
   useEffect(() => {
-    if (!token) {
+    if (!user) {
       router.push('/login');
     }
-  }, [token, router]);
+  }, [user, router]);
 
   function getWhatsAppLink() {
     const plan = SUBSCRIPTION_PLANS.find(p => p.id === selectedPlan);

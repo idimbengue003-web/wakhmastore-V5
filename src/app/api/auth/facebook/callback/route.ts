@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { generateToken, generateReferralCode, hashPassword } from '@/lib/auth';
+import { generateToken, generateReferralCode, generateRefreshToken, hashPassword, setAuthCookies } from '@/lib/auth';
 import { MAX_REFERRAL_POINTS, POINTS_PER_REFERRAL } from '@/lib/constants';
 
 const FACEBOOK_CLIENT_ID = process.env.FACEBOOK_CLIENT_ID || '';
@@ -116,11 +116,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const token = generateToken({
+    const accessToken = generateToken({
       userId: user.id,
       email: user.email,
       role: user.role,
     });
+    const refreshToken = generateRefreshToken({ userId: user.id });
 
     const userData = {
       id: user.id,
@@ -134,9 +135,12 @@ export async function GET(request: NextRequest) {
       image: user.image,
     };
 
-    // Set token in httpOnly cookie instead of URL params for security
+    // Set auth cookies on the redirect response
     const response = NextResponse.redirect(new URL('/auth/callback', request.url));
-    response.cookies.set('wakhma_oauth_token', token, {
+    setAuthCookies(response, accessToken, refreshToken);
+    
+    // Also set OAuth exchange cookies for the callback page to read
+    response.cookies.set('wakhma_oauth_token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

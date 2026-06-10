@@ -20,7 +20,7 @@ export const SUBSCRIPTION_PLANS = Object.values(PLANS).filter(p => p.id !== 'non
 export async function POST(request: NextRequest) {
   try {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const { allowed } = rateLimit(ip);
+    const { allowed } = await rateLimit(ip);
     if (!allowed) {
       return securityHeaders(NextResponse.json(
         { error: 'Trop de requêtes. Réessayez plus tard.' },

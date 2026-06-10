@@ -19,7 +19,7 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
 }
 
 export default function RechargePage() {
-  const { user, token, loadFromStorage } = useAuth();
+  const { user, loadFromStorage, updateUser } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'plans' | 'points'>('plans');
   const [subscribing, setSubscribing] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export default function RechargePage() {
   useEffect(() => { loadFromStorage(); }, [loadFromStorage]);
 
   async function handleSubscribe(planId: PlanId) {
-    if (!token) {
+    if (!user) {
       toast({ title: 'Connexion requise', description: 'Connectez-vous pour choisir un plan', variant: 'destructive' });
       return;
     }
@@ -40,7 +40,7 @@ export default function RechargePage() {
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: planId }),
       });
       const data = await res.json();
@@ -50,15 +50,7 @@ export default function RechargePage() {
           description: data.message || `Plan ${PLANS[planId].name} activé avec succès`,
         });
         // Update local user
-        if (typeof window !== 'undefined') {
-          const stored = localStorage.getItem('wakhma_user');
-          if (stored) {
-            const u = JSON.parse(stored);
-            u.plan = planId;
-            u.points = data.points || u.points;
-            localStorage.setItem('wakhma_user', JSON.stringify(u));
-          }
-        }
+        updateUser({ plan: planId, points: data.points || user?.points });
         window.location.reload();
       } else {
         toast({ title: 'Erreur', description: data.error || 'Erreur lors de l\'activation', variant: 'destructive' });
@@ -71,7 +63,7 @@ export default function RechargePage() {
   }
 
   async function handleBuyPoints(packageId: string) {
-    if (!token) {
+    if (!user) {
       toast({ title: 'Connexion requise', description: 'Connectez-vous pour acheter des points', variant: 'destructive' });
       return;
     }
@@ -79,7 +71,7 @@ export default function RechargePage() {
     try {
       const res = await fetch('/api/purchase-points', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ packageId }),
       });
       const data = await res.json();
@@ -88,14 +80,7 @@ export default function RechargePage() {
           title: 'Points ajoutés !',
           description: `${data.pointsAdded?.toLocaleString('fr-FR') || ''} points ajoutés à votre compte`,
         });
-        if (typeof window !== 'undefined') {
-          const stored = localStorage.getItem('wakhma_user');
-          if (stored) {
-            const u = JSON.parse(stored);
-            u.points = data.newBalance || u.points;
-            localStorage.setItem('wakhma_user', JSON.stringify(u));
-          }
-        }
+        updateUser({ points: data.newBalance || user?.points });
         window.location.reload();
       } else {
         toast({ title: 'Erreur', description: data.error || 'Erreur lors de l\'achat', variant: 'destructive' });

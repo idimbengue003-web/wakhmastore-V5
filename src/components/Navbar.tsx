@@ -26,7 +26,7 @@ import { useAuth } from '@/hooks/use-auth';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const { user, token, logout, loadFromStorage } = useAuth();
+  const { user, logout, loadFromStorage } = useAuth();
 
   useEffect(() => {
     loadFromStorage();

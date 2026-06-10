@@ -6,6 +6,7 @@ import { securityHeaders } from '@/lib/security-headers';
  *
  * Reads OAuth token and user data from httpOnly cookies set by OAuth callbacks,
  * returns them to the client, and clears the cookies.
+ * Auth cookies (wakhma_access, wakhma_refresh) are already set by the OAuth callback redirect.
  * This prevents tokens from being exposed in URL parameters.
  */
 export async function POST(request: NextRequest) {
@@ -29,8 +30,11 @@ export async function POST(request: NextRequest) {
     ));
   }
 
-  // Clear the OAuth cookies (one-time use)
+  // Return the user data so the client can update its state
+  // Auth cookies (wakhma_access, wakhma_refresh) were already set by the callback redirect
   const response = securityHeaders(NextResponse.json({ token, user }));
+  
+  // Clear the OAuth cookies (one-time use)
   response.cookies.set('wakhma_oauth_token', '', { maxAge: 0, path: '/' });
   response.cookies.set('wakhma_oauth_user', '', { maxAge: 0, path: '/' });
 

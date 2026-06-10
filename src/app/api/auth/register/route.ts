@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { hashPassword, generateToken, generateReferralCode } from '@/lib/auth';
+import { hashPassword, generateToken, generateRefreshToken, generateReferralCode, setAuthCookies } from '@/lib/auth';
 import { registerSchema } from '@/lib/validation';
 import { rateLimit } from '@/lib/rate-limit';
 import { getClientIp } from '@/lib/get-user';
@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting
     const ip = getClientIp(request);
-    const { allowed } = rateLimit(ip, 'auth');
+    const { allowed } = await rateLimit(ip, 'auth');
     if (!allowed) {
       return securityHeaders(NextResponse.json(
         { error: 'Trop de tentatives. Réessayez plus tard.' },
@@ -127,15 +127,16 @@ export async function POST(request: NextRequest) {
       return user;
     });
 
-    // Generate JWT token
-    const token = generateToken({
+    // Generate JWT tokens
+    const accessToken = generateToken({
       userId: user.id,
       email: user.email,
       role: user.role,
     });
+    const refreshToken = generateRefreshToken({ userId: user.id });
 
-    return securityHeaders(NextResponse.json({
-      token,
+    const response = NextResponse.json({
+      token: accessToken,
       user: {
         id: user.id,
         name: user.name,
@@ -146,7 +147,9 @@ export async function POST(request: NextRequest) {
         points: user.points,
         referralCode: user.referralCode,
       },
-    }, { status: 201 }));
+    }, { status: 201 });
+    setAuthCookies(response, accessToken, refreshToken);
+    return securityHeaders(response);
   } catch (error) {
     console.error('Error during registration:', error);
     const errorMsg = error instanceof Error ? error.message : String(error);

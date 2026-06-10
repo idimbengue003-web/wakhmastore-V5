@@ -17,7 +17,7 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const { login, loadFromStorage, token } = useAuth();
+  const { login, loadFromStorage, user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
 
@@ -48,10 +48,10 @@ function LoginContent() {
   }, [loadFromStorage]);
 
   useEffect(() => {
-    if (token) {
+    if (user) {
       router.push('/');
     }
-  }, [token]);
+  }, [user]);
 
   useEffect(() => {
     if (referralCodeFromUrl) {
@@ -89,7 +89,7 @@ function LoginContent() {
       const data = await res.json();
 
       if (res.ok) {
-        login(data.token, data.user);
+        login(data.user);
         toast({
           title: 'Connexion réussie !',
           description: `Bienvenue, ${data.user.name || data.user.email}`,
@@ -161,7 +161,7 @@ function LoginContent() {
       const data = await res.json();
 
       if (res.ok) {
-        login(data.token, data.user);
+        login(data.user);
         toast({
           title: 'Compte créé avec succès !',
           description: registerForm.referralCode

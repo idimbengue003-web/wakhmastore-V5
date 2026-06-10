@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { verifyPassword, generateToken, hashPassword } from '@/lib/auth';
+import { verifyPassword, generateToken, generateRefreshToken, hashPassword, setAuthCookies } from '@/lib/auth';
 import { loginSchema } from '@/lib/validation';
 import { rateLimit } from '@/lib/rate-limit';
 import { getClientIp } from '@/lib/get-user';
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting for auth
     const ip = getClientIp(request);
-    const { allowed, remaining } = rateLimit(ip, 'auth');
+    const { allowed, remaining } = await rateLimit(ip, 'auth');
     if (!allowed) {
       return securityHeaders(NextResponse.json(
         { error: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.' },
@@ -61,15 +61,16 @@ export async function POST(request: NextRequest) {
       ));
     }
 
-    // Generate JWT token
-    const token = generateToken({
+    // Generate JWT tokens
+    const accessToken = generateToken({
       userId: user.id,
       email: user.email,
       role: user.role,
     });
+    const refreshToken = generateRefreshToken({ userId: user.id });
 
-    return securityHeaders(NextResponse.json({
-      token,
+    const response = NextResponse.json({
+      token: accessToken,
       user: {
         id: user.id,
         email: user.email,
@@ -80,7 +81,9 @@ export async function POST(request: NextRequest) {
         points: user.points,
         referralCode: user.referralCode,
       },
-    }));
+    });
+    setAuthCookies(response, accessToken, refreshToken);
+    return securityHeaders(response);
   } catch (error) {
     console.error('Error during login:', error);
     return securityHeaders(NextResponse.json(
