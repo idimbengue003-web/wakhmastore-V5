@@ -49,11 +49,11 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: oklch(0.985 0 0);
   --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
+  --card: oklch(0.99 0 0);
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
+  --popover: oklch(0.99 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.705 0.213 47.604); /* orange-500 */
   --primary-foreground: oklch(0.985 0 0);
@@ -98,7 +98,7 @@
 
 /* Custom search bar shadow */
 .search-bar-shadow {
-  box-shadow: 0 4px 24px rgba(249, 115, 22, 0.15);
+  box-shadow: 0 2px 12px rgba(249, 115, 22, 0.08);
 }
 
 /* Annonce card hover effect */
@@ -108,7 +108,7 @@
 }
 .annonce-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(249, 115, 22, 0.12);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
 }
 
 /* ---- Scroll-reveal animations ---- */
@@ -169,7 +169,7 @@
 }
 .feature-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 16px 32px rgba(249, 115, 22, 0.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
 
 /* Category pill smooth hover */
@@ -218,11 +218,9 @@ a {
 @keyframes wakhma-pulse {
   0%, 100% {
     transform: scale(1);
-    text-shadow: 0 0 20px rgba(255,255,255,0.3), 0 2px 10px rgba(0,0,0,0.2);
   }
   50% {
-    transform: scale(1.06);
-    text-shadow: 0 0 40px rgba(255,255,255,0.6), 0 4px 20px rgba(0,0,0,0.3);
+    transform: scale(1.03);
   }
 }
 .wakhma-title {

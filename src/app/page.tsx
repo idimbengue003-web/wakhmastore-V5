@@ -88,29 +88,10 @@ export default function HomePage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-orange-dark to-orange overflow-hidden">
-        {/* Floating emojis background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <span className="floating-emoji" style={{ '--float-x': '5%', '--float-delay': '0s', '--float-duration': '14s', '--float-size': '2rem' } as React.CSSProperties}>📱</span>
-          <span className="floating-emoji" style={{ '--float-x': '15%', '--float-delay': '2s', '--float-duration': '16s', '--float-size': '1.8rem' } as React.CSSProperties}>📺</span>
-          <span className="floating-emoji" style={{ '--float-x': '25%', '--float-delay': '4s', '--float-duration': '13s', '--float-size': '2.2rem' } as React.CSSProperties}>💻</span>
-          <span className="floating-emoji" style={{ '--float-x': '35%', '--float-delay': '1s', '--float-duration': '15s', '--float-size': '1.6rem' } as React.CSSProperties}>🧊</span>
-          <span className="floating-emoji" style={{ '--float-x': '45%', '--float-delay': '3s', '--float-duration': '12s', '--float-size': '2rem' } as React.CSSProperties}>🚗</span>
-          <span className="floating-emoji" style={{ '--float-x': '55%', '--float-delay': '5s', '--float-duration': '17s', '--float-size': '1.8rem' } as React.CSSProperties}>🏠</span>
-          <span className="floating-emoji" style={{ '--float-x': '65%', '--float-delay': '2.5s', '--float-duration': '14s', '--float-size': '2.4rem' } as React.CSSProperties}>👗</span>
-          <span className="floating-emoji" style={{ '--float-x': '75%', '--float-delay': '0.5s', '--float-duration': '13s', '--float-size': '1.6rem' } as React.CSSProperties}>🔊</span>
-          <span className="floating-emoji" style={{ '--float-x': '82%', '--float-delay': '4.5s', '--float-duration': '16s', '--float-size': '2rem' } as React.CSSProperties}>🛋️</span>
-          <span className="floating-emoji" style={{ '--float-x': '90%', '--float-delay': '1.5s', '--float-duration': '15s', '--float-size': '1.8rem' } as React.CSSProperties}>📦</span>
-          <span className="floating-emoji" style={{ '--float-x': '10%', '--float-delay': '6s', '--float-duration': '18s', '--float-size': '1.4rem' } as React.CSSProperties}>🔧</span>
-          <span className="floating-emoji" style={{ '--float-x': '50%', '--float-delay': '7s', '--float-duration': '14s', '--float-size': '1.6rem' } as React.CSSProperties}>💄</span>
-          <span className="floating-emoji" style={{ '--float-x': '70%', '--float-delay': '3.5s', '--float-duration': '11s', '--float-size': '2rem' } as React.CSSProperties}>🍜</span>
-          <span className="floating-emoji" style={{ '--float-x': '30%', '--float-delay': '8s', '--float-duration': '15s', '--float-size': '1.8rem' } as React.CSSProperties}>📲</span>
-          <span className="floating-emoji" style={{ '--float-x': '88%', '--float-delay': '5.5s', '--float-duration': '13s', '--float-size': '1.5rem' } as React.CSSProperties}>❄️</span>
-          <span className="floating-emoji" style={{ '--float-x': '42%', '--float-delay': '9s', '--float-duration': '16s', '--float-size': '1.7rem' } as React.CSSProperties}>⚡</span>
-        </div>
+      <section className="relative bg-gradient-to-br from-orange-dark via-orange to-orange-dark overflow-hidden">
 
-        <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-28 text-center">
-          <h1 className="wakhma-title text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-6 tracking-tight">
+        <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 text-center">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-6 tracking-tight">
             Wakhma Store
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-4 font-medium">
@@ -234,7 +215,7 @@ export default function HomePage() {
       </Section>
 
       {/* Features - Rapide/Fiable/Efficace */}
-      <Section className="bg-gradient-to-br from-orange to-orange-dark py-12 sm:py-16">
+      <Section className="bg-gradient-to-br from-orange-dark to-orange py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-10">
             <h2 className="text-2xl sm:text-3xl font-bold text-white">
@@ -243,7 +224,7 @@ export default function HomePage() {
             <p className="text-white/80 mt-1">Rapide, fiable et efficace</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 stagger-children">
-            <div className="stagger-item feature-card bg-white rounded-2xl p-6 sm:p-8 text-center shadow-lg">
+            <div className="stagger-item feature-card bg-white rounded-2xl p-6 sm:p-8 text-center shadow-sm">
               <div className="w-14 h-14 bg-orange/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Zap className="w-7 h-7 text-orange" />
               </div>
@@ -252,7 +233,7 @@ export default function HomePage() {
                 Postez votre demande en quelques secondes et recevez des réponses rapidement.
               </p>
             </div>
-            <div className="stagger-item feature-card bg-white rounded-2xl p-6 sm:p-8 text-center shadow-lg">
+            <div className="stagger-item feature-card bg-white rounded-2xl p-6 sm:p-8 text-center shadow-sm">
               <div className="w-14 h-14 bg-orange/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-7 h-7 text-orange" />
               </div>
@@ -261,7 +242,7 @@ export default function HomePage() {
                 Des vendeurs vérifiés et un système de confiance pour vos transactions.
               </p>
             </div>
-            <div className="stagger-item feature-card bg-white rounded-2xl p-6 sm:p-8 text-center shadow-lg">
+            <div className="stagger-item feature-card bg-white rounded-2xl p-6 sm:p-8 text-center shadow-sm">
               <div className="w-14 h-14 bg-orange/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <TrendingUp className="w-7 h-7 text-orange" />
               </div>
@@ -276,7 +257,7 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <Section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="bg-orange-bg rounded-2xl p-8 sm:p-12 text-center border border-orange/10">
+        <div className="bg-orange-bg/70 rounded-2xl p-8 sm:p-12 text-center border border-orange/5">
           <Sparkles className="w-10 h-10 text-orange mx-auto mb-4" />
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
             Tu cherches un objet introuvable ou budget limité ?

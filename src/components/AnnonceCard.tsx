@@ -53,7 +53,7 @@ export default function AnnonceCard({
       <CardContent className="p-0">
         {/* Emoji area */}
         <div className="relative">
-          <div className={`h-28 flex items-center justify-center transition-all duration-500 ease-out group-hover:bg-orange/10 ${
+          <div className={`h-28 flex items-center justify-center transition-all duration-500 ease-out group-hover:bg-orange/5 ${
             isJeVends ? 'bg-green-50' : 'bg-orange-bg'
           }`}>
             <span className="text-4xl transition-transform duration-300 ease-out group-hover:scale-110">{emoji}</span>
