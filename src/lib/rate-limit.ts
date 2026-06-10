@@ -13,7 +13,7 @@ const defaultOptions: RateLimitOptions = {
 
 const authOptions: RateLimitOptions = {
   windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 5,            // 5 attempts per 15 minutes
+  maxRequests: 20,           // 20 attempts per 15 minutes
 };
 
 export function rateLimit(
@@ -25,7 +25,8 @@ export function rateLimit(
     : options;
 
   const now = Date.now();
-  const key = ip;
+  // Use IP as key; if IP is unknown, allow the request (no rate limit block)
+  const key = ip || 'global-unknown';
   const record = rateLimitMap.get(key);
 
   if (!record || now > record.resetTime) {

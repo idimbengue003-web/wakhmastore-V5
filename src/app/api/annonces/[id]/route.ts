@@ -1,20 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/get-user';
-import { rateLimit } from '@/lib/rate-limit';
 import { securityHeaders } from '@/lib/security-headers';
 
-// Unlock cost based on user's subscription plan
-function getUnlockCost(plan: string): number {
-  switch (plan) {
-    case 'diambar':
-      return 1000;
-    case 'vip_king':
-      return 800;
-    default:
-      return 1500;
-  }
-}
+const POINTS_TO_UNLOCK = 1500;
 
 // GET: Get single annonce details (phone/whatsapp only if purchased or author)
 export async function GET(
@@ -43,15 +32,7 @@ export async function GET(
 
     // Check if user has purchased access or is the author
     let hasAccess = false;
-    let userPlan = 'gratuit';
-
     if (payload) {
-      const user = await db.user.findUnique({
-        where: { id: payload.userId },
-        select: { plan: true },
-      });
-      userPlan = user?.plan || 'gratuit';
-
       if (payload.userId === annonce.authorId) {
         hasAccess = true;
       } else {
@@ -66,9 +47,6 @@ export async function GET(
         hasAccess = !!purchase;
       }
     }
-
-    // Calculate unlock cost based on user's subscription plan
-    const unlockCost = getUnlockCost(userPlan);
 
     // Return annonce with contact info conditionally
     const result = {
@@ -88,8 +66,7 @@ export async function GET(
       phone: hasAccess ? annonce.phone : null,
       whatsapp: hasAccess ? annonce.whatsapp : null,
       hasAccess,
-      unlockCost,
-      userPlan,
+      unlockCost: POINTS_TO_UNLOCK,
     };
 
     return securityHeaders(NextResponse.json(result));

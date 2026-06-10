@@ -1,67 +1,52 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 
-function AuthCallbackContent() {
+export default function AuthCallbackPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const sessionResult = useSession();
+  const data = sessionResult?.data;
+  const status = sessionResult?.status ?? 'loading';
+  const session = data;
   const { login } = useAuth();
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    const userStr = searchParams.get('user');
+    if (status === 'authenticated' && session?.customToken && session?.customUser) {
+      // Store the custom JWT token in our Zustand auth store
+      login(session.customToken, {
+        id: session.customUser.id,
+        name: session.customUser.name || '',
+        email: session.customUser.email,
+        phone: session.customUser.phone || undefined,
+        role: session.customUser.role,
+        plan: session.customUser.plan,
+        points: session.customUser.points,
+        referralCode: session.customUser.referralCode,
+        image: session.customUser.image || undefined,
+      });
 
-    if (token && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        login(token, user);
-
-        // If user has no phone, redirect to complete-profile
-        if (!user.phone) {
-          router.push('/complete-profile');
-        } else {
-          router.push('/');
-        }
-      } catch {
-        router.push('/login?oauth=error');
-      }
-    } else {
-      router.push('/login?oauth=error');
+      // Redirect to home
+      router.push('/');
+    } else if (status === 'unauthenticated') {
+      router.push('/login');
     }
-  }, [searchParams, login, router]);
+  }, [status, session, login, router]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-orange animate-spin mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-700">Connexion en cours...</p>
-          <p className="text-sm text-gray-500 mt-2">Veuillez patienter quelques instants</p>
-        </div>
-      </main>
-      <Footer />
-    </div>
-  );
-}
-
-export default function AuthCallbackPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-orange animate-spin" />
-        </main>
-        <Footer />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <Loader2 className="w-12 h-12 text-orange animate-spin mx-auto mb-4" />
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Connexion en cours...
+        </h2>
+        <p className="text-gray-500">
+          Vérification de votre compte, veuillez patienter.
+        </p>
       </div>
-    }>
-      <AuthCallbackContent />
-    </Suspense>
+    </div>
   );
 }

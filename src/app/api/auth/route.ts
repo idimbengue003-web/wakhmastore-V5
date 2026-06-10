@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { verifyPassword, generateToken } from '@/lib/auth';
+import { verifyPassword, generateToken, hashPassword } from '@/lib/auth';
 import { loginSchema } from '@/lib/validation';
 import { rateLimit } from '@/lib/rate-limit';
 import { getClientIp } from '@/lib/get-user';
@@ -32,14 +32,15 @@ export async function POST(request: NextRequest) {
 
     const { email, password } = result.data;
 
-    // Find user
+    // Find user using Prisma
     const user = await db.user.findUnique({
       where: { email },
+      select: { id: true, email: true, name: true, phone: true, password: true, role: true, plan: true, points: true, referralCode: true },
     });
 
-    if (!user || !user.password) {
+    if (!user) {
       return securityHeaders(NextResponse.json(
-        { error: 'Email ou mot de passe incorrect' },
+        { error: 'Email ou code PIN incorrect' },
         { status: 401 }
       ));
     }
@@ -53,7 +54,6 @@ export async function POST(request: NextRequest) {
       isValid = user.password === password;
       if (isValid) {
         // Auto-upgrade to hashed password
-        const { hashPassword } = await import('@/lib/auth');
         const hashed = await hashPassword(password);
         await db.user.update({
           where: { id: user.id },
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     if (!isValid) {
       return securityHeaders(NextResponse.json(
-        { error: `Email ou mot de passe incorrect. ${remaining} tentatives restantes.` },
+        { error: `Email ou code PIN incorrect. ${remaining} tentatives restantes.` },
         { status: 401 }
       ));
     }
@@ -87,8 +87,6 @@ export async function POST(request: NextRequest) {
         plan: user.plan,
         points: user.points,
         referralCode: user.referralCode,
-        avatar: user.avatar,
-        provider: user.provider,
       },
     }));
   } catch (error) {

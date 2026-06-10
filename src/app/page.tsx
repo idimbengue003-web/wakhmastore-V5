@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AnnonceCard from '@/components/AnnonceCard';
+import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 
 const categories = [
   { name: 'Téléphones', emoji: '📱' },
@@ -51,6 +52,15 @@ interface Annonce {
   createdAt: string;
 }
 
+function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  const ref = useScrollReveal();
+  return (
+    <div ref={ref} className={`scroll-reveal ${className}`}>
+      {children}
+    </div>
+  );
+}
+
 export default function HomePage() {
   const [annonces, setAnnonces] = useState<Annonce[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,63 +87,56 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      {/* Hero Section — Bleu avec objets décoratifs */}
-      <section className="relative bg-gradient-to-br from-orange-dark via-orange to-blue-vivid overflow-hidden">
-        {/* Floating category objects — decorative background */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {/* Row 1 — top scattered */}
-          <span className="absolute top-[8%] left-[5%] text-4xl sm:text-5xl opacity-35 animate-float-slow select-none">📱</span>
-          <span className="absolute top-[12%] left-[22%] text-3xl sm:text-4xl opacity-30 animate-float-medium select-none">📺</span>
-          <span className="absolute top-[6%] right-[18%] text-4xl sm:text-5xl opacity-35 animate-float-fast select-none">💻</span>
-          <span className="absolute top-[15%] right-[6%] text-3xl sm:text-4xl opacity-30 animate-float-slow select-none">🧊</span>
-          {/* Row 2 — middle scattered */}
-          <span className="absolute top-[40%] left-[3%] text-5xl sm:text-6xl opacity-25 animate-float-medium select-none">🚗</span>
-          <span className="absolute top-[35%] right-[4%] text-4xl sm:text-5xl opacity-25 animate-float-fast select-none">🏗️</span>
-          {/* Row 3 — bottom scattered */}
-          <span className="absolute bottom-[18%] left-[8%] text-3xl sm:text-4xl opacity-30 animate-float-fast select-none">❄️</span>
-          <span className="absolute bottom-[12%] left-[30%] text-4xl sm:text-5xl opacity-25 animate-float-slow select-none">🔊</span>
-          <span className="absolute bottom-[15%] right-[25%] text-3xl sm:text-4xl opacity-30 animate-float-medium select-none">👗</span>
-          <span className="absolute bottom-[10%] right-[8%] text-4xl sm:text-5xl opacity-35 animate-float-fast select-none">🛋️</span>
-          {/* Extra scattered */}
-          <span className="absolute top-[55%] left-[15%] text-3xl sm:text-4xl opacity-25 animate-float-slow select-none">⚡</span>
-          <span className="absolute top-[50%] right-[15%] text-3xl sm:text-4xl opacity-25 animate-float-medium select-none">🔧</span>
-          {/* More category emojis */}
-          <span className="absolute top-[25%] left-[42%] text-3xl sm:text-4xl opacity-20 animate-float-slow select-none">📦</span>
-          <span className="absolute top-[65%] left-[50%] text-3xl sm:text-4xl opacity-20 animate-float-medium select-none">📲</span>
-          <span className="absolute bottom-[25%] right-[40%] text-3xl sm:text-4xl opacity-20 animate-float-fast select-none">🏠</span>
-          {/* Soft circles */}
-          <div className="absolute top-[20%] left-[45%] w-48 h-48 border border-white/15 rounded-full" />
-          <div className="absolute bottom-[5%] left-[50%] -translate-x-1/2 w-64 h-64 border border-white/10 rounded-full" />
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-orange-dark to-orange overflow-hidden">
+        {/* Floating emojis background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <span className="floating-emoji" style={{ '--float-x': '5%', '--float-delay': '0s', '--float-duration': '14s', '--float-size': '2rem' } as React.CSSProperties}>📱</span>
+          <span className="floating-emoji" style={{ '--float-x': '15%', '--float-delay': '2s', '--float-duration': '16s', '--float-size': '1.8rem' } as React.CSSProperties}>📺</span>
+          <span className="floating-emoji" style={{ '--float-x': '25%', '--float-delay': '4s', '--float-duration': '13s', '--float-size': '2.2rem' } as React.CSSProperties}>💻</span>
+          <span className="floating-emoji" style={{ '--float-x': '35%', '--float-delay': '1s', '--float-duration': '15s', '--float-size': '1.6rem' } as React.CSSProperties}>🧊</span>
+          <span className="floating-emoji" style={{ '--float-x': '45%', '--float-delay': '3s', '--float-duration': '12s', '--float-size': '2rem' } as React.CSSProperties}>🚗</span>
+          <span className="floating-emoji" style={{ '--float-x': '55%', '--float-delay': '5s', '--float-duration': '17s', '--float-size': '1.8rem' } as React.CSSProperties}>🏠</span>
+          <span className="floating-emoji" style={{ '--float-x': '65%', '--float-delay': '2.5s', '--float-duration': '14s', '--float-size': '2.4rem' } as React.CSSProperties}>👗</span>
+          <span className="floating-emoji" style={{ '--float-x': '75%', '--float-delay': '0.5s', '--float-duration': '13s', '--float-size': '1.6rem' } as React.CSSProperties}>🔊</span>
+          <span className="floating-emoji" style={{ '--float-x': '82%', '--float-delay': '4.5s', '--float-duration': '16s', '--float-size': '2rem' } as React.CSSProperties}>🛋️</span>
+          <span className="floating-emoji" style={{ '--float-x': '90%', '--float-delay': '1.5s', '--float-duration': '15s', '--float-size': '1.8rem' } as React.CSSProperties}>📦</span>
+          <span className="floating-emoji" style={{ '--float-x': '10%', '--float-delay': '6s', '--float-duration': '18s', '--float-size': '1.4rem' } as React.CSSProperties}>🔧</span>
+          <span className="floating-emoji" style={{ '--float-x': '50%', '--float-delay': '7s', '--float-duration': '14s', '--float-size': '1.6rem' } as React.CSSProperties}>💄</span>
+          <span className="floating-emoji" style={{ '--float-x': '70%', '--float-delay': '3.5s', '--float-duration': '11s', '--float-size': '2rem' } as React.CSSProperties}>🍜</span>
+          <span className="floating-emoji" style={{ '--float-x': '30%', '--float-delay': '8s', '--float-duration': '15s', '--float-size': '1.8rem' } as React.CSSProperties}>📲</span>
+          <span className="floating-emoji" style={{ '--float-x': '88%', '--float-delay': '5.5s', '--float-duration': '13s', '--float-size': '1.5rem' } as React.CSSProperties}>❄️</span>
+          <span className="floating-emoji" style={{ '--float-x': '42%', '--float-delay': '9s', '--float-duration': '16s', '--float-size': '1.7rem' } as React.CSSProperties}>⚡</span>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18 md:py-22 text-center animate-fade-in-up">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-3 tracking-tight heading-compact animate-hero-float-title">
+        <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-28 text-center">
+          <h1 className="wakhma-title text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-6 tracking-tight">
             Wakhma Store
           </h1>
-          <p className="text-xl sm:text-2xl md:text-3xl text-white/90 mb-4 font-semibold">
-            Les bonnes affaires à Dakar
+          <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-4 font-medium">
+            Les bonnes affaires à Dakar 🇸🇳
           </p>
-          <p className="text-white/70 mb-8 max-w-xl mx-auto text-base sm:text-lg font-medium">
+          <p className="text-white/70 mb-8 max-w-xl mx-auto text-sm sm:text-base">
             Poste ce que tu veux. Les vendeurs te le trouvent rapidement.
           </p>
 
           {/* Search bar */}
-          <div className="max-w-2xl mx-auto mb-6">
-            <div className="search-bar-shadow flex rounded-lg bg-white p-1.5">
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="search-bar-shadow flex rounded-xl bg-white p-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
                   type="text"
                   placeholder="Que cherchez-vous ?"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 border-0 focus-visible:ring-0 text-gray-900 placeholder:text-gray-400 h-10 text-sm"
+                  className="pl-10 border-0 focus-visible:ring-0 text-gray-900 placeholder:text-gray-400 h-12 text-base"
                 />
               </div>
               <Link
                 href={searchQuery ? `/annonces?search=${encodeURIComponent(searchQuery)}` : '/annonces'}
               >
-                <Button size="sm" className="bg-orange hover:bg-orange-dark text-white font-semibold rounded-md px-5 h-10 transition-all duration-200 text-xs">
+                <Button className="btn-press bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg px-6 h-12">
                   Rechercher
                 </Button>
               </Link>
@@ -141,10 +144,10 @@ export default function HomePage() {
           </div>
 
           {/* Quick category pills */}
-          <div className="flex flex-wrap justify-center gap-1.5">
+          <div className="flex flex-wrap justify-center gap-2">
             {quickCategories.map((cat) => (
               <Link key={cat} href={`/annonces?category=${encodeURIComponent(cat)}`}>
-                <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-white/15 text-white text-xs font-medium backdrop-blur-sm hover:bg-white/25 transition-all duration-200 cursor-pointer hover:scale-105">
+                <span className="category-pill inline-flex items-center px-4 py-2 rounded-full bg-white/15 text-white text-sm font-medium backdrop-blur-sm cursor-pointer">
                   {categories.find((c) => c.name === cat)?.emoji} {cat}
                 </span>
               </Link>
@@ -154,139 +157,141 @@ export default function HomePage() {
       </section>
 
       {/* Annonces récentes */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-        <div className="flex items-center justify-between mb-5">
+      <Section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 heading-compact">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
               Annonces récentes
             </h2>
-            <p className="text-gray-500 text-xs mt-0.5">Les dernières demandes postées sur Wakhma Store</p>
+            <p className="text-gray-500 mt-1">Les dernières demandes postées sur Wakhma Store</p>
           </div>
           <Link href="/annonces">
-            <Button variant="ghost" size="sm" className="text-orange hover:text-orange-dark hover:bg-orange-bg font-semibold transition-all duration-200 text-xs">
-              Voir tout <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            <Button variant="ghost" className="btn-press text-orange hover:text-orange-dark hover:bg-orange-bg font-semibold">
+              Voir tout <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </Link>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="animate-pulse rounded-lg border border-gray-100 overflow-hidden">
-                <div className="bg-orange-bg h-40" />
-                <div className="p-4 space-y-2">
-                  <div className="h-3 bg-gray-200 rounded w-3/4" />
+              <div key={i} className="animate-pulse rounded-xl border border-gray-100 overflow-hidden">
+                <div className="bg-orange-bg h-28" />
+                <div className="p-4 space-y-3">
+                  <div className="h-4 bg-gray-200 rounded w-3/4" />
                   <div className="h-5 bg-gray-200 rounded w-1/2" />
-                  <div className="h-2 bg-gray-200 rounded w-2/3" />
+                  <div className="h-3 bg-gray-200 rounded w-2/3" />
                 </div>
               </div>
             ))}
           </div>
         ) : annonces.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-gray-500 text-sm">Aucune annonce pour le moment</p>
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">Aucune annonce pour le moment</p>
             <Link href="/deposer">
-              <Button size="sm" className="mt-3 bg-orange hover:bg-orange-dark text-white font-semibold rounded-md text-xs transition-all duration-200">
+              <Button className="btn-press mt-4 bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg">
                 Déposer la première annonce
               </Button>
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 stagger-children">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 stagger-children">
             {annonces.slice(0, 8).map((annonce) => (
-              <AnnonceCard key={annonce.id} {...annonce} />
+              <div key={annonce.id} className="stagger-item">
+                <AnnonceCard {...annonce} />
+              </div>
             ))}
           </div>
         )}
-      </section>
+      </Section>
 
       {/* Catégories */}
-      <section className="bg-orange-bg/50 py-8 sm:py-10">
+      <Section className="bg-gray-50 py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-5 sm:mb-6">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 heading-compact">
+          <div className="text-center mb-8 sm:mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
               Explorez les catégories
             </h2>
-            <p className="text-gray-500 text-xs mt-0.5">Trouvez ce que vous cherchez en un clic</p>
+            <p className="text-gray-500 mt-1">Trouvez ce que vous cherchez en un clic</p>
           </div>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-2 sm:gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-3 sm:gap-4 stagger-children">
             {categories.map((cat) => (
               <Link
                 key={cat.name}
                 href={`/annonces?category=${encodeURIComponent(cat.name)}`}
-                className="group flex flex-col items-center gap-1.5 p-2 sm:p-3 rounded-lg bg-white border border-gray-100 hover:border-orange/30 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
+                className="stagger-item group flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl bg-white border border-gray-100 hover:border-orange/30 hover:shadow-md transition-all duration-300 ease-out"
               >
-                <span className="text-xl sm:text-2xl group-hover:scale-110 transition-transform duration-300">
+                <span className="text-2xl sm:text-3xl group-hover:scale-125 transition-transform duration-300 ease-out">
                   {cat.emoji}
                 </span>
-                <span className="text-[10px] sm:text-xs font-medium text-gray-700 group-hover:text-orange transition-colors duration-200 text-center leading-tight">
+                <span className="text-xs sm:text-sm font-medium text-gray-700 group-hover:text-orange transition-colors duration-300 text-center leading-tight">
                   {cat.name}
                 </span>
               </Link>
             ))}
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* Features - Rapide/Fiable/Efficace */}
-      <section className="bg-gradient-to-br from-orange-dark via-orange to-blue-vivid py-8 sm:py-10">
+      <Section className="bg-gradient-to-br from-orange to-orange-dark py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-5 sm:mb-6">
-            <h2 className="text-lg sm:text-xl font-bold text-white heading-compact">
+          <div className="text-center mb-8 sm:mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white">
               Pourquoi Wakhma Store ?
             </h2>
-            <p className="text-white/80 text-xs mt-0.5">Rapide, fiable et efficace</p>
+            <p className="text-white/80 mt-1">Rapide, fiable et efficace</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white/95 backdrop-blur-sm rounded-lg p-5 text-center shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-              <div className="w-10 h-10 bg-orange/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Zap className="w-5 h-5 text-orange" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 stagger-children">
+            <div className="stagger-item feature-card bg-white rounded-2xl p-6 sm:p-8 text-center shadow-lg">
+              <div className="w-14 h-14 bg-orange/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Zap className="w-7 h-7 text-orange" />
               </div>
-              <h3 className="font-bold text-gray-900 text-sm mb-1 heading-compact">Rapide</h3>
-              <p className="text-gray-500 text-xs">
+              <h3 className="font-bold text-gray-900 text-lg mb-2">Rapide</h3>
+              <p className="text-gray-500 text-sm">
                 Postez votre demande en quelques secondes et recevez des réponses rapidement.
               </p>
             </div>
-            <div className="bg-white/95 backdrop-blur-sm rounded-lg p-5 text-center shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-              <div className="w-10 h-10 bg-orange/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Shield className="w-5 h-5 text-orange" />
+            <div className="stagger-item feature-card bg-white rounded-2xl p-6 sm:p-8 text-center shadow-lg">
+              <div className="w-14 h-14 bg-orange/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-7 h-7 text-orange" />
               </div>
-              <h3 className="font-bold text-gray-900 text-sm mb-1 heading-compact">Fiable</h3>
-              <p className="text-gray-500 text-xs">
+              <h3 className="font-bold text-gray-900 text-lg mb-2">Fiable</h3>
+              <p className="text-gray-500 text-sm">
                 Des vendeurs vérifiés et un système de confiance pour vos transactions.
               </p>
             </div>
-            <div className="bg-white/95 backdrop-blur-sm rounded-lg p-5 text-center shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-              <div className="w-10 h-10 bg-orange/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <TrendingUp className="w-5 h-5 text-orange" />
+            <div className="stagger-item feature-card bg-white rounded-2xl p-6 sm:p-8 text-center shadow-lg">
+              <div className="w-14 h-14 bg-orange/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="w-7 h-7 text-orange" />
               </div>
-              <h3 className="font-bold text-gray-900 text-sm mb-1 heading-compact">Efficace</h3>
-              <p className="text-gray-500 text-xs">
+              <h3 className="font-bold text-gray-900 text-lg mb-2">Efficace</h3>
+              <p className="text-gray-500 text-sm">
                 Trouvez exactement ce que vous cherchez au meilleur prix à Dakar.
               </p>
             </div>
           </div>
         </div>
-      </section>
+      </Section>
 
       {/* CTA Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-        <div className="bg-orange-bg rounded-lg p-6 sm:p-8 text-center border border-orange/10 transition-all duration-300 hover:shadow-lg">
-          <Sparkles className="w-8 h-8 text-orange mx-auto mb-3" />
-          <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 heading-compact">
+      <Section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="bg-orange-bg rounded-2xl p-8 sm:p-12 text-center border border-orange/10">
+          <Sparkles className="w-10 h-10 text-orange mx-auto mb-4" />
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
             Tu cherches un objet introuvable ou budget limité ?
           </h2>
-          <p className="text-gray-600 mb-4 max-w-lg mx-auto text-xs">
+          <p className="text-gray-600 mb-6 max-w-lg mx-auto">
             Dépose une annonce gratuitement et laisse les vendeurs de Dakar te trouver la meilleure offre !
           </p>
           <Link href="/deposer">
-            <Button size="sm" className="bg-orange hover:bg-orange-dark text-white font-semibold rounded-md px-6 py-2 text-xs h-auto transition-all duration-200 hover:scale-105">
+            <Button className="btn-press bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg px-8 py-3 text-base h-auto">
               Déposer une annonce
-              <ArrowRight className="w-4 h-4 ml-1.5" />
+              <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </Link>
         </div>
-      </section>
+      </Section>
 
       <Footer />
     </div>

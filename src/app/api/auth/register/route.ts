@@ -44,6 +44,20 @@ export async function POST(request: NextRequest) {
       ));
     }
 
+    // Normalize phone number
+    const normalizedPhone = phone!.startsWith('+221') ? phone
+      : phone!.startsWith('0') ? '+221' + phone!.slice(1)
+      : '+221' + phone;
+
+    // Check if phone is already used
+    const existingPhone = await db.user.findFirst({ where: { phone: normalizedPhone } });
+    if (existingPhone) {
+      return securityHeaders(NextResponse.json(
+        { error: 'Ce numéro de téléphone est déjà utilisé par un autre compte' },
+        { status: 409 }
+      ));
+    }
+
     // Hash password
     const hashedPassword = await hashPassword(password);
 
@@ -68,48 +82,52 @@ export async function POST(request: NextRequest) {
       referredBy = referrer.id;
     }
 
-    // Create user with phone (mandatory)
-    const user = await db.user.create({
-      data: {
-        name,
-        email,
-        phone: phone.replace(/\s/g, ''),
-        password: hashedPassword,
-        referralCode: userReferralCode,
-        referredBy: referredBy,
-      },
-    });
+    // Create user with referral in a transaction
+    const user = await db.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          name,
+          email,
+          phone: normalizedPhone,
+          password: hashedPassword,
+          referralCode: userReferralCode,
+          referredBy: referredBy,
+        },
+      });
 
-    // If referred, create referral record and add points
-    if (referredBy) {
-      const referrer = await db.user.findUnique({ where: { id: referredBy } });
-      if (referrer) {
-        // Check if referrer hasn't hit the cap
-        const currentReferralPoints = await db.referral.aggregate({
-          where: { referrerId: referredBy },
-          _sum: { points: true },
-        });
-
-        const totalPoints = currentReferralPoints._sum.points || 0;
-
-        if (totalPoints < MAX_REFERRAL_POINTS) {
-          const pointsToAdd = Math.min(POINTS_PER_REFERRAL, MAX_REFERRAL_POINTS - totalPoints);
-
-          await db.referral.create({
-            data: {
-              referrerId: referredBy,
-              referredId: user.id,
-              points: pointsToAdd,
-            },
+      // If referred, create referral record and add points
+      if (referredBy) {
+        const referrer = await tx.user.findUnique({ where: { id: referredBy } });
+        if (referrer) {
+          // Check if referrer hasn't hit the cap
+          const currentReferralPoints = await tx.referral.aggregate({
+            where: { referrerId: referredBy },
+            _sum: { points: true },
           });
 
-          await db.user.update({
-            where: { id: referredBy },
-            data: { points: referrer.points + pointsToAdd },
-          });
+          const totalPoints = currentReferralPoints._sum.points || 0;
+
+          if (totalPoints < MAX_REFERRAL_POINTS) {
+            const pointsToAdd = Math.min(POINTS_PER_REFERRAL, MAX_REFERRAL_POINTS - totalPoints);
+
+            await tx.referral.create({
+              data: {
+                referrerId: referredBy,
+                referredId: user.id,
+                points: pointsToAdd,
+              },
+            });
+
+            await tx.user.update({
+              where: { id: referredBy },
+              data: { points: referrer.points + pointsToAdd },
+            });
+          }
         }
       }
-    }
+
+      return user;
+    });
 
     // Generate JWT token
     const token = generateToken({
@@ -129,15 +147,12 @@ export async function POST(request: NextRequest) {
         plan: user.plan,
         points: user.points,
         referralCode: user.referralCode,
-        avatar: user.avatar,
-        provider: user.provider,
       },
     }, { status: 201 }));
   } catch (error) {
     console.error('Error during registration:', error);
-    const message = error instanceof Error ? error.message : 'Erreur lors de l\'inscription';
     return securityHeaders(NextResponse.json(
-      { error: message },
+      { error: 'Erreur lors de l\'inscription' },
       { status: 500 }
     ));
   }

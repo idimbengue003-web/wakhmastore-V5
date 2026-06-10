@@ -1,215 +1,86 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// SQL statements to create all tables
-const SQL_STATEMENTS: { name: string; sql: string }[] = [
-  {
-    name: 'User',
-    sql: `CREATE TABLE IF NOT EXISTS "User" (
-      "id" TEXT NOT NULL,
-      "email" TEXT NOT NULL,
-      "name" TEXT,
-      "phone" TEXT,
-      "password" TEXT,
-      "avatar" TEXT,
-      "provider" TEXT NOT NULL DEFAULT 'email',
-      "providerId" TEXT,
-      "role" TEXT NOT NULL DEFAULT 'user',
-      "plan" TEXT NOT NULL DEFAULT 'gratuit',
-      "points" INTEGER NOT NULL DEFAULT 0,
-      "referralCode" TEXT NOT NULL,
-      "referredBy" TEXT,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "User_pkey" PRIMARY KEY ("id")
-    )`,
-  },
-  {
-    name: 'User_email_key',
-    sql: `CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email")`,
-  },
-  {
-    name: 'User_referralCode_key',
-    sql: `CREATE UNIQUE INDEX IF NOT EXISTS "User_referralCode_key" ON "User"("referralCode")`,
-  },
-  {
-    name: 'Annonce',
-    sql: `CREATE TABLE IF NOT EXISTS "Annonce" (
-      "id" TEXT NOT NULL,
-      "title" TEXT NOT NULL,
-      "description" TEXT,
-      "price" INTEGER NOT NULL,
-      "category" TEXT NOT NULL,
-      "location" TEXT NOT NULL DEFAULT 'Dakar',
-      "emoji" TEXT NOT NULL DEFAULT '📦',
-      "phone" TEXT,
-      "whatsapp" TEXT,
-      "isVip" BOOLEAN NOT NULL DEFAULT false,
-      "vipType" TEXT,
-      "authorId" TEXT NOT NULL,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "Annonce_pkey" PRIMARY KEY ("id")
-    )`,
-  },
-  {
-    name: 'Purchase',
-    sql: `CREATE TABLE IF NOT EXISTS "Purchase" (
-      "id" TEXT NOT NULL,
-      "userId" TEXT NOT NULL,
-      "annonceId" TEXT NOT NULL,
-      "points" INTEGER NOT NULL DEFAULT 1500,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "Purchase_pkey" PRIMARY KEY ("id")
-    )`,
-  },
-  {
-    name: 'Purchase_userId_annonceId_key',
-    sql: `CREATE UNIQUE INDEX IF NOT EXISTS "Purchase_userId_annonceId_key" ON "Purchase"("userId", "annonceId")`,
-  },
-  {
-    name: 'Referral',
-    sql: `CREATE TABLE IF NOT EXISTS "Referral" (
-      "id" TEXT NOT NULL,
-      "referrerId" TEXT NOT NULL,
-      "referredId" TEXT NOT NULL,
-      "points" INTEGER NOT NULL DEFAULT 400,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "Referral_pkey" PRIMARY KEY ("id")
-    )`,
-  },
-  {
-    name: 'Referral_referredId_key',
-    sql: `CREATE UNIQUE INDEX IF NOT EXISTS "Referral_referredId_key" ON "Referral"("referredId")`,
-  },
-  {
-    name: 'PointPurchase',
-    sql: `CREATE TABLE IF NOT EXISTS "PointPurchase" (
-      "id" TEXT NOT NULL,
-      "userId" TEXT NOT NULL,
-      "amountFcfa" INTEGER NOT NULL,
-      "pointsAdded" INTEGER NOT NULL,
-      "status" TEXT NOT NULL DEFAULT 'pending',
-      "paymentMethod" TEXT,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "PointPurchase_pkey" PRIMARY KEY ("id")
-    )`,
-  },
-  {
-    name: 'Subscription',
-    sql: `CREATE TABLE IF NOT EXISTS "Subscription" (
-      "id" TEXT NOT NULL,
-      "userId" TEXT NOT NULL,
-      "plan" TEXT NOT NULL,
-      "priceFcfa" INTEGER NOT NULL,
-      "status" TEXT NOT NULL DEFAULT 'active',
-      "startDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "endDate" TIMESTAMP(3),
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "Subscription_pkey" PRIMARY KEY ("id")
-    )`,
-  },
-];
-
-// Foreign keys
-const FK_STATEMENTS: { name: string; sql: string }[] = [
-  {
-    name: 'Annonce_authorId_fkey',
-    sql: `ALTER TABLE "Annonce" ADD CONSTRAINT "Annonce_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE`,
-  },
-  {
-    name: 'Purchase_userId_fkey',
-    sql: `ALTER TABLE "Purchase" ADD CONSTRAINT "Purchase_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE`,
-  },
-  {
-    name: 'Purchase_annonceId_fkey',
-    sql: `ALTER TABLE "Purchase" ADD CONSTRAINT "Purchase_annonceId_fkey" FOREIGN KEY ("annonceId") REFERENCES "Annonce"("id") ON DELETE RESTRICT ON UPDATE CASCADE`,
-  },
-  {
-    name: 'Referral_referrerId_fkey',
-    sql: `ALTER TABLE "Referral" ADD CONSTRAINT "Referral_referrerId_fkey" FOREIGN KEY ("referrerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE`,
-  },
-  {
-    name: 'Referral_referredId_fkey',
-    sql: `ALTER TABLE "Referral" ADD CONSTRAINT "Referral_referredId_fkey" FOREIGN KEY ("referredId") REFERENCES "User"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-  },
-  {
-    name: 'PointPurchase_userId_fkey',
-    sql: `ALTER TABLE "PointPurchase" ADD CONSTRAINT "PointPurchase_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE`,
-  },
-  {
-    name: 'Subscription_userId_fkey',
-    sql: `ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE`,
-  },
-];
-
-// Tables to drop in reverse order (respecting foreign keys)
-const DROP_ORDER = [
-  'Subscription', 'PointPurchase', 'Referral', 'Purchase', 'Annonce', 'User',
-];
-
 // This route initializes the database
-// GET /api/init-db → create tables if missing
-// GET /api/init-db?reset=true → drop all tables and recreate (⚠️ deletes all data)
+// GET /api/init-db → verify database connection and tables exist
+// GET /api/init-db?seed=true → also seed demo data
 export async function GET(request: NextRequest) {
   const results: { step: string; status: string; error?: string }[] = [];
-  const resetMode = request.nextUrl.searchParams.get('reset') === 'true';
+  const seedMode = request.nextUrl.searchParams.get('seed') === 'true';
 
   try {
-    // If reset mode, drop all tables first
-    if (resetMode) {
-      for (const table of DROP_ORDER) {
-        try {
-          await db.$executeRawUnsafe(`DROP TABLE IF EXISTS "${table}" CASCADE`);
-          results.push({ step: `drop_${table}`, status: 'ok' });
-        } catch (err: unknown) {
-          const errMsg = err instanceof Error ? err.message : String(err);
-          results.push({ step: `drop_${table}`, status: 'error', error: errMsg });
-        }
+    // Test database connection by checking tables
+    try {
+      await db.user.findFirst();
+      results.push({ step: 'User', status: 'ok' });
+    } catch {
+      results.push({ step: 'User', status: 'missing', error: 'Table does not exist. Run: npx prisma migrate deploy' });
+    }
+
+    try {
+      await db.annonce.findFirst();
+      results.push({ step: 'Annonce', status: 'ok' });
+    } catch {
+      results.push({ step: 'Annonce', status: 'missing', error: 'Table does not exist' });
+    }
+
+    try {
+      await db.purchase.findFirst();
+      results.push({ step: 'Purchase', status: 'ok' });
+    } catch {
+      results.push({ step: 'Purchase', status: 'missing', error: 'Table does not exist' });
+    }
+
+    try {
+      await db.referral.findFirst();
+      results.push({ step: 'Referral', status: 'ok' });
+    } catch {
+      results.push({ step: 'Referral', status: 'missing', error: 'Table does not exist' });
+    }
+
+    try {
+      await db.pointPurchase.findFirst();
+      results.push({ step: 'PointPurchase', status: 'ok' });
+    } catch {
+      results.push({ step: 'PointPurchase', status: 'missing', error: 'Table does not exist' });
+    }
+
+    try {
+      await db.subscription.findFirst();
+      results.push({ step: 'Subscription', status: 'ok' });
+    } catch {
+      results.push({ step: 'Subscription', status: 'missing', error: 'Table does not exist' });
+    }
+
+    const hasErrors = results.some(r => r.status === 'missing');
+
+    // If seed mode and all tables exist, seed demo data
+    if (seedMode && !hasErrors) {
+      const userCount = await db.user.count();
+      if (userCount === 0) {
+        const { hashPassword } = await import('@/lib/auth');
+        const hashedPin = await hashPassword('1234');
+
+        await db.user.createMany({
+          data: [
+            { email: 'demo@wakhma.sn', name: 'Démo Wakhma', phone: '+22177000000', password: hashedPin, role: 'admin', plan: 'vip_king', points: 50000, referralCode: 'DEMO001' },
+            { email: 'fatou@test.sn', name: 'Fatou Diallo', phone: '+22177111111', password: hashedPin, plan: 'gratuit', points: 2000, referralCode: 'FATOU01' },
+            { email: 'mamadou@test.sn', name: 'Mamadou Sow', phone: '+22177222222', password: hashedPin, plan: 'diambar', points: 15000, referralCode: 'MAMAD01' },
+          ],
+        });
+        results.push({ step: 'seed', status: 'ok' });
+      } else {
+        results.push({ step: 'seed', status: 'skipped', error: 'Database already has data' });
       }
     }
 
-    // Check if all tables already exist (skip if reset)
-    if (!resetMode) {
-      try {
-        await db.user.findFirst();
-        await db.annonce.findFirst();
-        await db.purchase.findFirst();
-        await db.referral.findFirst();
-        await db.pointPurchase.findFirst();
-        await db.subscription.findFirst();
-        return NextResponse.json({ status: 'ok', message: 'All database tables already exist' });
-      } catch {
-        // Some tables missing, continue to create
-      }
-    }
-
-    // Create tables one by one
-    for (const stmt of SQL_STATEMENTS) {
-      try {
-        await db.$executeRawUnsafe(stmt.sql);
-        results.push({ step: stmt.name, status: 'ok' });
-      } catch (err: unknown) {
-        const errMsg = err instanceof Error ? err.message : String(err);
-        results.push({ step: stmt.name, status: 'error', error: errMsg });
-      }
-    }
-
-    // Add foreign keys one by one
-    for (const stmt of FK_STATEMENTS) {
-      try {
-        await db.$executeRawUnsafe(stmt.sql);
-        results.push({ step: stmt.name, status: 'ok' });
-      } catch {
-        results.push({ step: stmt.name, status: 'skipped (may already exist)' });
-      }
-    }
-
-    const hasErrors = results.some(r => r.status === 'error');
     return NextResponse.json({
-      status: hasErrors ? 'partial' : 'ok',
-      message: hasErrors ? 'Database initialized with some errors' : 'Database tables created successfully!',
+      status: hasErrors ? 'incomplete' : 'ok',
+      message: hasErrors
+        ? 'Some tables are missing. Run: npx prisma migrate deploy'
+        : 'All database tables are ready!',
       details: results,
+      hint: hasErrors ? 'Make sure DATABASE_URL points to a PostgreSQL database and migrations have been applied.' : undefined,
     });
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : String(error);

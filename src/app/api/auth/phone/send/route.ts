@@ -1,0 +1,113 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { rateLimit } from '@/lib/rate-limit';
+import { securityHeaders } from '@/lib/security-headers';
+import { sendWhatsAppOTP, isWhatsAppAPIConfigured } from '@/lib/whatsapp';
+
+// In-memory store for verification codes (resets on server restart)
+// In production with WhatsApp Cloud API, use Redis or a database table
+const verificationCodes = new Map<string, { code: string; expires: number; attempts: number }>();
+
+export { verificationCodes };
+
+// Max verification attempts per code
+const MAX_VERIFY_ATTEMPTS = 3;
+
+export async function POST(request: NextRequest) {
+  try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const { allowed } = rateLimit(ip, 'auth');
+    if (!allowed) {
+      return securityHeaders(NextResponse.json(
+        { error: 'Trop de tentatives. Réessayez plus tard.' },
+        { status: 429 }
+      ));
+    }
+
+    const body = await request.json();
+    const phone = (body.phone || '').replace(/\s/g, '');
+
+    if (!phone || !/^(\+221|0)?[0-9]{9}$/.test(phone)) {
+      return securityHeaders(NextResponse.json(
+        { error: 'Numéro de téléphone sénégalais invalide' },
+        { status: 400 }
+      ));
+    }
+
+    // Normalize phone number to international format
+    const normalizedPhone = phone.startsWith('+221') ? phone : phone.startsWith('0') ? '+221' + phone.slice(1) : '+221' + phone;
+
+    // Check if phone is already registered
+    const existingUser = await db.user.findFirst({
+      where: { phone: normalizedPhone },
+    });
+    if (existingUser) {
+      return securityHeaders(NextResponse.json(
+        { error: 'Ce numéro de téléphone est déjà utilisé par un autre compte' },
+        { status: 409 }
+      ));
+    }
+
+    // Check if a code was recently sent (prevent spam — 60 seconds cooldown)
+    const existing = verificationCodes.get(normalizedPhone);
+    if (existing && Date.now() < existing.expires - 4 * 60 * 1000) {
+      const cooldownMs = (existing.expires - 4 * 60 * 1000) - Date.now();
+      if (cooldownMs > 0) {
+        return securityHeaders(NextResponse.json(
+          { error: `Attendez ${Math.ceil(cooldownMs / 1000)} secondes avant de demander un nouveau code` },
+          { status: 429 }
+        ));
+      }
+    }
+
+    // Generate 4-digit code
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    const expires = Date.now() + 5 * 60 * 1000; // 5 minutes
+
+    // Store code with attempt counter
+    verificationCodes.set(normalizedPhone, { code, expires, attempts: 0 });
+
+    // Check if WhatsApp Cloud API is configured
+    const isCloudAPI = isWhatsAppAPIConfigured();
+
+    // Send OTP via WhatsApp Cloud API if configured
+    let otpMethod = 'demo';
+    let whatsappLink = '';
+
+    if (isCloudAPI) {
+      const otpResult = await sendWhatsAppOTP(normalizedPhone, code);
+      otpMethod = otpResult.method;
+      whatsappLink = otpResult.whatsappLink || '';
+    }
+
+    console.log(`[WhatsApp OTP] Code ${code} generated for ${normalizedPhone} via ${otpMethod}`);
+
+    const responseData: Record<string, unknown> = {
+      success: true,
+      method: otpMethod,
+    };
+
+    if (otpMethod === 'cloud_api') {
+      // Cloud API sent the code via WhatsApp — no need to show it
+      responseData.message = 'Code de vérification envoyé via WhatsApp';
+    } else if (otpMethod === 'wa_me_link' && whatsappLink) {
+      // Fallback: wa.me link available
+      responseData.message = 'Code de vérification prêt — ouvrez le lien WhatsApp';
+      responseData.whatsappLink = whatsappLink;
+      // Also include code since wa.me is not reliable for OTP
+      responseData.code = code;
+    } else {
+      // Demo mode: no WhatsApp API configured — show code on screen
+      responseData.message = 'Code de vérification généré (mode démo)';
+      responseData.code = code;
+    }
+
+    return securityHeaders(NextResponse.json(responseData));
+  } catch (error) {
+    console.error('Error sending verification code:', error);
+    return securityHeaders(NextResponse.json(
+      { error: 'Erreur lors de l\'envoi du code' },
+      { status: 500 }
+    ));
+  }
+}

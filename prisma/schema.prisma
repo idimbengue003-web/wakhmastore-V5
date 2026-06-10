@@ -8,27 +8,25 @@ datasource db {
 }
 
 model User {
-  id           String     @id @default(cuid())
-  email        String     @unique
-  name         String?
-  phone        String?
-  password     String?    // Optional for OAuth users
-  avatar       String?    // OAuth avatar URL
-  provider     String     @default("email") // email, google, facebook
-  providerId   String?    // OAuth provider user ID
-  role         String     @default("user") // user, admin
-  plan         String     @default("gratuit") // gratuit, diambar, vip_king
-  points       Int        @default(0)
-  referralCode String     @unique @default(cuid())
-  referredBy   String?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  annonces     Annonce[]
-  purchases    Purchase[]
-  referrals    Referral[] @relation("Referrer")
-  referredByR  Referral?  @relation("Referred")
+  id             String     @id @default(cuid())
+  email          String     @unique
+  name           String?
+  phone          String?
+  password       String     // Code PIN hashé (4 chiffres)
+  image          String?    // Photo de profil
+  role           String     @default("user") // user, admin
+  plan           String     @default("gratuit") // gratuit, diambar, vip_king
+  points         Int        @default(0)
+  referralCode   String     @unique @default(cuid())
+  referredBy     String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  annonces       Annonce[]
+  purchases      Purchase[]
+  referrals      Referral[] @relation("Referrer")
+  referredByR    Referral?  @relation("Referred")
   pointPurchases PointPurchase[]
-  subscriptions   Subscription[]
+  subscriptions  Subscription[]
 }
 
 model Annonce {
@@ -77,26 +75,26 @@ model Referral {
 }
 
 model PointPurchase {
-  id           String   @id @default(cuid())
-  userId       String
-  amountFcfa   Int      // Montant payé en FCFA
-  pointsAdded  Int      // Points crédités
-  status       String   @default("pending") // pending, completed, failed
-  paymentMethod String? // wave, orange_money, bank_transfer
-  createdAt    DateTime @default(now())
+  id            String   @id @default(cuid())
+  userId        String
+  amountFcfa    Int
+  pointsAdded   Int
+  status        String   @default("pending")
+  paymentMethod String?
+  createdAt     DateTime @default(now())
 
-  user         User     @relation(fields: [userId], references: [id])
+  user          User     @relation(fields: [userId], references: [id])
 }
 
 model Subscription {
-  id           String   @id @default(cuid())
-  userId       String
-  plan         String   // diambar, vip_king
-  priceFcfa    Int      // Prix payé en FCFA
-  status       String   @default("active") // active, expired, cancelled
-  startDate    DateTime @default(now())
-  endDate      DateTime? // Date d'expiration
-  createdAt    DateTime @default(now())
+  id         String    @id @default(cuid())
+  userId     String
+  plan       String
+  priceFcfa  Int
+  status     String    @default("active")
+  startDate  DateTime  @default(now())
+  endDate    DateTime?
+  createdAt  DateTime  @default(now())
 
-  user         User     @relation(fields: [userId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
 }
