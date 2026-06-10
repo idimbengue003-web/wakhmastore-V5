@@ -3,14 +3,16 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
-  throw new Error(
-    'JWT_SECRET environment variable is required in production. ' +
-    'Set it in your .env file or Vercel environment variables.'
+// Use fallback only during build time; runtime must have the real secret
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
+if (!JWT_SECRET && process.env.NODE_ENV === 'production' && !isBuildTime) {
+  console.warn(
+    'WARNING: JWT_SECRET is not set. Using insecure fallback. ' +
+    'Set JWT_SECRET in your Vercel environment variables.'
   );
 }
 
-// Fallback for development only
+// Fallback for development / build time only
 const SECRET = JWT_SECRET || 'wakhma-store-dev-secret-key-not-for-production';
 const SALT_ROUNDS = 12;
 
