@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx prisma generate && npx prisma migrate resolve --applied 20250610_postgresql_init 2>/dev/null; npx prisma migrate deploy && next build",
+  "buildCommand": "npx prisma generate && npx prisma migrate resolve --applied 20240610000000_init 2>/dev/null; npx prisma migrate resolve --applied 20250610_postgresql_init 2>/dev/null; npx prisma migrate deploy && next build",
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["iad1"]
