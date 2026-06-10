@@ -24,17 +24,20 @@ const SUBSCRIPTION_PLANS = [
     id: 'gratuit',
     name: 'Gratuit',
     icon: Zap,
-    priceFcfa: 0,
+    priceFcfa: 2000,
     period: '/mois',
     unlockCost: 1500,
-    description: 'Pour découvrir Wakhma Store',
+    pointsIncluded: 15000,
+    annoncesVends: 3,
+    description: 'Pour commencer à vendre sur Wakhma',
     features: [
+      '15 000 points offerts',
+      '3 annonces « Je vends » par mois',
       'Débloque une annonce à 1 500 points',
-      'Poster des annonces gratuitement',
       'Visibilité standard',
       'Support par email',
     ],
-    color: 'gray',
+    color: 'blue',
     popular: false,
   },
   {
@@ -44,18 +47,18 @@ const SUBSCRIPTION_PLANS = [
     priceFcfa: 5000,
     period: '/mois',
     unlockCost: 1000,
-    pointsIncluded: 30000,
-    annoncesVends: 3,
+    pointsIncluded: 26000,
+    annoncesVends: 5,
     description: 'Pour les vendeurs actifs',
     features: [
-      '30 000 points inclus',
-      '3 annonces « Je vends » incluses',
+      '26 000 points inclus',
+      '5 annonces « Je vends » par mois',
       'Débloque une annonce à 1 000 points (au lieu de 1 500)',
       'Badge Diambar',
       'Annonces mises en avant',
       'Support prioritaire WhatsApp',
     ],
-    color: 'blue',
+    color: 'green',
     popular: false,
   },
   {
@@ -65,11 +68,11 @@ const SUBSCRIPTION_PLANS = [
     priceFcfa: 9900,
     period: '/mois',
     unlockCost: 800,
-    pointsIncluded: 50000,
+    pointsIncluded: 49000,
     annoncesVends: 5,
     description: 'Pour les pros de la vente',
     features: [
-      '50 000 points inclus',
+      '49 000 points inclus',
       '5 annonces « Je vends » par semaine',
       'Débloque une annonce à 800 points (au lieu de 1 500)',
       'Badge VIP KING',
@@ -78,10 +81,44 @@ const SUBSCRIPTION_PLANS = [
       'Statistiques détaillées',
       'Mise en avant hebdomadaire',
     ],
-    color: 'orange',
+    color: 'gold',
     popular: true,
   },
 ];
+
+// Color configs per plan
+const PLAN_COLORS: Record<string, { bg: string; bgLight: string; text: string; border: string; btn: string; btnHover: string; icon: string; check: string }> = {
+  gratuit: {
+    bg: 'bg-blue-500',
+    bgLight: 'bg-blue-50',
+    text: 'text-blue-600',
+    border: 'border-blue-500',
+    btn: 'bg-blue-500 hover:bg-blue-600',
+    btnHover: 'hover:bg-blue-600',
+    icon: 'text-blue-500',
+    check: 'text-blue-500',
+  },
+  diambar: {
+    bg: 'bg-green-500',
+    bgLight: 'bg-green-50',
+    text: 'text-green-600',
+    border: 'border-green-500',
+    btn: 'bg-green-500 hover:bg-green-600',
+    btnHover: 'hover:bg-green-600',
+    icon: 'text-green-500',
+    check: 'text-green-500',
+  },
+  vip_king: {
+    bg: 'bg-amber-500',
+    bgLight: 'bg-amber-50',
+    text: 'text-amber-600',
+    border: 'border-amber-500',
+    btn: 'bg-amber-500 hover:bg-amber-600',
+    btnHover: 'hover:bg-amber-600',
+    icon: 'text-amber-500',
+    check: 'text-amber-500',
+  },
+};
 
 const PAYMENT_METHODS = [
   {
@@ -110,9 +147,7 @@ export default function AbonnementsPage() {
   const [selectedPayment, setSelectedPayment] = useState<string>('wave');
   const [proofRef, setProofRef] = useState('');
 
-  useEffect(() => {
-    loadFromStorage();
-  }, [loadFromStorage]);
+  useEffect(() => { loadFromStorage(); }, [loadFromStorage]);
 
   useEffect(() => {
     if (!token) {
@@ -145,8 +180,8 @@ export default function AbonnementsPage() {
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="w-12 h-12 bg-orange-bg rounded-lg flex items-center justify-center mx-auto mb-3">
-            <Crown className="w-6 h-6 text-orange" />
+          <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+            <Crown className="w-6 h-6 text-amber-500" />
           </div>
           <h1 className="text-lg sm:text-xl font-bold heading-compact text-gray-900">
             Abonnements
@@ -155,7 +190,7 @@ export default function AbonnementsPage() {
             Choisissez l&apos;abonnement qui vous convient et économisez sur le débloquage des annonces
           </p>
           {user && (
-            <div className="inline-flex items-center gap-2 mt-4 bg-orange/10 text-orange font-semibold px-3 py-1.5 rounded-full text-xs">
+            <div className="inline-flex items-center gap-2 mt-4 bg-amber-50 text-amber-700 font-semibold px-3 py-1.5 rounded-full text-xs">
               <Award className="w-5 h-5" />
               Plan actuel : <span className="uppercase">{user.plan.replace('_', ' ')}</span>
               {' '}({user.plan === 'diambar' ? '1 000 pts/annonce' : user.plan === 'vip_king' ? '800 pts/annonce' : '1 500 pts/annonce'})
@@ -169,28 +204,27 @@ export default function AbonnementsPage() {
             const Icon = plan.icon;
             const isSelected = selectedPlan === plan.id;
             const isCurrentPlan = user?.plan === plan.id;
+            const colors = PLAN_COLORS[plan.id];
 
             return (
               <Card
                 key={plan.id}
                 className={`relative rounded-lg transition-all ${
                   plan.popular
-                    ? 'border-2 border-orange shadow-lg'
+                    ? `border-2 ${colors.border} shadow-lg`
                     : 'border border-gray-100 hover:border-gray-200'
-                } ${isSelected && plan.id !== 'gratuit' ? 'ring-2 ring-orange ring-offset-2' : ''}`}
+                } ${isSelected ? `ring-2 ${colors.border} ring-offset-2` : ''}`}
               >
                 {plan.popular && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange text-white border-0 font-semibold px-2.5">
+                  <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 ${colors.bg} text-white border-0 font-semibold px-2.5`}>
                     Le plus populaire
                   </Badge>
                 )}
                 <CardHeader className="text-center pb-2">
                   <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 ${
-                      plan.popular ? 'bg-orange/10' : 'bg-gray-100'
-                    }`}
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 ${colors.bgLight}`}
                   >
-                    <Icon className={`w-5 h-5 ${plan.popular ? 'text-orange' : 'text-gray-500'}`} />
+                    <Icon className={`w-5 h-5 ${colors.icon}`} />
                   </div>
                   <CardTitle className="text-sm font-bold heading-compact text-gray-900">{plan.name}</CardTitle>
                   <p className="text-gray-500 text-xs">{plan.description}</p>
@@ -198,25 +232,15 @@ export default function AbonnementsPage() {
                 <CardContent className="space-y-6">
                   <div className="text-center">
                     <span className="text-2xl font-extrabold text-gray-900">
-                      {plan.priceFcfa > 0 ? plan.priceFcfa.toLocaleString('fr-FR') : '0'}
+                      {plan.priceFcfa.toLocaleString('fr-FR')}
                     </span>
                     <span className="text-gray-500 text-xs"> FCFA{plan.period}</span>
                   </div>
 
                   {/* Unlock cost highlight */}
-                  <div className={`text-center p-2.5 rounded-lg ${
-                    plan.id === 'gratuit'
-                      ? 'bg-gray-50'
-                      : plan.id === 'diambar'
-                      ? 'bg-blue-50'
-                      : 'bg-orange/10'
-                  }`}>
+                  <div className={`text-center p-2.5 rounded-lg ${colors.bgLight}`}>
                     <p className="text-xs text-gray-500 mb-1">Coût pour débloquer une annonce</p>
-                    <p className={`text-lg font-bold ${
-                      plan.id === 'gratuit'
-                        ? 'text-gray-700'
-                        : 'text-orange'
-                    }`}>
+                    <p className={`text-lg font-bold ${colors.text}`}>
                       {plan.unlockCost.toLocaleString('fr-FR')} points
                     </p>
                     {plan.id !== 'gratuit' && (
@@ -229,37 +253,19 @@ export default function AbonnementsPage() {
                   <ul className="space-y-2">
                     {plan.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-2">
-                        <Check
-                          className={`w-4 h-4 flex-shrink-0 ${
-                            plan.popular ? 'text-orange' : 'text-green-500'
-                          }`}
-                        />
+                        <Check className={`w-4 h-4 flex-shrink-0 ${colors.check}`} />
                         <span className="text-xs text-gray-600">{feature}</span>
                       </li>
                     ))}
                   </ul>
 
-                  {plan.id === 'gratuit' ? (
-                    <Button
-                      variant="outline"
-                      className="w-full rounded-lg h-9 text-xs font-semibold border-gray-200 text-gray-500"
-                      disabled={isCurrentPlan}
-                    >
-                      {isCurrentPlan ? 'Plan actuel' : 'Plan par défaut'}
-                    </Button>
-                  ) : (
-                    <Button
-                      className={`w-full rounded-lg h-9 text-xs font-semibold ${
-                        plan.popular
-                          ? 'bg-orange hover:bg-orange-dark text-white'
-                          : 'bg-gray-900 hover:bg-gray-800 text-white'
-                      }`}
-                      disabled={isCurrentPlan}
-                      onClick={() => setSelectedPlan(plan.id)}
-                    >
-                      {isCurrentPlan ? 'Plan actuel' : `Choisir ${plan.name}`}
-                    </Button>
-                  )}
+                  <Button
+                    className={`w-full rounded-lg h-9 text-xs font-semibold text-white ${colors.btn}`}
+                    disabled={isCurrentPlan}
+                    onClick={() => setSelectedPlan(plan.id)}
+                  >
+                    {isCurrentPlan ? 'Plan actuel' : `Choisir ${plan.name}`}
+                  </Button>
                 </CardContent>
               </Card>
             );
@@ -267,7 +273,7 @@ export default function AbonnementsPage() {
         </div>
 
         {/* Payment Instructions */}
-        {selectedPlan && selectedPlan !== 'gratuit' && (
+        {selectedPlan && (
           <Card className="border-gray-100 rounded-lg max-w-lg mx-auto">
             <CardHeader>
               <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
@@ -279,7 +285,7 @@ export default function AbonnementsPage() {
               {/* Step 1: Choose method */}
               <div>
                 <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded-full bg-orange text-white text-[10px] flex items-center justify-center font-bold">1</span>
+                  <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] flex items-center justify-center font-bold">1</span>
                   Choisissez votre méthode de paiement
                 </p>
                 <div className="space-y-2">
@@ -291,7 +297,7 @@ export default function AbonnementsPage() {
                         type="button"
                         className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
                           selectedPayment === method.id
-                            ? 'border-orange bg-orange/5'
+                            ? 'border-amber-500 bg-amber-50'
                             : 'border-gray-100 hover:border-gray-200'
                         }`}
                         onClick={() => setSelectedPayment(method.id)}
@@ -299,7 +305,7 @@ export default function AbonnementsPage() {
                         <Icon className={`w-5 h-5 ${method.color}`} />
                         <span className="font-medium text-gray-700">{method.label}</span>
                         {selectedPayment === method.id && (
-                          <Check className="w-5 h-5 text-orange ml-auto" />
+                          <Check className="w-5 h-5 text-amber-500 ml-auto" />
                         )}
                       </button>
                     );
@@ -312,7 +318,7 @@ export default function AbonnementsPage() {
               {/* Step 2: Send payment */}
               <div>
                 <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded-full bg-orange text-white text-[10px] flex items-center justify-center font-bold">2</span>
+                  <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] flex items-center justify-center font-bold">2</span>
                   Envoyez le paiement
                 </p>
                 <div className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-2">
@@ -346,7 +352,7 @@ export default function AbonnementsPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Débloquage par annonce</span>
-                  <span className="font-medium text-orange">
+                  <span className="font-medium text-amber-600">
                     {selectedPlanData?.unlockCost.toLocaleString('fr-FR')} pts
                   </span>
                 </div>
@@ -364,7 +370,7 @@ export default function AbonnementsPage() {
               {/* Step 3: Reference */}
               <div>
                 <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded-full bg-orange text-white text-[10px] flex items-center justify-center font-bold">3</span>
+                  <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] flex items-center justify-center font-bold">3</span>
                   Indiquez la référence du paiement
                 </p>
                 <div className="space-y-1.5">
@@ -428,7 +434,7 @@ export default function AbonnementsPage() {
                 Comment fonctionne l&apos;abonnement ?
               </h3>
               <p className="text-xs text-gray-600">
-                L&apos;abonnement réduit le coût de débloquage des annonces. Avec Diambar (5 000 FCFA), vous recevez 30 000 points, 3 annonces « Je vends » et payez 1 000 points par débloquage. Avec VIP KING (9 900 FCFA), vous recevez 50 000 points, 5 annonces « Je vends » par semaine et payez seulement 800 points par débloquage. L&apos;abonnement dure 30 jours et se renouvelle automatiquement.
+                L&apos;abonnement réduit le coût de débloquage des annonces. Avec le plan Gratuit (2 000 FCFA), vous recevez 15 000 points et 3 annonces « Je vends ». Avec Diambar (5 000 FCFA), vous recevez 26 000 points, 5 annonces « Je vends » et payez 1 000 points par débloquage. Avec VIP KING (9 900 FCFA), vous recevez 49 000 points, 5 annonces « Je vends » par semaine et payez seulement 800 points par débloquage. L&apos;abonnement dure 30 jours et se renouvelle automatiquement.
               </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
@@ -436,7 +442,7 @@ export default function AbonnementsPage() {
                 Comment payer via WhatsApp ?
               </h3>
               <p className="text-xs text-gray-600">
-                Choisissez votre méthode (Wave, Orange Money ou virement), envoyez le montant au numéro indiqué, puis cliquez sur « Envoyer la preuve via WhatsApp » pour nous envoyer la capture d\'écran de confirmation. Votre compte sera crédité sous 30 minutes après validation.
+                Choisissez votre méthode (Wave, Orange Money ou virement), envoyez le montant au numéro indiqué, puis cliquez sur « Envoyer la preuve via WhatsApp » pour nous envoyer la capture d&apos;écran de confirmation. Votre compte sera crédité sous 30 minutes après validation.
               </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">

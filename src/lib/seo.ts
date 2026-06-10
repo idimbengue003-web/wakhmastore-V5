@@ -59,7 +59,7 @@ export const pageMetadata: Record<string, Metadata> = {
   abonnements: {
     title: "Abonnements — Diambar & VIP KING",
     description:
-      "Abonnez-vous à Wakhma Store et économisez sur le débloquage des annonces. Diambar à 2 000 F/mois (-33%) ou VIP KING à 5 000 F/mois (-47%).",
+      "Abonnez-vous à Wakhma Store et économisez sur le débloquage des annonces. Gratuit à 2 000 F/mois, Diambar à 5 000 F/mois ou VIP KING à 9 900 F/mois.",
     alternates: { canonical: "/abonnements" },
     openGraph: {
       title: "Abonnements Diambar & VIP KING — Wakhma Store",

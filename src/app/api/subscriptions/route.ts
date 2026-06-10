@@ -7,16 +7,32 @@ import { securityHeaders } from '@/lib/security-headers';
 // Subscription plans
 export const SUBSCRIPTION_PLANS = [
   {
+    id: 'gratuit',
+    name: 'Gratuit',
+    priceFcfa: 2000,
+    period: '/mois',
+    unlockCost: 1500, // Cost per annonce unlock
+    pointsIncluded: 15000,
+    annoncesVends: 3,
+    features: [
+      '15 000 points offerts',
+      '3 annonces « Je vends » par mois',
+      'Débloque une annonce à 1 500 points',
+      'Visibilité standard',
+      'Support par email',
+    ],
+  },
+  {
     id: 'diambar',
     name: 'Diambar',
     priceFcfa: 5000,
     period: '/mois',
     unlockCost: 1000, // Cost per annonce unlock
-    pointsIncluded: 30000,
-    annoncesVends: 3,
+    pointsIncluded: 26000,
+    annoncesVends: 5,
     features: [
-      '30 000 points inclus',
-      '3 annonces « Je vends » incluses',
+      '26 000 points inclus',
+      '5 annonces « Je vends » par mois',
       'Débloque une annonce à 1 000 points au lieu de 1 500',
       'Badge Diambar',
       'Annonces mises en avant',
@@ -29,10 +45,10 @@ export const SUBSCRIPTION_PLANS = [
     priceFcfa: 9900,
     period: '/mois',
     unlockCost: 800, // Cost per annonce unlock
-    pointsIncluded: 50000,
+    pointsIncluded: 49000,
     annoncesVends: 5, // 5 per week
     features: [
-      '50 000 points inclus',
+      '49 000 points inclus',
       '5 annonces « Je vends » par semaine',
       'Débloque une annonce à 800 points au lieu de 1 500',
       'Badge VIP KING',

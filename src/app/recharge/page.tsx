@@ -116,7 +116,7 @@ export default function RechargePage() {
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Header */}
         <Section className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-orange/10 text-orange px-4 py-2 rounded-full text-sm font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 bg-amber-50 text-amber-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">
             <Sparkles className="w-4 h-4" />
             100% GRATUIT pour les acheteurs
           </div>
@@ -164,27 +164,29 @@ export default function RechargePage() {
                     key={plan.id}
                     className={`relative rounded-2xl border-2 transition-all duration-500 ease-out hover:-translate-y-1 ${
                       isPopular
-                        ? 'border-orange shadow-xl shadow-orange/10 scale-[1.02]'
-                        : 'border-gray-100 hover:border-gray-200'
+                        ? 'border-amber-500 shadow-xl shadow-amber-500/10 scale-[1.02]'
+                        : plan.id === 'diambar'
+                        ? 'border-green-200 hover:border-green-300'
+                        : 'border-blue-200 hover:border-blue-300'
                     }`}
                   >
                     {isPopular && (
-                      <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange text-white border-0 font-semibold px-4">
+                      <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white border-0 font-semibold px-4">
                         Le plus populaire
                       </Badge>
                     )}
                     <CardHeader className="text-center pb-2">
                       <div
                         className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-transform duration-300 hover:scale-110 ${
-                          isPopular ? 'bg-orange/10' : plan.id === 'diambar' ? 'bg-blue-50' : 'bg-gray-100'
+                          isPopular ? 'bg-amber-50' : plan.id === 'diambar' ? 'bg-green-50' : 'bg-blue-50'
                         }`}
                       >
                         {plan.id === 'vip_king' ? (
-                          <Crown className="w-8 h-8 text-orange" />
+                          <Crown className="w-8 h-8 text-amber-500" />
                         ) : plan.id === 'diambar' ? (
-                          <Star className="w-8 h-8 text-blue-500" />
+                          <Star className="w-8 h-8 text-green-500" />
                         ) : (
-                          <Zap className="w-8 h-8 text-gray-400" />
+                          <Zap className="w-8 h-8 text-blue-500" />
                         )}
                       </div>
                       <CardTitle className="text-xl font-bold text-gray-900">{plan.name}</CardTitle>
@@ -192,22 +194,18 @@ export default function RechargePage() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="text-center">
-                        {plan.price > 0 ? (
-                          <>
-                            <span className="text-4xl font-extrabold text-gray-900">
-                              {plan.price.toLocaleString('fr-FR')}
-                            </span>
-                            <span className="text-gray-500 text-sm"> FCFA{plan.period}</span>
-                          </>
-                        ) : (
-                          <span className="text-4xl font-extrabold text-green-600">Gratuit</span>
-                        )}
+                        <>
+                          <span className="text-4xl font-extrabold text-gray-900">
+                            {plan.price.toLocaleString('fr-FR')}
+                          </span>
+                          <span className="text-gray-500 text-sm"> FCFA{plan.period}</span>
+                        </>
                       </div>
 
                       {/* Points included */}
                       {plan.points > 0 && (
                         <div className={`text-center py-2 px-4 rounded-xl ${
-                          isPopular ? 'bg-orange/10 text-orange' : 'bg-blue-50 text-blue-600'
+                          isPopular ? 'bg-amber-50 text-amber-600' : plan.id === 'diambar' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
                         }`}>
                           <Coins className="w-4 h-4 inline mr-1" />
                           <span className="font-bold">{plan.points.toLocaleString('fr-FR')} points</span> offerts
@@ -219,7 +217,7 @@ export default function RechargePage() {
                           <li key={feature} className="flex items-start gap-2">
                             <Check
                               className={`w-5 h-5 flex-shrink-0 ${
-                                isPopular ? 'text-orange' : plan.id === 'diambar' ? 'text-blue-500' : 'text-green-500'
+                                isPopular ? 'text-amber-500' : plan.id === 'diambar' ? 'text-green-500' : 'text-blue-500'
                               }`}
                             />
                             <span className="text-sm text-gray-600">{feature}</span>
@@ -230,23 +228,22 @@ export default function RechargePage() {
                       <Button
                         onClick={() => handleSubscribe(plan.id)}
                         disabled={isCurrentPlan || subscribing === plan.id}
-                        className={`btn-press w-full rounded-xl h-11 font-semibold transition-all duration-300 ${
+                        className={`btn-press w-full rounded-xl h-11 font-semibold transition-all duration-300 text-white ${
                           isCurrentPlan
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             : isPopular
-                            ? 'bg-orange hover:bg-orange-dark text-white'
+                            ? 'bg-amber-500 hover:bg-amber-600'
                             : plan.id === 'diambar'
-                            ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                            : 'border-gray-200 text-gray-500'
+                            ? 'bg-green-500 hover:bg-green-600'
+                            : 'bg-blue-500 hover:bg-blue-600'
                         }`}
-                        variant={plan.id === 'gratuit' && !isCurrentPlan ? 'outline' : 'default'}
                       >
                         {isCurrentPlan ? 'Plan actuel' : subscribing === plan.id ? (
                           <span className="flex items-center gap-2">
                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             Activation...
                           </span>
-                        ) : plan.price > 0 ? `Choisir ${plan.name}` : 'Plan gratuit'}
+                        ) : `Choisir ${plan.name}`}
                       </Button>
                     </CardContent>
                   </Card>
@@ -256,9 +253,9 @@ export default function RechargePage() {
 
             {/* Payment Info */}
             <Section className="mt-8">
-              <div className="bg-orange-bg rounded-2xl p-6 sm:p-8 border border-orange/10">
+              <div className="bg-amber-50 rounded-2xl p-6 sm:p-8 border border-amber-200">
                 <div className="flex items-start gap-3">
-                  <Phone className="w-5 h-5 text-orange flex-shrink-0 mt-0.5" />
+                  <Phone className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                   <div>
                     <h3 className="font-bold text-gray-900 mb-1">Comment payer ?</h3>
                     <p className="text-sm text-gray-600 mb-3">

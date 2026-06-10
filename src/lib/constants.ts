@@ -5,16 +5,17 @@ export const PLANS = {
   gratuit: {
     id: 'gratuit',
     name: 'Gratuit',
-    price: 0,
+    price: 2000,
     period: '/mois',
-    description: 'Pour découvrir Wakhma Store',
-    color: 'gray',
+    description: 'Pour commencer à vendre sur Wakhma',
+    color: 'blue',
     annoncesPerMonth: 3, // max "Je vends" annonces per month
     annoncesPerWeek: 0,
-    points: 0,
+    points: 15000,
     badge: null,
     features: [
-      '3 annonces "Je cherche" par mois',
+      '15 000 points offerts',
+      '3 annonces "Je vends" par mois',
       'Visibilité standard',
       'Support par email',
     ],
@@ -25,7 +26,7 @@ export const PLANS = {
     price: 5000,
     period: '/mois',
     description: 'Pour les vendeurs actifs',
-    color: 'blue',
+    color: 'green',
     annoncesPerMonth: 5, // 5 "Je vends" annonces per month
     annoncesPerWeek: 0,
     points: 26000,
@@ -45,7 +46,7 @@ export const PLANS = {
     price: 9900,
     period: '/mois',
     description: 'Pour les pros de la vente',
-    color: 'orange',
+    color: 'gold',
     annoncesPerMonth: 0, // unlimited (per week instead)
     annoncesPerWeek: 5, // 5 "Je vends" annonces per week
     points: 49000,

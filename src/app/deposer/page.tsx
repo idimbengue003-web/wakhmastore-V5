@@ -222,21 +222,21 @@ export default function DeposerPage() {
 
             {/* Plan limit indicator */}
             <div className={`flex items-center justify-between gap-3 rounded-xl p-3 mt-2 transition-all duration-300 ${
-              isAtLimit ? 'bg-red-50 border border-red-200' : 'bg-orange-bg border border-orange/10'
+              isAtLimit ? 'bg-red-50 border border-red-200' : user.plan === 'vip_king' ? 'bg-amber-50 border border-amber-200' : user.plan === 'diambar' ? 'bg-green-50 border border-green-200' : 'bg-blue-50 border border-blue-200'
             }`}>
               <div className="flex items-center gap-2">
                 {user.plan === 'vip_king' ? (
-                  <Crown className="w-4 h-4 text-orange" />
+                  <Crown className="w-4 h-4 text-amber-500" />
                 ) : user.plan === 'diambar' ? (
-                  <Star className="w-4 h-4 text-blue-500" />
+                  <Star className="w-4 h-4 text-green-500" />
                 ) : (
-                  <Zap className="w-4 h-4 text-gray-400" />
+                  <Zap className="w-4 h-4 text-blue-500" />
                 )}
                 <span className="text-xs font-medium text-gray-700">
                   Plan {userPlan.name} — {maxAnnonces > 0 ? `${maxAnnonces} annonces par ${periodLabel}` : 'Annonces illimitées'}
                 </span>
               </div>
-              <span className={`text-xs font-bold ${isAtLimit ? 'text-red-600' : 'text-orange'}`}>
+              <span className={`text-xs font-bold ${isAtLimit ? 'text-red-600' : user.plan === 'vip_king' ? 'text-amber-600' : user.plan === 'diambar' ? 'text-green-600' : 'text-blue-600'}`}>
                 {annonceCount !== null ? `${annonceCount}/${maxAnnonces > 0 ? maxAnnonces : '∞'}` : '...'}
               </span>
             </div>
