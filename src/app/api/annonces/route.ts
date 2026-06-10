@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
     if (category) where.category = category;
     if (type) where.type = type;
     if (search) where.OR = [
-      { title: { contains: search, mode: 'insensitive' } },
-      { description: { contains: search, mode: 'insensitive' } },
+      { title: { contains: search } },
+      { description: { contains: search } },
     ];
 
     const [annonces, total] = await Promise.all([
