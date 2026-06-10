@@ -89,6 +89,25 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-orange-dark via-orange to-orange-dark overflow-hidden">
+        {/* Floating emojis - subtle & transparent */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <span className="floating-emoji opacity-25" style={{ '--float-x': '5%', '--float-delay': '0s', '--float-duration': '14s', '--float-size': '2rem' } as React.CSSProperties}>📱</span>
+          <span className="floating-emoji opacity-20" style={{ '--float-x': '15%', '--float-delay': '2s', '--float-duration': '16s', '--float-size': '1.8rem' } as React.CSSProperties}>📺</span>
+          <span className="floating-emoji opacity-25" style={{ '--float-x': '25%', '--float-delay': '4s', '--float-duration': '13s', '--float-size': '2.2rem' } as React.CSSProperties}>💻</span>
+          <span className="floating-emoji opacity-20" style={{ '--float-x': '35%', '--float-delay': '1s', '--float-duration': '15s', '--float-size': '1.6rem' } as React.CSSProperties}>🧊</span>
+          <span className="floating-emoji opacity-25" style={{ '--float-x': '45%', '--float-delay': '3s', '--float-duration': '12s', '--float-size': '2rem' } as React.CSSProperties}>🚗</span>
+          <span className="floating-emoji opacity-20" style={{ '--float-x': '55%', '--float-delay': '5s', '--float-duration': '17s', '--float-size': '1.8rem' } as React.CSSProperties}>🏠</span>
+          <span className="floating-emoji opacity-25" style={{ '--float-x': '65%', '--float-delay': '2.5s', '--float-duration': '14s', '--float-size': '2.4rem' } as React.CSSProperties}>👗</span>
+          <span className="floating-emoji opacity-20" style={{ '--float-x': '75%', '--float-delay': '0.5s', '--float-duration': '13s', '--float-size': '1.6rem' } as React.CSSProperties}>🔊</span>
+          <span className="floating-emoji opacity-25" style={{ '--float-x': '82%', '--float-delay': '4.5s', '--float-duration': '16s', '--float-size': '2rem' } as React.CSSProperties}>🛋️</span>
+          <span className="floating-emoji opacity-20" style={{ '--float-x': '90%', '--float-delay': '1.5s', '--float-duration': '15s', '--float-size': '1.8rem' } as React.CSSProperties}>📦</span>
+          <span className="floating-emoji opacity-15" style={{ '--float-x': '10%', '--float-delay': '6s', '--float-duration': '18s', '--float-size': '1.4rem' } as React.CSSProperties}>🔧</span>
+          <span className="floating-emoji opacity-15" style={{ '--float-x': '50%', '--float-delay': '7s', '--float-duration': '14s', '--float-size': '1.6rem' } as React.CSSProperties}>💄</span>
+          <span className="floating-emoji opacity-20" style={{ '--float-x': '70%', '--float-delay': '3.5s', '--float-duration': '11s', '--float-size': '2rem' } as React.CSSProperties}>🍜</span>
+          <span className="floating-emoji opacity-15" style={{ '--float-x': '30%', '--float-delay': '8s', '--float-duration': '15s', '--float-size': '1.8rem' } as React.CSSProperties}>📲</span>
+          <span className="floating-emoji opacity-15" style={{ '--float-x': '88%', '--float-delay': '5.5s', '--float-duration': '13s', '--float-size': '1.5rem' } as React.CSSProperties}>❄️</span>
+          <span className="floating-emoji opacity-20" style={{ '--float-x': '42%', '--float-delay': '9s', '--float-duration': '16s', '--float-size': '1.7rem' } as React.CSSProperties}>⚡</span>
+        </div>
 
         <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 text-center">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tight">
