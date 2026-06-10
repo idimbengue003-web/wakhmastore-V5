@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
     console.error('Error during registration:', error);
     const errorMsg = error instanceof Error ? error.message : String(error);
     return securityHeaders(NextResponse.json(
-      { error: 'Erreur lors de l\'inscription', details: errorMsg },
+      { error: 'Erreur lors de l\'inscription' },
       { status: 500 }
     ));
   }
