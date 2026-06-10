@@ -2,21 +2,163 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, Crown, Star, Zap, Coins, Sparkles, ShieldCheck, ArrowRight, Phone, Copy, MessageCircle } from 'lucide-react';
+import {
+  Check, Crown, Star, Zap, Coins, Sparkles, ShieldCheck,
+  Phone, Copy, MessageCircle, Send, Wallet, Smartphone,
+  AlertCircle, ChevronDown, ChevronUp
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useScrollReveal } from '@/hooks/use-scroll-reveal';
-import { PLANS, POINT_PACKAGES, PAYMENT_PHONE, WHATSAPP_LINK } from '@/lib/constants';
+import { PLANS, POINT_PACKAGES, PAYMENT_PHONE, WHATSAPP_LINK, WHATSAPP_NUMBER } from '@/lib/constants';
 import type { PlanId } from '@/lib/constants';
 
 function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   const ref = useScrollReveal();
   return <div ref={ref} className={`scroll-reveal ${className}`}>{children}</div>;
+}
+
+// Payment block component — reused inside each card
+function PaymentBlock({ amount, label, color = 'orange' }: { amount: number; label: string; color?: string }) {
+  const { toast } = useToast();
+  const [selectedPayment, setSelectedPayment] = useState<'wave' | 'orange_money'>('wave');
+  const [proofRef, setProofRef] = useState('');
+
+  const colorClass = color === 'amber' ? 'amber' : color === 'green' ? 'green' : 'orange';
+  const btnBg = color === 'amber' ? 'bg-amber-500 hover:bg-amber-600'
+    : color === 'green' ? 'bg-green-500 hover:bg-green-600'
+    : 'bg-orange hover:bg-orange-dark';
+
+  function getWhatsAppLink() {
+    const methodName = selectedPayment === 'wave' ? 'Wave' : 'Orange Money';
+    const message = `Bonjour Wakhma Store !\n\nJe souhaite payer : *${label}* (${amount.toLocaleString('fr-FR')} FCFA).\n\nMéthode : *${methodName}*\nRéférence : ${proofRef || '(à compléter)'}\n\nMerci de confirmer la réception !`;
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  }
+
+  return (
+    <div className="space-y-3">
+      <Separator />
+
+      {/* Payment methods */}
+      <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+        <span className={`w-5 h-5 rounded-full ${btnBg} text-white text-[10px] flex items-center justify-center font-bold`}>1</span>
+        Méthode de paiement
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 transition-all text-xs font-semibold ${
+            selectedPayment === 'wave'
+              ? `border-blue-500 bg-blue-50 text-blue-700`
+              : 'border-gray-100 text-gray-500 hover:border-gray-200'
+          }`}
+          onClick={() => setSelectedPayment('wave')}
+        >
+          <Wallet className="w-4 h-4" />
+          Wave
+          {selectedPayment === 'wave' && <Check className="w-3.5 h-3.5 ml-auto" />}
+        </button>
+        <button
+          type="button"
+          className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 transition-all text-xs font-semibold ${
+            selectedPayment === 'orange_money'
+              ? 'border-orange bg-orange/5 text-orange'
+              : 'border-gray-100 text-gray-500 hover:border-gray-200'
+          }`}
+          onClick={() => setSelectedPayment('orange_money')}
+        >
+          <Smartphone className="w-4 h-4" />
+          Orange Money
+          {selectedPayment === 'orange_money' && <Check className="w-3.5 h-3.5 ml-auto" />}
+        </button>
+      </div>
+
+      {/* Phone number + copy */}
+      <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+        <span className={`w-5 h-5 rounded-full ${btnBg} text-white text-[10px] flex items-center justify-center font-bold`}>2</span>
+        Envoyez {amount.toLocaleString('fr-FR')} FCFA
+      </p>
+      <div className="flex items-center justify-between bg-green-50 rounded-xl px-3 py-2.5 border border-green-200">
+        <div>
+          <p className="text-[10px] text-gray-500">Numéro {selectedPayment === 'wave' ? 'Wave' : 'Orange Money'}</p>
+          <p className="text-base font-bold text-gray-900">{PAYMENT_PHONE}</p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-green-600 hover:text-green-700 hover:bg-green-50 h-8 px-2"
+          onClick={() => {
+            navigator.clipboard.writeText(PAYMENT_PHONE.replace(/\s/g, ''));
+            toast({ title: 'Copié !', description: 'Numéro copié' });
+          }}
+        >
+          <Copy className="w-4 h-4" />
+        </Button>
+      </div>
+
+      {/* Reference input */}
+      <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+        <span className={`w-5 h-5 rounded-full ${btnBg} text-white text-[10px] flex items-center justify-center font-bold`}>3</span>
+        Référence du paiement
+      </p>
+      <Input
+        type="text"
+        placeholder="Ex: TXN123456 ou réf. Orange Money"
+        value={proofRef}
+        onChange={(e) => setProofRef(e.target.value)}
+        className="rounded-xl border-gray-200 h-10 text-xs"
+      />
+
+      {/* Two action buttons */}
+      <div className="space-y-2">
+        <a
+          href={getWhatsAppLink()}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block"
+        >
+          <Button
+            className={`w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl h-11 text-sm transition-all duration-300`}
+            type="button"
+          >
+            <MessageCircle className="w-5 h-5 mr-2" />
+            Envoyer la preuve via WhatsApp
+            <Send className="w-4 h-4 ml-2" />
+          </Button>
+        </a>
+        <a
+          href={WHATSAPP_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block"
+        >
+          <Button
+            variant="outline"
+            className="w-full rounded-xl h-10 text-xs font-semibold border-green-300 text-green-700 hover:bg-green-50"
+            type="button"
+          >
+            <Phone className="w-4 h-4 mr-1.5" />
+            Accélérer ma demande sur WhatsApp
+          </Button>
+        </a>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-2.5 flex items-start gap-2">
+        <AlertCircle className="w-3.5 h-3.5 text-blue-600 flex-shrink-0 mt-0.5" />
+        <p className="text-[10px] text-blue-800">
+          Votre {label.toLowerCase()} sera activé sous 30 min après validation du paiement.
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export default function RechargePage() {
@@ -25,7 +167,8 @@ export default function RechargePage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'plans' | 'points'>('plans');
   const [subscribing, setSubscribing] = useState<string | null>(null);
-  const [purchasing, setPurchasing] = useState<string | null>(null);
+  const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
+  const [expandedPkg, setExpandedPkg] = useState<string | null>(null);
 
   useEffect(() => { loadFromStorage(); }, [loadFromStorage]);
 
@@ -57,7 +200,6 @@ export default function RechargePage() {
           title: 'Plan activé !',
           description: data.message || `Plan ${PLANS[planId].name} activé avec succès`,
         });
-        // Update local user
         updateUser({ plan: planId, points: data.points || user?.points });
         window.location.reload();
       } else {
@@ -67,36 +209,6 @@ export default function RechargePage() {
       toast({ title: 'Erreur', description: 'Erreur réseau', variant: 'destructive' });
     } finally {
       setSubscribing(null);
-    }
-  }
-
-  async function handleBuyPoints(packageId: string) {
-    if (!user) {
-      toast({ title: 'Connexion requise', description: 'Connectez-vous pour acheter des points', variant: 'destructive' });
-      return;
-    }
-    setPurchasing(packageId);
-    try {
-      const res = await fetch('/api/purchase-points', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packageId }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast({
-          title: 'Points ajoutés !',
-          description: `${data.pointsAdded?.toLocaleString('fr-FR') || ''} points ajoutés à votre compte`,
-        });
-        updateUser({ points: data.newBalance || user?.points });
-        window.location.reload();
-      } else {
-        toast({ title: 'Erreur', description: data.error || 'Erreur lors de l\'achat', variant: 'destructive' });
-      }
-    } catch {
-      toast({ title: 'Erreur', description: 'Erreur réseau', variant: 'destructive' });
-    } finally {
-      setPurchasing(null);
     }
   }
 
@@ -119,6 +231,12 @@ export default function RechargePage() {
           <p className="text-gray-500 mt-2 max-w-2xl mx-auto">
             Les abonnements sont réservés aux <strong>vendeurs</strong>. Les acheteurs postent leurs demandes gratuitement !
           </p>
+          {user && (
+            <div className="inline-flex items-center gap-2 bg-orange/10 text-orange px-4 py-2 rounded-full text-sm font-semibold mt-3">
+              <Coins className="w-4 h-4" />
+              Solde : {user.points.toLocaleString('fr-FR')} points
+            </div>
+          )}
         </Section>
 
         {/* Tab Switcher */}
@@ -152,12 +270,18 @@ export default function RechargePage() {
               {planEntries.map((plan) => {
                 const isPopular = plan.id === 'vip_king';
                 const isCurrentPlan = user?.plan === plan.id;
+                const isExpanded = expandedPlan === plan.id;
+                const cardColor = isPopular ? 'amber' : plan.id === 'diambar' ? 'green' : 'blue';
+                const btnBg = isPopular ? 'bg-amber-500 hover:bg-amber-600'
+                  : plan.id === 'diambar' ? 'bg-green-500 hover:bg-green-600'
+                  : 'bg-blue-500 hover:bg-blue-600';
+
                 return (
                   <Card
                     key={plan.id}
                     className={`relative rounded-2xl border-2 transition-all duration-500 ease-out hover:-translate-y-1 ${
                       isPopular
-                        ? 'border-amber-500 shadow-xl shadow-amber-500/10 scale-[1.02]'
+                        ? 'border-amber-500 shadow-xl shadow-amber-500/10 md:scale-[1.02]'
                         : plan.id === 'diambar'
                         ? 'border-green-200 hover:border-green-300'
                         : 'border-blue-200 hover:border-blue-300'
@@ -185,14 +309,12 @@ export default function RechargePage() {
                       <CardTitle className="text-xl font-bold text-gray-900">{plan.name}</CardTitle>
                       <p className="text-gray-500 text-sm">{plan.description}</p>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-4">
                       <div className="text-center">
-                        <>
-                          <span className="text-4xl font-extrabold text-gray-900">
-                            {plan.price.toLocaleString('fr-FR')}
-                          </span>
-                          <span className="text-gray-500 text-sm"> FCFA{plan.period}</span>
-                        </>
+                        <span className="text-4xl font-extrabold text-gray-900">
+                          {plan.price.toLocaleString('fr-FR')}
+                        </span>
+                        <span className="text-gray-500 text-sm"> FCFA{plan.period}</span>
                       </div>
 
                       {/* Points included */}
@@ -205,11 +327,11 @@ export default function RechargePage() {
                         </div>
                       )}
 
-                      <ul className="space-y-3">
+                      <ul className="space-y-2">
                         {plan.features.map((feature) => (
                           <li key={feature} className="flex items-start gap-2">
                             <Check
-                              className={`w-5 h-5 flex-shrink-0 ${
+                              className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
                                 isPopular ? 'text-amber-500' : plan.id === 'diambar' ? 'text-green-500' : 'text-blue-500'
                               }`}
                             />
@@ -218,17 +340,19 @@ export default function RechargePage() {
                         ))}
                       </ul>
 
+                      {/* Choose / expand payment button */}
                       <Button
-                        onClick={() => handleSubscribe(plan.id)}
+                        onClick={() => {
+                          if (isCurrentPlan) return;
+                          setExpandedPlan(isExpanded ? null : plan.id);
+                        }}
                         disabled={isCurrentPlan || subscribing === plan.id}
                         className={`btn-press w-full rounded-xl h-11 font-semibold transition-all duration-300 text-white ${
                           isCurrentPlan
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : isPopular
-                            ? 'bg-amber-500 hover:bg-amber-600'
-                            : plan.id === 'diambar'
-                            ? 'bg-green-500 hover:bg-green-600'
-                            : 'bg-blue-500 hover:bg-blue-600'
+                            : isExpanded
+                            ? 'bg-gray-800 hover:bg-gray-900'
+                            : btnBg
                         }`}
                       >
                         {isCurrentPlan ? 'Plan actuel' : subscribing === plan.id ? (
@@ -236,60 +360,34 @@ export default function RechargePage() {
                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             Activation...
                           </span>
-                        ) : `Choisir ${plan.name}`}
+                        ) : isExpanded ? (
+                          <span className="flex items-center gap-2">
+                            <ChevronUp className="w-4 h-4" />
+                            Masquer le paiement
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            Choisir {plan.name}
+                            <ChevronDown className="w-4 h-4" />
+                          </span>
+                        )}
                       </Button>
+
+                      {/* Inline payment section */}
+                      {isExpanded && !isCurrentPlan && (
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                          <PaymentBlock
+                            amount={plan.price}
+                            label={`Abonnement ${plan.name}`}
+                            color={cardColor}
+                          />
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );
               })}
             </div>
-
-            {/* Payment Info */}
-            <Section className="mt-8">
-              <div className="bg-amber-50 rounded-2xl p-6 sm:p-8 border border-amber-200">
-                <div className="flex items-start gap-3">
-                  <Phone className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-900 mb-1">Comment payer ?</h3>
-                    <p className="text-sm text-gray-600 mb-3">
-                      Envoyez le montant via <strong>Wave</strong> ou <strong>Orange Money</strong> au numéro ci-dessous, puis envoyez la capture d&apos;écran sur WhatsApp pour validation.
-                    </p>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <Badge className="bg-blue-100 text-blue-700 border-0">Wave</Badge>
-                      <Badge className="bg-orange/20 text-orange border-0">Orange Money</Badge>
-                    </div>
-                    <div className="flex items-center justify-between bg-white rounded-xl px-4 py-3 border border-amber-200">
-                      <div>
-                        <p className="text-[10px] text-gray-500">Numéro Wave / Orange Money</p>
-                        <p className="text-lg font-bold text-gray-900">{PAYMENT_PHONE}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 h-9 px-2"
-                          onClick={() => {
-                            navigator.clipboard.writeText(PAYMENT_PHONE.replace(/\s/g, ''));
-                            toast({ title: 'Copié !', description: 'Numéro copié dans le presse-papier' });
-                          }}
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                        <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-green-600 hover:text-green-700 hover:bg-green-50 h-9 px-2"
-                          >
-                            <MessageCircle className="w-4 h-4" />
-                          </Button>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Section>
           </Section>
         )}
 
@@ -301,116 +399,85 @@ export default function RechargePage() {
               <p className="text-gray-500 text-sm max-w-lg mx-auto">
                 Les points vous permettent de débloquer les coordonnées des acheteurs intéressés par vos annonces. 1 500 points = 1 contact débloqué.
               </p>
-              {user && (
-                <div className="inline-flex items-center gap-2 bg-orange/10 text-orange px-4 py-2 rounded-full text-sm font-semibold mt-3">
-                  <Coins className="w-4 h-4" />
-                  Solde : {user.points.toLocaleString('fr-FR')} points
-                </div>
-              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {POINT_PACKAGES.map((pkg) => (
-                <Card
-                  key={pkg.id}
-                  className={`relative rounded-2xl border-2 transition-all duration-500 ease-out hover:-translate-y-1 ${
-                    pkg.popular
-                      ? 'border-orange shadow-xl shadow-orange/10'
-                      : 'border-gray-100 hover:border-gray-200'
-                  }`}
-                >
-                  {pkg.popular && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange text-white border-0 font-semibold px-3">
-                      Meilleur rapport
-                    </Badge>
-                  )}
-                  <CardContent className="pt-8 pb-6 text-center space-y-4">
-                    <div className="w-16 h-16 bg-orange/10 rounded-2xl flex items-center justify-center mx-auto">
-                      <Coins className="w-8 h-8 text-orange" />
-                    </div>
-                    <div>
-                      <p className="text-3xl sm:text-4xl font-extrabold text-gray-900">
-                        {pkg.points.toLocaleString('fr-FR')}
-                      </p>
-                      <p className="text-orange font-semibold text-sm">points</p>
-                    </div>
-                    <div className="bg-orange-bg rounded-xl py-3 px-4">
-                      <span className="text-2xl font-bold text-gray-900">{pkg.price.toLocaleString('fr-FR')}</span>
-                      <span className="text-gray-500 text-sm"> FCFA</span>
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      ≈ {Math.round(pkg.points / 1500)} contacts débloqués
-                    </div>
-                    <Button
-                      onClick={() => handleBuyPoints(pkg.id)}
-                      disabled={purchasing === pkg.id}
-                      className={`btn-press w-full rounded-xl h-11 font-semibold transition-all duration-300 ${
-                        pkg.popular
-                          ? 'bg-orange hover:bg-orange-dark text-white'
-                          : 'bg-gray-900 hover:bg-gray-800 text-white'
-                      }`}
-                    >
-                      {purchasing === pkg.id ? (
-                        <span className="flex items-center gap-2">
-                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          Traitement...
-                        </span>
-                      ) : (
-                        <>
-                          Acheter {pkg.points.toLocaleString('fr-FR')} pts
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </>
+              {POINT_PACKAGES.map((pkg) => {
+                const isExpanded = expandedPkg === pkg.id;
+                return (
+                  <Card
+                    key={pkg.id}
+                    className={`relative rounded-2xl border-2 transition-all duration-500 ease-out hover:-translate-y-1 ${
+                      pkg.popular
+                        ? 'border-orange shadow-xl shadow-orange/10'
+                        : 'border-gray-100 hover:border-gray-200'
+                    }`}
+                  >
+                    {pkg.popular && (
+                      <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange text-white border-0 font-semibold px-3">
+                        Meilleur rapport
+                      </Badge>
+                    )}
+                    <CardContent className="pt-8 pb-6 space-y-4">
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-orange/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                          <Coins className="w-8 h-8 text-orange" />
+                        </div>
+                        <p className="text-3xl sm:text-4xl font-extrabold text-gray-900">
+                          {pkg.points.toLocaleString('fr-FR')}
+                        </p>
+                        <p className="text-orange font-semibold text-sm">points</p>
+                      </div>
+
+                      <div className="bg-orange-bg rounded-xl py-3 px-4 text-center">
+                        <span className="text-2xl font-bold text-gray-900">{pkg.price.toLocaleString('fr-FR')}</span>
+                        <span className="text-gray-500 text-sm"> FCFA</span>
+                      </div>
+
+                      <div className="text-xs text-gray-400 text-center">
+                        ≈ {Math.round(pkg.points / 1500)} contacts débloqués
+                      </div>
+
+                      {/* Buy / expand button */}
+                      <Button
+                        onClick={() => setExpandedPkg(isExpanded ? null : pkg.id)}
+                        className={`btn-press w-full rounded-xl h-11 font-semibold transition-all duration-300 ${
+                          isExpanded
+                            ? 'bg-gray-800 hover:bg-gray-900 text-white'
+                            : pkg.popular
+                            ? 'bg-orange hover:bg-orange-dark text-white'
+                            : 'bg-gray-900 hover:bg-gray-800 text-white'
+                        }`}
+                      >
+                        {isExpanded ? (
+                          <span className="flex items-center gap-2">
+                            <ChevronUp className="w-4 h-4" />
+                            Masquer le paiement
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            Acheter {pkg.points.toLocaleString('fr-FR')} pts
+                            <ChevronDown className="w-4 h-4" />
+                          </span>
+                        )}
+                      </Button>
+
+                      {/* Inline payment section */}
+                      {isExpanded && (
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                          <PaymentBlock
+                            amount={pkg.price}
+                            label={`Pack ${pkg.label} — ${pkg.points.toLocaleString('fr-FR')} points`}
+                          />
+                        </div>
                       )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
 
-            {/* Payment Info for Points */}
-            <div className="mt-8 max-w-lg mx-auto">
-              <div className="bg-green-50 rounded-2xl p-5 border border-green-200">
-                <div className="flex items-start gap-3">
-                  <Phone className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-900 mb-1 text-sm">Paiement des points</h3>
-                    <p className="text-xs text-gray-600 mb-3">
-                      Envoyez le montant via <strong>Wave</strong> ou <strong>Orange Money</strong> au numéro ci-dessous, puis envoyez la capture sur WhatsApp.
-                    </p>
-                    <div className="flex items-center justify-between bg-white rounded-xl px-4 py-2.5 border border-green-200">
-                      <div>
-                        <p className="text-[10px] text-gray-500">Numéro</p>
-                        <p className="text-base font-bold text-gray-900">{PAYMENT_PHONE}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-green-600 hover:text-green-700 h-8 px-2"
-                          onClick={() => {
-                            navigator.clipboard.writeText(PAYMENT_PHONE.replace(/\s/g, ''));
-                            toast({ title: 'Copié !', description: 'Numéro copié' });
-                          }}
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                        <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-green-600 hover:text-green-700 h-8 px-2"
-                          >
-                            <MessageCircle className="w-4 h-4" />
-                          </Button>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Points FAQ */}
+            {/* How it works */}
             <div className="mt-10 max-w-2xl mx-auto space-y-4">
               <h3 className="text-lg font-bold text-gray-900 text-center">Comment ça marche ?</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

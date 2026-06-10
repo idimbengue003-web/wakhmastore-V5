@@ -4,20 +4,19 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Crown, Star, Zap, Check, Award,
-  Smartphone, Wallet, MessageCircle, Send, Copy, AlertCircle
+  Smartphone, Wallet, MessageCircle, Send, Copy, AlertCircle,
+  Phone, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-
-const WHATSAPP_NUMBER = '221789271296';
+import { PAYMENT_PHONE, WHATSAPP_LINK, WHATSAPP_NUMBER } from '@/lib/constants';
 
 const SUBSCRIPTION_PLANS = [
   {
@@ -87,16 +86,13 @@ const SUBSCRIPTION_PLANS = [
   },
 ];
 
-// Color configs per plan
-const PLAN_COLORS: Record<string, { bg: string; bgLight: string; text: string; border: string; btn: string; btnHover: string; icon: string; check: string }> = {
+const PLAN_COLORS: Record<string, { bg: string; bgLight: string; text: string; border: string; btn: string; check: string }> = {
   gratuit: {
     bg: 'bg-blue-500',
     bgLight: 'bg-blue-50',
     text: 'text-blue-600',
     border: 'border-blue-500',
     btn: 'bg-blue-500 hover:bg-blue-600',
-    btnHover: 'hover:bg-blue-600',
-    icon: 'text-blue-500',
     check: 'text-blue-500',
   },
   diambar: {
@@ -105,8 +101,6 @@ const PLAN_COLORS: Record<string, { bg: string; bgLight: string; text: string; b
     text: 'text-green-600',
     border: 'border-green-500',
     btn: 'bg-green-500 hover:bg-green-600',
-    btnHover: 'hover:bg-green-600',
-    icon: 'text-green-500',
     check: 'text-green-500',
   },
   vip_king: {
@@ -115,38 +109,153 @@ const PLAN_COLORS: Record<string, { bg: string; bgLight: string; text: string; b
     text: 'text-amber-600',
     border: 'border-amber-500',
     btn: 'bg-amber-500 hover:bg-amber-600',
-    btnHover: 'hover:bg-amber-600',
-    icon: 'text-amber-500',
     check: 'text-amber-500',
   },
 };
 
-const PAYMENT_METHODS = [
-  {
-    id: 'wave',
-    label: 'Wave',
-    icon: Wallet,
-    color: 'text-blue-600',
-    number: '78 927 12 96',
-    instructions: 'Envoyez le montant au numéro Wave ci-dessus, puis envoyez la capture d\'écran de la confirmation via WhatsApp.',
-  },
-  {
-    id: 'orange_money',
-    label: 'Orange Money',
-    icon: Smartphone,
-    color: 'text-orange',
-    number: '78 927 12 96',
-    instructions: 'Envoyez le montant au numéro Orange Money ci-dessus, puis envoyez la capture d\'écran de la confirmation via WhatsApp.',
-  },
-];
+// Payment block for inline use
+function PlanPaymentBlock({ plan }: { plan: typeof SUBSCRIPTION_PLANS[0] }) {
+  const { toast } = useToast();
+  const [selectedPayment, setSelectedPayment] = useState<'wave' | 'orange_money'>('wave');
+  const [proofRef, setProofRef] = useState('');
+  const colors = PLAN_COLORS[plan.id];
+
+  function getWhatsAppLink() {
+    const methodName = selectedPayment === 'wave' ? 'Wave' : 'Orange Money';
+    const message = `Bonjour Wakhma Store !\n\nJe souhaite souscrire à l'abonnement *${plan.name}* (${plan.priceFcfa.toLocaleString('fr-FR')} FCFA/mois).\n\nMéthode : *${methodName}*\nRéférence : ${proofRef || '(à compléter)'}\n\nMerci de confirmer la réception !`;
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  }
+
+  return (
+    <div className="space-y-3">
+      <Separator />
+
+      {/* Payment methods */}
+      <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+        <span className={`w-5 h-5 rounded-full ${colors.btn} text-white text-[10px] flex items-center justify-center font-bold`}>1</span>
+        Méthode de paiement
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 transition-all text-xs font-semibold ${
+            selectedPayment === 'wave'
+              ? 'border-blue-500 bg-blue-50 text-blue-700'
+              : 'border-gray-100 text-gray-500 hover:border-gray-200'
+          }`}
+          onClick={() => setSelectedPayment('wave')}
+        >
+          <Wallet className="w-4 h-4" />
+          Wave
+          {selectedPayment === 'wave' && <Check className="w-3.5 h-3.5 ml-auto" />}
+        </button>
+        <button
+          type="button"
+          className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 transition-all text-xs font-semibold ${
+            selectedPayment === 'orange_money'
+              ? 'border-orange bg-orange/5 text-orange'
+              : 'border-gray-100 text-gray-500 hover:border-gray-200'
+          }`}
+          onClick={() => setSelectedPayment('orange_money')}
+        >
+          <Smartphone className="w-4 h-4" />
+          Orange Money
+          {selectedPayment === 'orange_money' && <Check className="w-3.5 h-3.5 ml-auto" />}
+        </button>
+      </div>
+
+      {/* Phone number */}
+      <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+        <span className={`w-5 h-5 rounded-full ${colors.btn} text-white text-[10px] flex items-center justify-center font-bold`}>2</span>
+        Envoyez {plan.priceFcfa.toLocaleString('fr-FR')} FCFA
+      </p>
+      <div className="flex items-center justify-between bg-green-50 rounded-xl px-3 py-2.5 border border-green-200">
+        <div>
+          <p className="text-[10px] text-gray-500">Numéro {selectedPayment === 'wave' ? 'Wave' : 'Orange Money'}</p>
+          <p className="text-base font-bold text-gray-900">{PAYMENT_PHONE}</p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-green-600 hover:text-green-700 hover:bg-green-50 h-8 px-2"
+          onClick={() => {
+            navigator.clipboard.writeText(PAYMENT_PHONE.replace(/\s/g, ''));
+            toast({ title: 'Copié !', description: 'Numéro copié' });
+          }}
+        >
+          <Copy className="w-4 h-4" />
+        </Button>
+      </div>
+
+      {/* Reference */}
+      <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+        <span className={`w-5 h-5 rounded-full ${colors.btn} text-white text-[10px] flex items-center justify-center font-bold`}>3</span>
+        Référence du paiement
+      </p>
+      <Input
+        type="text"
+        placeholder="Ex: TXN123456 ou réf. Orange Money"
+        value={proofRef}
+        onChange={(e) => setProofRef(e.target.value)}
+        className="rounded-xl border-gray-200 h-10 text-xs"
+      />
+
+      {/* Order summary */}
+      <div className="bg-gray-50 rounded-xl p-3 space-y-2">
+        <div className="flex justify-between text-xs">
+          <span className="text-gray-500">Abonnement</span>
+          <span className="font-medium text-gray-900">{plan.name}</span>
+        </div>
+        <div className="flex justify-between text-xs">
+          <span className="text-gray-500">Débloquage par annonce</span>
+          <span className={`font-medium ${colors.text}`}>{plan.unlockCost.toLocaleString('fr-FR')} pts</span>
+        </div>
+        <Separator />
+        <div className="flex justify-between">
+          <span className="font-medium text-gray-700 text-xs">Montant à envoyer / mois</span>
+          <span className="text-lg font-bold text-gray-900">{plan.priceFcfa.toLocaleString('fr-FR')} FCFA</span>
+        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div className="space-y-2">
+        <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer" className="block">
+          <Button
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl h-11 text-sm"
+            type="button"
+          >
+            <MessageCircle className="w-5 h-5 mr-2" />
+            Envoyer la preuve via WhatsApp
+            <Send className="w-4 h-4 ml-2" />
+          </Button>
+        </a>
+        <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="block">
+          <Button
+            variant="outline"
+            className="w-full rounded-xl h-10 text-xs font-semibold border-green-300 text-green-700 hover:bg-green-50"
+            type="button"
+          >
+            <Phone className="w-4 h-4 mr-1.5" />
+            Accélérer ma demande sur WhatsApp
+          </Button>
+        </a>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-2.5 flex items-start gap-2">
+        <AlertCircle className="w-3.5 h-3.5 text-blue-600 flex-shrink-0 mt-0.5" />
+        <p className="text-[10px] text-blue-800">
+          Votre abonnement sera activé sous 30 min après validation du paiement.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function AbonnementsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { user, loadFromStorage } = useAuth();
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [selectedPayment, setSelectedPayment] = useState<string>('wave');
-  const [proofRef, setProofRef] = useState('');
+  const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
 
   useEffect(() => { loadFromStorage(); }, [loadFromStorage]);
 
@@ -155,24 +264,6 @@ export default function AbonnementsPage() {
       router.push('/login?redirect=/abonnements');
     }
   }, [user, router]);
-
-  function getWhatsAppLink() {
-    const plan = SUBSCRIPTION_PLANS.find(p => p.id === selectedPlan);
-    const method = PAYMENT_METHODS.find(m => m.id === selectedPayment);
-    const message = `Bonjour Wakhma Store !\n\nJe souhaite souscrire à l\'abonnement *${plan?.name}* (${plan?.priceFcfa.toLocaleString('fr-FR')} FCFA/mois).\n\nMéthode de paiement : *${method?.label}*\nRéférence / ID transaction : ${proofRef || '(à compléter)'}\n\nMerci de confirmer la réception du paiement !`;
-    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-  }
-
-  function copyToClipboard(text: string) {
-    navigator.clipboard.writeText(text.replace(/\s/g, ''));
-    toast({
-      title: 'Copié !',
-      description: 'Numéro copié dans le presse-papier',
-    });
-  }
-
-  const selectedPlanData = SUBSCRIPTION_PLANS.find(p => p.id === selectedPlan);
-  const selectedMethod = PAYMENT_METHODS.find(m => m.id === selectedPayment);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -203,18 +294,18 @@ export default function AbonnementsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           {SUBSCRIPTION_PLANS.map((plan) => {
             const Icon = plan.icon;
-            const isSelected = selectedPlan === plan.id;
             const isCurrentPlan = user?.plan === plan.id;
+            const isExpanded = expandedPlan === plan.id;
             const colors = PLAN_COLORS[plan.id];
 
             return (
               <Card
                 key={plan.id}
-                className={`relative rounded-lg transition-all ${
+                className={`relative rounded-xl transition-all ${
                   plan.popular
                     ? `border-2 ${colors.border} shadow-lg`
                     : 'border border-gray-100 hover:border-gray-200'
-                } ${isSelected ? `ring-2 ${colors.border} ring-offset-2` : ''}`}
+                }`}
               >
                 {plan.popular && (
                   <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 ${colors.bg} text-white border-0 font-semibold px-2.5`}>
@@ -222,15 +313,13 @@ export default function AbonnementsPage() {
                   </Badge>
                 )}
                 <CardHeader className="text-center pb-2">
-                  <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 ${colors.bgLight}`}
-                  >
-                    <Icon className={`w-5 h-5 ${colors.icon}`} />
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 ${colors.bgLight}`}>
+                    <Icon className={`w-5 h-5 ${colors.text}`} />
                   </div>
                   <CardTitle className="text-sm font-bold heading-compact text-gray-900">{plan.name}</CardTitle>
                   <p className="text-gray-500 text-xs">{plan.description}</p>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4">
                   <div className="text-center">
                     <span className="text-2xl font-extrabold text-gray-900">
                       {plan.priceFcfa.toLocaleString('fr-FR')}
@@ -238,7 +327,7 @@ export default function AbonnementsPage() {
                     <span className="text-gray-500 text-xs"> FCFA{plan.period}</span>
                   </div>
 
-                  {/* Unlock cost highlight */}
+                  {/* Unlock cost */}
                   <div className={`text-center p-2.5 rounded-lg ${colors.bgLight}`}>
                     <p className="text-xs text-gray-500 mb-1">Coût pour débloquer une annonce</p>
                     <p className={`text-lg font-bold ${colors.text}`}>
@@ -260,171 +349,44 @@ export default function AbonnementsPage() {
                     ))}
                   </ul>
 
+                  {/* Choose / expand button */}
                   <Button
-                    className={`w-full rounded-lg h-9 text-xs font-semibold text-white ${colors.btn}`}
+                    className={`w-full rounded-xl h-10 text-xs font-semibold text-white ${
+                      isCurrentPlan
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : isExpanded
+                        ? 'bg-gray-800 hover:bg-gray-900'
+                        : colors.btn
+                    }`}
                     disabled={isCurrentPlan}
-                    onClick={() => setSelectedPlan(plan.id)}
+                    onClick={() => setExpandedPlan(isExpanded ? null : plan.id)}
                   >
-                    {isCurrentPlan ? 'Plan actuel' : `Choisir ${plan.name}`}
+                    {isCurrentPlan ? 'Plan actuel' : isExpanded ? (
+                      <span className="flex items-center gap-2">
+                        <ChevronUp className="w-4 h-4" />
+                        Masquer le paiement
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        Choisir {plan.name}
+                        <ChevronDown className="w-4 h-4" />
+                      </span>
+                    )}
                   </Button>
+
+                  {/* Inline payment */}
+                  {isExpanded && !isCurrentPlan && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <PlanPaymentBlock plan={plan} />
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
           })}
         </div>
 
-        {/* Payment Instructions */}
-        {selectedPlan && (
-          <Card className="border-gray-100 rounded-lg max-w-lg mx-auto">
-            <CardHeader>
-              <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-green-600" />
-                Instructions de paiement — {selectedPlanData?.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Step 1: Choose method */}
-              <div>
-                <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] flex items-center justify-center font-bold">1</span>
-                  Choisissez votre méthode de paiement
-                </p>
-                <div className="space-y-2">
-                  {PAYMENT_METHODS.map((method) => {
-                    const Icon = method.icon;
-                    return (
-                      <button
-                        key={method.id}
-                        type="button"
-                        className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
-                          selectedPayment === method.id
-                            ? 'border-amber-500 bg-amber-50'
-                            : 'border-gray-100 hover:border-gray-200'
-                        }`}
-                        onClick={() => setSelectedPayment(method.id)}
-                      >
-                        <Icon className={`w-5 h-5 ${method.color}`} />
-                        <span className="font-medium text-gray-700">{method.label}</span>
-                        {selectedPayment === method.id && (
-                          <Check className="w-5 h-5 text-amber-500 ml-auto" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Step 2: Send payment */}
-              <div>
-                <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] flex items-center justify-center font-bold">2</span>
-                  Envoyez le paiement
-                </p>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-2">
-                  <p className="text-xs text-green-800 font-medium">
-                    {selectedMethod?.instructions}
-                  </p>
-                  <div className="flex items-center justify-between bg-white rounded-md px-3 py-2 border border-green-100">
-                    <div>
-                      <p className="text-[10px] text-gray-500">Numéro {selectedMethod?.label}</p>
-                      <p className="text-sm font-bold text-gray-900">{selectedMethod?.number}</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-green-600 hover:text-green-700 hover:bg-green-50 h-8 px-2"
-                      onClick={() => copyToClipboard(selectedMethod?.number || '')}
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Order summary */}
-              <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Abonnement</span>
-                  <span className="font-medium text-gray-900">{selectedPlanData?.name}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Débloquage par annonce</span>
-                  <span className="font-medium text-amber-600">
-                    {selectedPlanData?.unlockCost.toLocaleString('fr-FR')} pts
-                  </span>
-                </div>
-                <Separator />
-                <div className="flex justify-between">
-                  <span className="font-medium text-gray-700">Montant à envoyer / mois</span>
-                  <span className="text-xl font-bold text-gray-900">
-                    {selectedPlanData?.priceFcfa.toLocaleString('fr-FR')} FCFA
-                  </span>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Step 3: Reference */}
-              <div>
-                <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] flex items-center justify-center font-bold">3</span>
-                  Indiquez la référence du paiement
-                </p>
-                <div className="space-y-1.5">
-                  <Label htmlFor="proof-ref" className="text-xs text-gray-600">
-                    ID de transaction ou référence (optionnel)
-                  </Label>
-                  <Input
-                    id="proof-ref"
-                    type="text"
-                    placeholder="Ex: TXN123456 ou réf. Orange Money"
-                    value={proofRef}
-                    onChange={(e) => setProofRef(e.target.value)}
-                    className="rounded-lg border-gray-200 h-10 text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-blue-800">
-                  Après avoir envoyé le paiement, cliquez sur le bouton ci-dessous pour nous envoyer la preuve via WhatsApp. Votre abonnement sera activé dès validation (sous 30 min).
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1 rounded-lg h-11 text-sm font-semibold"
-                  onClick={() => setSelectedPlan(null)}
-                >
-                  Annuler
-                </Button>
-                <a
-                  href={getWhatsAppLink()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1"
-                >
-                  <Button
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg h-11 text-sm"
-                    type="button"
-                  >
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    Envoyer la preuve
-                    <Send className="w-4 h-4 ml-2" />
-                  </Button>
-                </a>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* FAQ Section */}
+        {/* FAQ */}
         <div className="mt-8 max-w-2xl mx-auto">
           <h2 className="text-sm font-bold heading-compact text-gray-900 text-center mb-6">
             Questions fréquentes
@@ -443,7 +405,7 @@ export default function AbonnementsPage() {
                 Comment payer via WhatsApp ?
               </h3>
               <p className="text-xs text-gray-600">
-                Choisissez votre méthode (Wave ou Orange Money), envoyez le montant au numéro indiqué, puis cliquez sur « Envoyer la preuve via WhatsApp » pour nous envoyer la capture d&apos;écran de confirmation. Votre compte sera crédité sous 30 minutes après validation.
+                Choisissez votre méthode (Wave ou Orange Money), envoyez le montant au numéro indiqué dans chaque carte, puis cliquez sur « Envoyer la preuve via WhatsApp » pour nous envoyer la capture d&apos;écran de confirmation. Vous pouvez aussi cliquer sur « Accélérer ma demande » pour nous contacter directement. Votre compte sera crédité sous 30 minutes après validation.
               </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
