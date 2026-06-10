@@ -25,7 +25,7 @@ export const SUBSCRIPTION_PLANS = [
   },
   {
     id: 'diambar',
-    name: 'DIAMBAR',
+    name: 'DIAMBAR 💪🏽',
     priceFcfa: 5000,
     period: '/mois',
     unlockCost: 1000, // Cost per annonce unlock
@@ -35,14 +35,14 @@ export const SUBSCRIPTION_PLANS = [
       '26 000 points inclus',
       '5 annonces « Je vends » par mois',
       'Débloque une annonce à 1 000 points au lieu de 1 500',
-      'Badge ⭐ DIAMBAR',
+      'Badge 💪🏽 DIAMBAR',
       'Annonces mises en avant',
       'Support prioritaire WhatsApp',
     ],
   },
   {
     id: 'vip_king',
-    name: 'VIP KING',
+    name: 'VIP KING 👑',
     priceFcfa: 9900,
     period: '/mois',
     unlockCost: 800, // Cost per annonce unlock

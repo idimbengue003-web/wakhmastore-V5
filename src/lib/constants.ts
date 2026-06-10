@@ -23,7 +23,7 @@ export const PLANS = {
   },
   diambar: {
     id: 'diambar',
-    name: 'DIAMBAR',
+    name: 'DIAMBAR 💪🏽',
     price: 5000,
     period: '/mois',
     description: 'Pour les vendeurs actifs',
@@ -31,11 +31,11 @@ export const PLANS = {
     annoncesPerMonth: 5, // 5 "Je vends" annonces per month
     annoncesPerWeek: 0,
     points: 26000,
-    badge: '⭐ DIAMBAR',
+    badge: '💪🏽 DIAMBAR',
     features: [
       '5 annonces "Je vends" par mois',
       '26 000 points offerts',
-      'Badge ⭐ DIAMBAR',
+      'Badge 💪🏽 DIAMBAR',
       'Annonces spéciales & mises en avant',
       'Faveurs & priorité dans les résultats',
       'Support prioritaire WhatsApp',
@@ -43,7 +43,7 @@ export const PLANS = {
   },
   vip_king: {
     id: 'vip_king',
-    name: 'VIP KING',
+    name: 'VIP KING 👑',
     price: 9900,
     period: '/mois',
     description: 'Pour les pros de la vente',

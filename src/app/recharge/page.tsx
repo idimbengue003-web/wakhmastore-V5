@@ -387,7 +387,7 @@ export default function RechargePage() {
                 C&apos;est gratuit pour les acheteurs ?
               </h3>
               <p className="text-sm text-gray-600">
-                Oui ! Poster une annonce &quot;Je cherche&quot; est 100% gratuit. Ce sont les vendeurs qui paient en points pour débloquer vos coordonnées. Les abonnements BOLT ⚡, DIAMBAR et VIP KING sont destinés aux vendeurs qui souhaitent publier des annonces &quot;Je vends&quot; et être plus visibles.
+                Oui ! Poster une annonce &quot;Je cherche&quot; est 100% gratuit. Ce sont les vendeurs qui paient en points pour débloquer vos coordonnées. Les abonnements BOLT ⚡, DIAMBAR 💪🏽 et VIP KING 👑 sont destinés aux vendeurs qui souhaitent publier des annonces &quot;Je vends&quot; et être plus visibles.
               </p>
             </div>
             <div className="bg-gray-50 rounded-xl p-5 transition-all duration-300 hover:bg-gray-100">

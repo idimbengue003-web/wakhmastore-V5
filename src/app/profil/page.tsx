@@ -106,8 +106,8 @@ export default function ProfilPage() {
   }
 
   function getPlanBadge(plan: string) {
-    if (plan === 'vip_king') return <Badge className="bg-amber-500 text-white gap-1"><Crown className="w-3 h-3" />VIP KING</Badge>;
-    if (plan === 'diambar') return <Badge className="bg-green-500 text-white gap-1"><Star className="w-3 h-3" />DIAMBAR</Badge>;
+    if (plan === 'vip_king') return <Badge className="bg-amber-500 text-white gap-1"><Crown className="w-3 h-3" />VIP KING 👑</Badge>;
+    if (plan === 'diambar') return <Badge className="bg-green-500 text-white gap-1"><Star className="w-3 h-3" />DIAMBAR 💪🏽</Badge>;
     return <Badge className="bg-blue-500 text-white gap-1"><Zap className="w-3 h-3" />BOLT ⚡</Badge>;
   }
 

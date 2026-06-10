@@ -43,7 +43,7 @@ const SUBSCRIPTION_PLANS = [
   },
   {
     id: 'diambar',
-    name: 'DIAMBAR',
+    name: 'DIAMBAR 💪🏽',
     icon: Star,
     priceFcfa: 5000,
     period: '/mois',
@@ -55,7 +55,7 @@ const SUBSCRIPTION_PLANS = [
       '26 000 points inclus',
       '5 annonces « Je vends » par mois',
       'Débloque une annonce à 1 000 points (au lieu de 1 500)',
-      'Badge ⭐ DIAMBAR',
+      'Badge 💪🏽 DIAMBAR',
       'Annonces mises en avant',
       'Support prioritaire WhatsApp',
     ],
@@ -64,7 +64,7 @@ const SUBSCRIPTION_PLANS = [
   },
   {
     id: 'vip_king',
-    name: 'VIP KING',
+    name: 'VIP KING 👑',
     icon: Crown,
     priceFcfa: 9900,
     period: '/mois',
@@ -435,7 +435,7 @@ export default function AbonnementsPage() {
                 Comment fonctionne l&apos;abonnement ?
               </h3>
               <p className="text-xs text-gray-600">
-                L&apos;abonnement réduit le coût de débloquage des annonces. Avec le plan BOLT ⚡ (2 000 FCFA), vous recevez 15 000 points, 3 annonces « Je vends » et le badge ⚡ DIAMBAR. Avec DIAMBAR (5 000 FCFA), vous recevez 26 000 points, 5 annonces « Je vends » et payez 1 000 points par débloquage. Avec VIP KING (9 900 FCFA), vous recevez 49 000 points, 5 annonces « Je vends » par semaine et payez seulement 800 points par débloquage. L&apos;abonnement dure 30 jours et se renouvelle automatiquement.
+                L&apos;abonnement réduit le coût de débloquage des annonces. Avec le plan BOLT ⚡ (2 000 FCFA), vous recevez 15 000 points, 3 annonces « Je vends » et le badge ⚡ DIAMBAR. Avec DIAMBAR 💪🏽 (5 000 FCFA), vous recevez 26 000 points, 5 annonces « Je vends » et payez 1 000 points par débloquage. Avec VIP KING 👑 (9 900 FCFA), vous recevez 49 000 points, 5 annonces « Je vends » par semaine et payez seulement 800 points par débloquage. L&apos;abonnement dure 30 jours et se renouvelle automatiquement.
               </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">

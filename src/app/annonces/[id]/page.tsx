@@ -230,7 +230,7 @@ export default function AnnonceDetailPage() {
                 <Badge className={`absolute top-4 right-4 text-sm font-bold border-0 px-3 py-1 text-white ${
                   annonce.vipType === 'vip_king' ? 'bg-amber-500' : 'bg-green-500'
                 }`}>
-                  {annonce.vipType === 'vip_king' ? '👑 VIP KING' : '⭐ DIAMBAR'}
+                  {annonce.vipType === 'vip_king' ? '👑 VIP KING' : '💪🏽 DIAMBAR'}
                 </Badge>
               )}
               {/* Category Badge */}

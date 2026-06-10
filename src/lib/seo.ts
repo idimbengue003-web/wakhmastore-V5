@@ -57,12 +57,12 @@ export const pageMetadata: Record<string, Metadata> = {
   },
 
   abonnements: {
-    title: "Abonnements — BOLT ⚡, DIAMBAR & VIP KING",
+    title: "Abonnements — BOLT ⚡, DIAMBAR 💪🏽 & VIP KING 👑",
     description:
-      "Abonnez-vous à Wakhma Store et économisez sur le débloquage des annonces. BOLT ⚡ à 2 000 F/mois, DIAMBAR à 5 000 F/mois ou VIP KING à 9 900 F/mois.",
+      "Abonnez-vous à Wakhma Store et économisez sur le débloquage des annonces. BOLT ⚡ à 2 000 F/mois, DIAMBAR 💪🏽 à 5 000 F/mois ou VIP KING 👑 à 9 900 F/mois.",
     alternates: { canonical: "/abonnements" },
     openGraph: {
-      title: "Abonnements BOLT ⚡, DIAMBAR & VIP KING — Wakhma Store",
+      title: "Abonnements BOLT ⚡, DIAMBAR 💪🏽 & VIP KING 👑 — Wakhma Store",
       description:
         "Économisez sur le débloquage des annonces avec un abonnement Wakhma Store.",
       url: `${BASE_URL}/abonnements`,

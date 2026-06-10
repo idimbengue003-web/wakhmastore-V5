@@ -64,7 +64,7 @@ export default function AnnonceCard({
             <Badge className={`absolute top-2 right-2 text-xs font-bold border-0 text-white ${
               vipType === 'vip_king' ? 'bg-amber-500' : 'bg-green-500'
             }`}>
-              {vipType === 'vip_king' ? '👑 VIP KING' : '⭐ DIAMBAR'}
+              {vipType === 'vip_king' ? '👑 VIP KING' : '💪🏽 DIAMBAR'}
             </Badge>
           )}
         </div>
