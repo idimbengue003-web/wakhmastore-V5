@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { MessageCircle, MapPin, Clock, Lock } from 'lucide-react';
+import { MessageCircle, MapPin, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice, timeAgo } from '@/lib/constants';
@@ -69,11 +69,7 @@ export default function AnnonceCard({
                 {vipType === 'vip_king' ? '👑 VIP KING' : '💪🏽 DIAMBAR'}
               </Badge>
             )}
-            {/* Lock overlay hint */}
-            <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-black/60 text-white text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm">
-              <Lock className="w-3 h-3" />
-              <span>1 500 pts</span>
-            </div>
+
           </div>
 
           {/* Content - Description & Info visible before opening */}
