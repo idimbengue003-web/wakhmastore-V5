@@ -25,7 +25,6 @@ const PUBLIC_ROUTES = [
   '/cgu',
   '/mentions-legales',
   '/confidentialite',
-  '/auth/callback',
   '/api/auth',
   '/api/annonces', // GET is public
 ];

@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     let stored: { code: string; expires: number; attempts: number } | null = null;
     const otpKey = getOtpKey(normalizedPhone);
 
-    if (isRedisConfigured()) {
+    if (isRedisConfigured() && redis) {
       try {
         const raw = await redis.get<string>(otpKey);
         if (raw) {
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     // Check expiration
     if (Date.now() > stored.expires) {
-      if (isRedisConfigured()) {
+      if (isRedisConfigured() && redis) {
         try { await redis.del(otpKey); } catch { /* ignore */ }
       }
       verificationCodesFallback.delete(normalizedPhone);
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     // Check attempt limit
     if (stored.attempts >= MAX_VERIFY_ATTEMPTS) {
-      if (isRedisConfigured()) {
+      if (isRedisConfigured() && redis) {
         try { await redis.del(otpKey); } catch { /* ignore */ }
       }
       verificationCodesFallback.delete(normalizedPhone);
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     stored.attempts++;
 
     // Save updated attempt count
-    if (isRedisConfigured()) {
+    if (isRedisConfigured() && redis) {
       try {
         // Calculate remaining TTL in seconds (at least 1)
         const ttlSec = Math.max(1, Math.ceil((stored.expires - Date.now()) / 1000));
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Code is valid — remove it so it can't be reused
-    if (isRedisConfigured()) {
+    if (isRedisConfigured() && redis) {
       try { await redis.del(otpKey); } catch { /* ignore */ }
     }
     verificationCodesFallback.delete(normalizedPhone);

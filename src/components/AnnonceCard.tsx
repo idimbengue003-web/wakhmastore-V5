@@ -55,7 +55,7 @@ export default function AnnonceCard({
           <Badge className={`absolute bottom-2 left-2 text-xs font-bold border-0 ${
             isJeVends
               ? 'bg-green-500 text-white'
-              : 'bg-blue-500 text-white'
+              : 'bg-amber-500 text-white'
           }`}>
             {isJeVends ? '💰 Je vends' : '🔍 Je cherche'}
           </Badge>
@@ -71,11 +71,11 @@ export default function AnnonceCard({
 
         {/* Content */}
         <div className="p-4 space-y-2">
-          <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
+          <h3 className="font-semibold text-gray-900 text-sm leading-snug line-clamp-2">
             {title}
           </h3>
           <p className="text-lg font-bold text-orange">{formatPrice(price)}</p>
-          <div className="flex items-center gap-3 text-xs text-gray-500">
+          <div className="flex items-center gap-3 text-xs text-gray-600">
             <span className="flex items-center gap-1">
               <MapPin className="w-3 h-3" />
               {location}

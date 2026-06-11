@@ -6,10 +6,11 @@ const defaultConfig = { windowMs: 60 * 1000, maxRequests: 30 }; // 30 req/min
 const authConfig = { windowMs: 15 * 60 * 1000, maxRequests: 20 }; // 20 req/15min
 
 // Upstash rate limiters (work across serverless instances)
+// Only create if redis client is available
 let defaultLimiter: Ratelimit | null = null;
 let authLimiter: Ratelimit | null = null;
 
-if (process.env.UPSTASH_REDIS_REST_URL) {
+if (redis) {
   defaultLimiter = new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(defaultConfig.maxRequests, `${defaultConfig.windowMs / 1000} s`),
@@ -61,7 +62,7 @@ export async function rateLimit(
 
   const limiter = options === 'auth' ? authLimiter : defaultLimiter;
 
-  // If Redis is configured, use Upstash
+  // If Redis limiter is available, use Upstash
   if (limiter) {
     try {
       const key = ip || 'global-unknown';
@@ -79,16 +80,4 @@ export async function rateLimit(
 
   // In-memory fallback
   return inMemoryRateLimit(ip, opts);
-}
-
-// Clean up old entries every 10 minutes
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, record] of rateLimitMap.entries()) {
-      if (now > record.resetTime) {
-        rateLimitMap.delete(key);
-      }
-    }
-  }, 10 * 60 * 1000);
 }

@@ -228,7 +228,7 @@ export default function RechargePage() {
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
             Abonnements & Points
           </h1>
-          <p className="text-gray-500 mt-2 max-w-2xl mx-auto">
+            <p className="text-gray-600 mt-2 max-w-2xl mx-auto">
             Les abonnements sont réservés aux <strong>vendeurs</strong>. Les acheteurs postent leurs demandes gratuitement !
           </p>
           {user && (
@@ -396,7 +396,7 @@ export default function RechargePage() {
           <Section>
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Achetez des points</h2>
-              <p className="text-gray-500 text-sm max-w-lg mx-auto">
+              <p className="text-gray-600 text-sm max-w-lg mx-auto">
                 Les points vous permettent de débloquer les coordonnées des acheteurs intéressés par vos annonces. 1 500 points = 1 contact débloqué.
               </p>
             </div>

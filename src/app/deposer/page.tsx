@@ -123,7 +123,7 @@ export default function DeposerPage() {
           title: 'Annonce publiée !',
           description: 'Votre annonce a été créée avec succès. Elle est visible par tous les utilisateurs.',
         });
-        router.push('/annonces');
+        router.push('/annonces?refresh=1');
       } else {
         const data = await res.json();
         if (res.status === 401) {
@@ -191,7 +191,7 @@ export default function DeposerPage() {
             <CardTitle className="text-2xl font-bold text-gray-900">
               Déposer une annonce
             </CardTitle>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-600 text-sm">
               Publiez gratuitement ce que vous cherchez. Les vendeurs vous contacteront !
             </p>
 

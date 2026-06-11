@@ -153,8 +153,23 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error during registration:', error);
     const errorMsg = error instanceof Error ? error.message : String(error);
+    
+    // Return more specific error for debugging
+    if (errorMsg.includes('P2002') || errorMsg.includes('Unique constraint')) {
+      return securityHeaders(NextResponse.json(
+        { error: 'Un compte avec ces informations existe déjà' },
+        { status: 409 }
+      ));
+    }
+    if (errorMsg.includes('P1001') || errorMsg.includes('connect')) {
+      return securityHeaders(NextResponse.json(
+        { error: 'Service temporairement indisponible. Réessayez dans quelques secondes.' },
+        { status: 503 }
+      ));
+    }
+    
     return securityHeaders(NextResponse.json(
-      { error: 'Erreur lors de l\'inscription' },
+      { error: 'Erreur lors de l\'inscription. Veuillez réessayer.' },
       { status: 500 }
     ));
   }

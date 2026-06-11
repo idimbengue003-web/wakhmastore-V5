@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     // Check if a code was recently sent (prevent spam — 60 seconds cooldown)
     let existing: { code: string; expires: number; attempts: number } | null = null;
 
-    if (isRedisConfigured()) {
+    if (isRedisConfigured() && redis) {
       try {
         const stored = await redis.get<{ code: string; expires: number; attempts: number }>(getOtpKey(normalizedPhone));
         existing = stored || null;
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     // Store code with attempt counter
     const otpData = { code, expires, attempts: 0 };
 
-    if (isRedisConfigured()) {
+    if (isRedisConfigured() && redis) {
       try {
         await redis.set(getOtpKey(normalizedPhone), JSON.stringify(otpData), { ex: 300 }); // 5 min TTL
       } catch (error) {

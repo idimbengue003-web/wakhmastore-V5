@@ -59,6 +59,7 @@ function AnnoncesContent() {
       }
       params.set('page', String(pageNum));
       params.set('limit', String(ITEMS_PER_PAGE));
+      params.set('_', String(Date.now())); // bust cache
       const res = await fetch(`/api/annonces?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
@@ -219,8 +220,8 @@ function AnnoncesContent() {
               </div>
             ) : annonces.length === 0 ? (
               <div className="text-center py-16">
-                <p className="text-gray-400 text-lg mb-2">Aucune annonce trouvée</p>
-                <p className="text-gray-400 text-sm">Essayez de modifier vos filtres</p>
+                <p className="text-gray-500 text-lg mb-2">Aucune annonce trouvée</p>
+                <p className="text-gray-500 text-sm">Essayez de modifier vos filtres</p>
               </div>
             ) : (
               <>
@@ -290,7 +291,7 @@ function AnnoncesContent() {
                       </button>
                     </div>
 
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-500">
                       Page {page} sur {totalPages} — {((page - 1) * ITEMS_PER_PAGE + 1)} à {Math.min(page * ITEMS_PER_PAGE, totalCount)} sur {totalCount} annonces
                     </p>
                   </div>

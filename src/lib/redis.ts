@@ -1,10 +1,10 @@
 import { Redis } from '@upstash/redis';
 
 // Upstash Redis — works in Vercel serverless
-// Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in Vercel env vars
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || '',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
-});
+// Only create client if credentials are configured
+const url = process.env.UPSTASH_REDIS_REST_URL;
+const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+const redis = (url && token) ? new Redis({ url, token }) : null;
 
 export default redis;

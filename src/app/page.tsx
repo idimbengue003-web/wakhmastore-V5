@@ -19,8 +19,10 @@ interface Annonce {
   category: string;
   emoji: string;
   location: string;
+  type?: string;
   isVip: boolean;
   vipType: string | null;
+  authorName?: string;
   createdAt: string;
 }
 
@@ -41,7 +43,7 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchAnnonces() {
       try {
-        const res = await fetch('/api/annonces');
+        const res = await fetch('/api/annonces?_=' + Date.now());
         if (res.ok) {
           const data = await res.json();
           setAnnonces(data);
@@ -85,11 +87,8 @@ export default function HomePage() {
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tight">
             Wakhma Store
           </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-4 font-medium">
-            Les bonnes affaires à Dakar
-          </p>
-          <p className="text-white/70 mb-8 max-w-xl mx-auto text-sm sm:text-base">
-            Poste ce que tu veux. Les vendeurs te le trouvent rapidement.
+          <p className="text-white/90 mb-8 max-w-xl mx-auto text-base sm:text-lg md:text-xl font-medium">
+            Poste ce que tu cherches gratuitement. Les vendeurs te trouvent et te contactent directement.
           </p>
 
           {/* Search bar */}
@@ -119,7 +118,7 @@ export default function HomePage() {
           <div className="flex flex-wrap justify-center gap-2">
             {QUICK_CATEGORIES.map((cat) => (
               <Link key={cat} href={`/annonces?category=${encodeURIComponent(cat)}`}>
-                <span className="category-pill inline-flex items-center px-4 py-2 rounded-full bg-white/15 text-white text-sm font-medium backdrop-blur-sm cursor-pointer">
+                <span className="category-pill inline-flex items-center px-4 py-2 rounded-full bg-white/25 text-white text-sm font-medium backdrop-blur-sm cursor-pointer">
                   {CATEGORIES.find((c) => c.name === cat)?.emoji} {cat}
                 </span>
               </Link>
@@ -135,7 +134,7 @@ export default function HomePage() {
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
               Annonces récentes
             </h2>
-            <p className="text-gray-500 mt-1">Les dernières demandes postées sur Wakhma Store</p>
+            <p className="text-gray-600 mt-1">Les dernières demandes postées sur Wakhma Store</p>
           </div>
           <Link href="/annonces">
             <Button variant="ghost" className="btn-press text-orange hover:text-orange-dark hover:bg-orange-bg font-semibold">
@@ -184,7 +183,7 @@ export default function HomePage() {
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
               Explorez les catégories
             </h2>
-            <p className="text-gray-500 mt-1">Trouvez ce que vous cherchez en un clic</p>
+            <p className="text-gray-600 mt-1">Trouvez ce que vous cherchez en un clic</p>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-3 sm:gap-4 stagger-children">
             {CATEGORIES.map((cat) => (
@@ -212,7 +211,7 @@ export default function HomePage() {
             <h2 className="text-2xl sm:text-3xl font-bold text-white">
               Pourquoi Wakhma Store ?
             </h2>
-            <p className="text-white/80 mt-1">Rapide, fiable et efficace</p>
+            <p className="text-white/90 mt-1">Rapide, fiable et efficace</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 stagger-children">
             <div className="stagger-item feature-card bg-white rounded-2xl p-6 sm:p-8 text-center shadow-sm">
@@ -220,7 +219,7 @@ export default function HomePage() {
                 <Zap className="w-7 h-7 text-orange" />
               </div>
               <h3 className="font-bold text-gray-900 text-lg mb-2">Rapide</h3>
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-600 text-sm">
                 Postez votre demande en quelques secondes et recevez des réponses rapidement.
               </p>
             </div>
@@ -229,7 +228,7 @@ export default function HomePage() {
                 <Shield className="w-7 h-7 text-orange" />
               </div>
               <h3 className="font-bold text-gray-900 text-lg mb-2">Fiable</h3>
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-600 text-sm">
                 Des vendeurs vérifiés et un système de confiance pour vos transactions.
               </p>
             </div>
@@ -238,7 +237,7 @@ export default function HomePage() {
                 <TrendingUp className="w-7 h-7 text-orange" />
               </div>
               <h3 className="font-bold text-gray-900 text-lg mb-2">Efficace</h3>
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-600 text-sm">
                 Trouvez exactement ce que vous cherchez au meilleur prix à Dakar.
               </p>
             </div>
@@ -248,7 +247,7 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <Section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="bg-orange-bg/70 rounded-2xl p-8 sm:p-12 text-center border border-orange/5">
+        <div className="bg-orange-bg/70 rounded-2xl p-8 sm:p-12 text-center border border-orange/20">
           <Sparkles className="w-10 h-10 text-orange mx-auto mb-4" />
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
             Tu cherches un objet introuvable ou budget limité ?
