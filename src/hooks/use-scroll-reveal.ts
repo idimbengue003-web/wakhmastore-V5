@@ -9,21 +9,23 @@ export function useScrollReveal() {
     const el = ref.current;
     if (!el) return;
 
+    const reveal = () => {
+      // Reveal the section itself
+      el.classList.add('revealed');
+
+      // Reveal stagger children if present
+      const staggerItems = el.querySelectorAll('.stagger-item');
+      staggerItems.forEach((item) => {
+        item.classList.add('revealed');
+      });
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // Reveal the section itself
-            entry.target.classList.add('revealed');
-
-            // Reveal stagger children if present
-            const staggerItems = entry.target.querySelectorAll('.stagger-item');
-            staggerItems.forEach((item) => {
-              item.classList.add('revealed');
-            });
-
-            // Once revealed, stop observing
-            observer.unobserve(entry.target);
+            reveal();
+            // Don't unobserve — keep watching for dynamically added children
           }
         });
       },
@@ -35,7 +37,26 @@ export function useScrollReveal() {
 
     observer.observe(el);
 
-    return () => observer.disconnect();
+    // Also use MutationObserver to catch dynamically added .stagger-item elements
+    const mutationObserver = new MutationObserver(() => {
+      // If section is already revealed, reveal any new stagger items
+      if (el.classList.contains('revealed')) {
+        const staggerItems = el.querySelectorAll('.stagger-item:not(.revealed)');
+        staggerItems.forEach((item) => {
+          item.classList.add('revealed');
+        });
+      }
+    });
+
+    mutationObserver.observe(el, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      observer.disconnect();
+      mutationObserver.disconnect();
+    };
   }, []);
 
   return ref;
