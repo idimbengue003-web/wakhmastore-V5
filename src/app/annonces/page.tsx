@@ -225,11 +225,9 @@ function AnnoncesContent() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 stagger-children">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                   {annonces.map((annonce) => (
-                    <div key={annonce.id} className="stagger-item">
-                      <AnnonceCard {...annonce} />
-                    </div>
+                    <AnnonceCard key={annonce.id} {...annonce} />
                   ))}
                 </div>
 
