@@ -50,17 +50,17 @@ export const useAuth = create<AuthState>((set, get) => ({
       if (userStr) {
         try {
           const user = JSON.parse(userStr);
+          // Set user from localStorage immediately for fast UI
           set({ user, isLoading: false });
-          // Also try to refresh in background to get fresh data
+          // Then refresh in background to get fresh data & re-validate
           get().refreshAuth();
           return;
         } catch {
           // Invalid JSON — fall through to refresh
         }
       }
-      // No user in localStorage — try to refresh from httpOnly cookies
-      // This handles the case where the user logged in before the cookie migration
-      // or where localStorage was cleared but cookies are still valid
+      // No user in localStorage — try httpOnly cookies (refresh token)
+      // Keep isLoading=true until refresh completes to prevent premature redirect
       set({ isLoading: true });
       get().refreshAuth();
     }
@@ -78,7 +78,7 @@ export const useAuth = create<AuthState>((set, get) => ({
         set({ user, isLoading: false });
         return user;
       } else {
-        // Refresh failed — clear user
+        // Refresh failed — clear localStorage user and mark as not loading
         if (typeof window !== 'undefined') {
           localStorage.removeItem('wakhma_user');
         }
@@ -86,6 +86,8 @@ export const useAuth = create<AuthState>((set, get) => ({
         return null;
       }
     } catch {
+      // Network error — don't clear existing user, just stop loading
+      set(state => ({ isLoading: false, user: state.user }));
       return null;
     }
   },

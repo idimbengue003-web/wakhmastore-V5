@@ -19,7 +19,7 @@ import { PLANS, CATEGORY_EMOJIS, CATEGORIES, isSubscriber as checkSubscriber } f
 export default function DeposerPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { user, isLoading, loadFromStorage } = useAuth();
+  const { user, isLoading, login } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [annonceCount, setAnnonceCount] = useState<number | null>(null);
   const [form, setForm] = useState({
@@ -33,12 +33,45 @@ export default function DeposerPage() {
     type: 'je_cherche' as 'je_cherche' | 'je_vends',
   });
 
+  // Load user on mount — try localStorage first, then refresh from httpOnly cookies
   useEffect(() => {
-    loadFromStorage();
-  }, [loadFromStorage]);
+    const init = async () => {
+      const stored = localStorage.getItem('wakhma_user');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          login(parsed);
+        } catch {
+          // Invalid JSON — try refresh
+        }
+      }
+      // Always try to refresh from server (uses httpOnly cookies)
+      // This handles expired access tokens where refresh token is still valid
+      try {
+        const res = await fetch('/api/auth/refresh', { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          login(data.user);
+        }
+      } catch {
+        // Refresh failed
+      }
+    };
+    init();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Only redirect to login AFTER we're sure the user is not authenticated
+  // (not just during loading)
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading) {
+      setAuthChecked(true);
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (authChecked && !user) {
       toast({
         title: 'Connexion requise',
         description: 'Vous devez être connecté pour déposer une annonce.',
@@ -46,7 +79,7 @@ export default function DeposerPage() {
       });
       router.push('/login?redirect=/deposer');
     }
-  }, [user, isLoading, router]);
+  }, [authChecked, user, router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-fill phone from user profile
   useEffect(() => {

@@ -16,19 +16,6 @@ const ADMIN_ROUTES = [
   '/api/init-db',
 ];
 
-// Routes that should be excluded from middleware (public)
-const PUBLIC_ROUTES = [
-  '/',
-  '/annonces',
-  '/login',
-  '/register',
-  '/cgu',
-  '/mentions-legales',
-  '/confidentialite',
-  '/api/auth',
-  '/api/annonces', // GET is public
-];
-
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -54,18 +41,24 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // Check protected routes — now we CAN check auth from cookies
+  // Check protected routes — verify auth cookies exist
   const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
   if (isProtectedRoute) {
     const hasAccessToken = request.cookies.get('wakhma_access')?.value;
     const hasRefreshToken = request.cookies.get('wakhma_refresh')?.value;
-    
+
     if (!hasAccessToken && !hasRefreshToken) {
       // No tokens at all — redirect to login
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
+
+    // If we have at least a refresh token, let the request through.
+    // The client-side code will call /api/auth/refresh to get a new access token.
+    // The API routes themselves verify token validity via getUserFromRequest().
+    // If the refresh token is also invalid, the API will return 401 and
+    // the client will redirect to login.
   }
 
   return response;

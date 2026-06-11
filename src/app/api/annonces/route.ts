@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getUserFromRequest } from '@/lib/get-user';
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,6 +50,8 @@ export async function GET(request: NextRequest) {
       type: a.type,
       isVip: a.isVip,
       vipType: a.vipType,
+      phone: a.phone,
+      whatsapp: a.whatsapp,
       authorId: a.authorId,
       authorName: a.author.name || 'Vendeur',
       createdAt: a.createdAt,
@@ -67,17 +70,56 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // AUTH REQUIRED — get user from JWT token (httpOnly cookie or Authorization header)
+    const payload = getUserFromRequest(request);
+    if (!payload) {
+      return NextResponse.json(
+        { error: 'Vous devez être connecté pour déposer une annonce' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
-    const { title, price, category, emoji, type, location, authorId } = body;
-    
+    const { title, description, price, category, emoji, type, location, phone, whatsapp } = body;
+
+    if (!title || !price || !category) {
+      return NextResponse.json(
+        { error: 'Titre, prix et catégorie sont obligatoires' },
+        { status: 400 }
+      );
+    }
+
+    // Use the authenticated user's ID from the token — never trust client-sent authorId
+    const authorId = payload.userId;
+
+    // Check user's annonce limit based on plan
+    const user = await db.user.findUnique({
+      where: { id: authorId },
+      select: { plan: true, _count: { select: { annonces: true } } },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Utilisateur non trouvé' },
+        { status: 401 }
+      );
+    }
+
+    // Free users can only post "je_cherche"
+    const isSubscriber = user.plan === 'gratuit' || user.plan === 'diambar' || user.plan === 'vip_king';
+    const annonceType = isSubscriber ? (type || 'je_cherche') : 'je_cherche';
+
     const annonce = await db.annonce.create({
       data: {
         title,
-        price: parseInt(price),
+        description: description || null,
+        price: parseInt(String(price)),
         category,
         emoji: emoji || '📦',
-        type: type || 'je_cherche',
+        type: annonceType,
         location: location || 'Dakar',
+        phone: phone || null,
+        whatsapp: whatsapp || null,
         authorId,
       },
     });

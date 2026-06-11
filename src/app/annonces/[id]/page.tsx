@@ -42,7 +42,7 @@ interface AnnonceDetail {
 export default function AnnonceDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const { user, isLoading, loadFromStorage, updateUser } = useAuth();
+  const { user, isLoading, login, updateUser } = useAuth();
   const { toast } = useToast();
   const [annonce, setAnnonce] = useState<AnnonceDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -50,9 +50,31 @@ export default function AnnonceDetailPage() {
   const [revealPhase, setRevealPhase] = useState(0); // 0: loading, 1: card appear, 2: details appear, 3: paywall appear, 4: contact revealed
   const [showPaywallModal, setShowPaywallModal] = useState(false);
 
+  // Load user on mount — try localStorage then refresh from httpOnly cookies
   useEffect(() => {
-    loadFromStorage();
-  }, [loadFromStorage]);
+    const init = async () => {
+      const stored = localStorage.getItem('wakhma_user');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          login(parsed);
+        } catch {
+          // Invalid JSON
+        }
+      }
+      // Try to refresh from server (httpOnly cookies)
+      try {
+        const res = await fetch('/api/auth/refresh', { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          login(data.user);
+        }
+      } catch {
+        // Refresh failed
+      }
+    };
+    init();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!isLoading) {
