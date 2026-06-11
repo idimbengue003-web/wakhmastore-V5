@@ -15,6 +15,7 @@ import { CATEGORIES, QUICK_CATEGORIES } from '@/lib/constants';
 interface Annonce {
   id: string;
   title: string;
+  description?: string | null;
   price: number;
   category: string;
   emoji: string;
@@ -144,12 +145,13 @@ export default function HomePage() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="animate-pulse rounded-xl border border-gray-100 overflow-hidden">
-                <div className="bg-orange-bg h-28" />
-                <div className="p-4 space-y-3">
+              <div key={i} className="animate-pulse rounded-2xl border border-gray-100 overflow-hidden">
+                <div className="bg-orange-bg h-44 sm:h-52" />
+                <div className="p-4 sm:p-5 space-y-3">
                   <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  <div className="h-3 bg-gray-200 rounded w-full" />
                   <div className="h-5 bg-gray-200 rounded w-1/2" />
                   <div className="h-3 bg-gray-200 rounded w-2/3" />
                 </div>
@@ -166,7 +168,7 @@ export default function HomePage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 stagger-children">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 stagger-children">
             {annonces.slice(0, 8).map((annonce) => (
               <div key={annonce.id} className="stagger-item">
                 <AnnonceCard {...annonce} />

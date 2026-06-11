@@ -37,8 +37,6 @@ interface AnnonceDetail {
   unlockCost: number;
 }
 
-
-
 export default function AnnonceDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -47,8 +45,8 @@ export default function AnnonceDetailPage() {
   const [annonce, setAnnonce] = useState<AnnonceDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
-  const [revealPhase, setRevealPhase] = useState(0); // 0: loading, 1: card appear, 2: details appear, 3: paywall appear, 4: contact revealed
-  const [showPaywallModal, setShowPaywallModal] = useState(false);
+  const [revealPhase, setRevealPhase] = useState(0); // 0: loading, 1: card appear, 2: header reveal, 3: details appear, 4: paywall/contact appear, 5: contact revealed
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   // Load user on mount — try localStorage then refresh from httpOnly cookies
   useEffect(() => {
@@ -89,16 +87,14 @@ export default function AnnonceDetailPage() {
         const data = await res.json();
         setAnnonce(data);
 
-        // Start the slow-reveal animation sequence
-        setTimeout(() => setRevealPhase(1), 100);  // Card appears
-        setTimeout(() => setRevealPhase(2), 600);  // Details appear
-        setTimeout(() => {
-          if (data.hasAccess) {
-            setRevealPhase(4); // Already purchased - show contact
-          } else {
-            setRevealPhase(3); // Show paywall option
-          }
-        }, 1200); // Paywall/contact appear
+        // Start the slow-reveal animation sequence — SLOWER and more gradual
+        setTimeout(() => setRevealPhase(1), 150);   // Card frame appears
+        setTimeout(() => setRevealPhase(2), 500);    // Header/emoji reveal
+        setTimeout(() => setRevealPhase(3), 1000);   // Details appear
+        setTimeout(() => setRevealPhase(4), 1600);   // Paywall/contact section
+        if (data.hasAccess) {
+          setTimeout(() => setRevealPhase(5), 2200); // Contact revealed with dramatic pause
+        }
       } else {
         toast({
           title: 'Erreur',
@@ -146,10 +142,8 @@ export default function AnnonceDetailPage() {
           hasAccess: true,
         } : prev);
 
-        setShowPaywallModal(false);
-
-        // Smooth reveal animation for contact info
-        setTimeout(() => setRevealPhase(4), 100);
+        // Smooth slow reveal animation for contact info
+        setTimeout(() => setRevealPhase(5), 300);
 
         toast({
           title: 'Accès débloqué !',
@@ -208,34 +202,45 @@ export default function AnnonceDetailPage() {
       <Navbar />
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <Button
-          variant="ghost"
-          className="mb-6 text-gray-600 hover:text-orange -ml-2"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour
-        </Button>
+        {/* Back button - appears first */}
+        <div className={`transition-all duration-800 ease-out ${revealPhase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+          <Button
+            variant="ghost"
+            className="mb-6 text-gray-600 hover:text-orange -ml-2"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour
+          </Button>
+        </div>
 
-        {/* Annonce Card - Slow reveal */}
-        <div className={`transition-all duration-700 ease-out ${revealPhase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        {/* Annonce Card - Slow reveal with smooth transitions */}
+        <div className={`transition-all duration-1000 ease-out ${revealPhase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
           <Card className="border-gray-100 rounded-2xl overflow-hidden shadow-lg">
-            {/* Emoji Header */}
-            <div className={`relative bg-gradient-to-br ${
+            {/* Emoji Header - Slides down smoothly */}
+            <div className={`relative bg-gradient-to-br transition-all duration-1200 ease-out ${
               annonce.type === 'je_vends' ? 'from-green-50 to-green-100/50' : 'from-orange/10 to-orange/5'
-            }`}>
-              <div className="h-40 sm:h-48 flex items-center justify-center">
-                <span className="text-7xl sm:text-8xl">{annonce.emoji}</span>
+            } ${revealPhase >= 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+              <div className="h-48 sm:h-64 flex items-center justify-center relative overflow-hidden">
+                <span className={`text-8xl sm:text-9xl transition-all duration-1500 ease-out ${
+                  revealPhase >= 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+                }`}>{annonce.emoji}</span>
+                {/* Subtle shine animation */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shine" />
               </div>
               {/* Type Badge */}
-              <Badge className={`absolute bottom-4 left-4 text-sm font-bold border-0 px-3 py-1 ${
+              <Badge className={`absolute bottom-4 left-4 text-sm font-bold border-0 px-3 py-1 transition-all duration-700 ease-out ${
+                revealPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              } ${
                 annonce.type === 'je_vends' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
               }`}>
                 {annonce.type === 'je_vends' ? '💰 Je vends' : '🔍 Je cherche'}
               </Badge>
               {/* VIP Badge */}
               {annonce.isVip && (
-                <Badge className={`absolute top-4 right-4 text-sm font-bold border-0 px-3 py-1 text-white ${
+                <Badge className={`absolute top-4 right-4 text-sm font-bold border-0 px-3 py-1 text-white transition-all duration-700 ease-out delay-200 ${
+                  revealPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                } ${
                   annonce.vipType === 'vip_king' ? 'bg-amber-500' : 'bg-green-500'
                 }`}>
                   {annonce.vipType === 'vip_king' ? '👑 VIP KING' : '💪🏽 DIAMBAR'}
@@ -244,14 +249,16 @@ export default function AnnonceDetailPage() {
               {/* Category Badge */}
               <Badge
                 variant="secondary"
-                className="absolute top-4 left-4 bg-white/90 text-gray-700 font-medium backdrop-blur-sm"
+                className={`absolute top-4 left-4 bg-white/90 text-gray-700 font-medium backdrop-blur-sm transition-all duration-700 ease-out ${
+                  revealPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}
               >
                 {annonce.category}
               </Badge>
             </div>
 
-            {/* Content - Slow reveal */}
-            <CardContent className={`p-6 sm:p-8 transition-all duration-700 ease-out delay-200 ${revealPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            {/* Content - Slow reveal with stagger */}
+            <CardContent className={`p-6 sm:p-8 transition-all duration-1000 ease-out ${revealPhase >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
               {/* Title & Price */}
               <div className="space-y-3 mb-6">
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
@@ -302,10 +309,10 @@ export default function AnnonceDetailPage() {
               <Separator className="mb-6" />
 
               {/* Contact Section - Paywall or Revealed */}
-              <div className={`transition-all duration-700 ease-out ${revealPhase >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+              <div className={`transition-all duration-1000 ease-out ${revealPhase >= 4 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                 {annonce.hasAccess ? (
-                  /* Contact Revealed */
-                  <div className={`transition-all duration-1000 ease-out ${revealPhase >= 4 ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+                  /* Contact Revealed - with dramatic slow animation */
+                  <div className={`transition-all duration-1500 ease-out ${revealPhase >= 5 ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-90 translate-y-6'}`}>
                     <div className="bg-green-50 border border-green-200 rounded-2xl p-5 space-y-4">
                       <div className="flex items-center gap-2 text-green-700 mb-2">
                         <CheckCircle className="w-5 h-5" />
@@ -315,7 +322,7 @@ export default function AnnonceDetailPage() {
                       {annonce.phone && (
                         <a
                           href={`tel:${annonce.phone}`}
-                          className="flex items-center gap-3 p-4 bg-white rounded-xl hover:bg-green-100 transition-colors"
+                          className="flex items-center gap-3 p-4 bg-white rounded-xl hover:bg-green-100 transition-all duration-300"
                         >
                           <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                             <Phone className="w-6 h-6 text-green-600" />
@@ -332,7 +339,7 @@ export default function AnnonceDetailPage() {
                           href={`https://wa.me/${annonce.whatsapp.replace(/^(\+221|0)/, '221')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-4 bg-white rounded-xl hover:bg-green-100 transition-colors"
+                          className="flex items-center gap-3 p-4 bg-white rounded-xl hover:bg-green-100 transition-all duration-300"
                         >
                           <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
                             <MessageCircle className="w-6 h-6 text-white" />
@@ -437,7 +444,7 @@ export default function AnnonceDetailPage() {
               </div>
 
               {/* Security notice */}
-              <div className={`mt-6 transition-all duration-700 ${revealPhase >= 3 ? 'opacity-100' : 'opacity-0'}`}>
+              <div className={`mt-6 transition-all duration-1000 ${revealPhase >= 4 ? 'opacity-100' : 'opacity-0'}`}>
                 <div className="flex items-start gap-2 text-xs text-gray-400">
                   <Shield className="w-4 h-4 flex-shrink-0 mt-0.5" />
                   <p>

@@ -16,11 +16,12 @@ const categories = [
   ...CATEGORIES.map(c => ({ name: `${c.emoji} ${c.name}`, value: c.name })),
 ];
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 10;
 
 interface Annonce {
   id: string;
   title: string;
+  description?: string | null;
   price: number;
   category: string;
   emoji: string;
@@ -206,12 +207,13 @@ function AnnoncesContent() {
             )}
 
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 gap-3 sm:gap-5">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="animate-pulse rounded-xl border border-gray-100 overflow-hidden">
-                    <div className="bg-orange-bg h-28" />
-                    <div className="p-4 space-y-3">
+                  <div key={i} className="animate-pulse rounded-2xl border border-gray-100 overflow-hidden">
+                    <div className="bg-orange-bg h-44 sm:h-52" />
+                    <div className="p-4 sm:p-5 space-y-3">
                       <div className="h-4 bg-gray-200 rounded w-3/4" />
+                      <div className="h-3 bg-gray-200 rounded w-full" />
                       <div className="h-5 bg-gray-200 rounded w-1/2" />
                       <div className="h-3 bg-gray-200 rounded w-2/3" />
                     </div>
@@ -225,7 +227,8 @@ function AnnoncesContent() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                {/* 2 by 2 Grid */}
+                <div className="grid grid-cols-2 gap-3 sm:gap-5">
                   {annonces.map((annonce) => (
                     <AnnonceCard key={annonce.id} {...annonce} />
                   ))}
