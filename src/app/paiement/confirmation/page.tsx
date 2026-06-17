@@ -25,12 +25,15 @@ function ConfirmationContent() {
   const montant = searchParams.get('montant') || '';
   const plan = searchParams.get('plan') || '';
   const pointsFromUrl = searchParams.get('points') || '';
+  const pendingId = searchParams.get('pending') || '';
 
   // Compute initial status from URL params
+  // If we have a pendingId but no explicit status, treat as 'attente' (pending payment in progress)
   const initialStatus: PaymentStatus =
     statusParam === 'succes' ? 'succes'
     : statusParam === 'echec' || statusParam === 'echec_paiement' ? 'echec'
     : statusParam === 'attente' ? 'attente'
+    : pendingId ? 'attente' // We have a pending payment → show "waiting" UI
     : 'inconnu';
 
   const [status, setStatus] = useState<PaymentStatus>(initialStatus);
@@ -47,14 +50,16 @@ function ConfirmationContent() {
     }
   }, [user]);
 
-  // When status is 'succes', poll the /api/auth/me endpoint every 3s for up to 60s
-  // to detect when the webhook from the gateway has credited points/subscription.
+  // When status is 'succes' (or we have a pendingId), poll the /api/auth/me endpoint
+  // every 3s for up to 90s to detect when the webhook from Automate has credited points/subscription.
   useEffect(() => {
-    if (status !== 'succes') return;
+    // Only poll if we have either a success status or a pending ID (meaning a pending payment exists)
+    if (status !== 'succes' && !pendingId) return;
 
     let cancelled = false;
-    const maxAttempts = 20; // 20 * 3s = 60s
+    const maxAttempts = 30; // 30 * 3s = 90s
     let attempt = 0;
+    const initialBalance = pointsBefore ?? 0;
 
     const poll = async () => {
       if (cancelled) return;
@@ -67,9 +72,20 @@ function ConfirmationContent() {
           if (data?.user) {
             // Refresh the auth context so the navbar/profile shows the new balance
             await refreshAuth?.();
-            // If we know the expected points and they match, we can stop polling
-            if (pointsFromUrl && data.user.points >= Number(pointsBefore ?? 0) + Number(pointsFromUrl)) {
-              return; // Credited!
+            const currentBalance = data.user.points;
+            const balanceIncreased = currentBalance > initialBalance;
+            const planChanged = plan && data.user.plan !== user?.plan;
+
+            // Points/plan credited → switch to SUCCESS view
+            if (balanceIncreased || planChanged) {
+              if (pointsFromUrl && currentBalance >= initialBalance + Number(pointsFromUrl)) {
+                setStatus('succes');
+                return; // Exact match — done
+              }
+              if (!pointsFromUrl && (balanceIncreased || planChanged)) {
+                setStatus('succes');
+                return; // Something was credited
+              }
             }
           }
         }
@@ -81,14 +97,14 @@ function ConfirmationContent() {
       }
     };
 
-    // Wait 2s before first poll (gives the gateway webhook time to land)
+    // Wait 2s before first poll (gives Automate + webhook time to land)
     const initial = setTimeout(poll, 2000);
     return () => {
       cancelled = true;
       clearTimeout(initial);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
+  }, [status, pendingId]);
 
   const pointsAfter = user?.points ?? null;
   const pointsDelta =

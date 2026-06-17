@@ -13,6 +13,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/use-auth';
 import { getSubscriptionPaymentUrl } from '@/lib/constants';
+import { createPendingPayment } from '@/lib/payment-pending-client';
 
 const SUBSCRIPTION_PLANS = [
   {
@@ -113,6 +114,18 @@ const PLAN_COLORS: Record<string, { bg: string; bgLight: string; text: string; b
 function PlanPaymentBlock({ plan }: { plan: typeof SUBSCRIPTION_PLANS[0] }) {
   const colors = PLAN_COLORS[plan.id];
   const paymentUrl = getSubscriptionPaymentUrl(plan.id);
+  const [isPreparing, setIsPreparing] = useState(false);
+
+  async function handlePayClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    e.preventDefault();
+    setIsPreparing(true);
+    const result = await createPendingPayment({
+      planId: plan.id,
+      amount: plan.priceFcfa,
+      type: 'abonnement',
+    });
+    window.location.href = result.paymentUrl;
+  }
 
   return (
     <div className="space-y-3">
@@ -137,13 +150,23 @@ function PlanPaymentBlock({ plan }: { plan: typeof SUBSCRIPTION_PLANS[0] }) {
       </div>
 
       {/* Direct payment button */}
-      <a href={paymentUrl} target="_blank" rel="noopener noreferrer" className="block">
+      <a href={paymentUrl} target="_blank" rel="noopener noreferrer" onClick={handlePayClick} className="block">
         <Button
           className={`w-full ${colors.btn} text-white font-semibold rounded-xl h-12 text-sm`}
           type="button"
+          disabled={isPreparing}
         >
-          <CreditCard className="w-5 h-5 mr-2" />
-          Payer maintenant
+          {isPreparing ? (
+            <span className="flex items-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Préparation...
+            </span>
+          ) : (
+            <>
+              <CreditCard className="w-5 h-5 mr-2" />
+              Payer maintenant
+            </>
+          )}
         </Button>
       </a>
 

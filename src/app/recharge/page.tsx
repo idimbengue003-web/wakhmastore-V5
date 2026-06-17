@@ -19,6 +19,7 @@ import {
   getSubscriptionPaymentUrl, getPointsPaymentUrl
 } from '@/lib/constants';
 import type { PlanId } from '@/lib/constants';
+import { createPendingPayment } from '@/lib/payment-pending-client';
 
 function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   const ref = useScrollReveal();
@@ -26,10 +27,19 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
 }
 
 // Payment block component — now takes a payment URL and renders a direct checkout
-function PaymentBlock({ paymentUrl, amount, label, color = 'orange' }: { paymentUrl: string; amount: number; label: string; color?: string }) {
+function PaymentBlock({ paymentUrl, amount, label, color = 'orange', planId, purchaseType }: { paymentUrl: string; amount: number; label: string; color?: string; planId: string; purchaseType: 'abonnement' | 'points' }) {
   const btnBg = color === 'amber' ? 'bg-amber-500 hover:bg-amber-600'
     : color === 'green' ? 'bg-green-500 hover:bg-green-600'
     : 'bg-orange hover:bg-orange-dark';
+  const [isPreparing, setIsPreparing] = useState(false);
+
+  async function handlePayClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    e.preventDefault();
+    setIsPreparing(true);
+    const result = await createPendingPayment({ planId, amount, type: purchaseType });
+    // Rediriger vers l'URL (avec pendingId injecté)
+    window.location.href = result.paymentUrl;
+  }
 
   return (
     <div className="space-y-3">
@@ -46,13 +56,23 @@ function PaymentBlock({ paymentUrl, amount, label, color = 'orange' }: { payment
       </div>
 
       {/* Direct payment button */}
-      <a href={paymentUrl} target="_blank" rel="noopener noreferrer" className="block">
+      <a href={paymentUrl} target="_blank" rel="noopener noreferrer" onClick={handlePayClick} className="block">
         <Button
           className={`w-full ${btnBg} text-white font-semibold rounded-xl h-12 text-sm`}
           type="button"
+          disabled={isPreparing}
         >
-          <CreditCard className="w-5 h-5 mr-2" />
-          Payer maintenant
+          {isPreparing ? (
+            <span className="flex items-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Préparation...
+            </span>
+          ) : (
+            <>
+              <CreditCard className="w-5 h-5 mr-2" />
+              Payer maintenant
+            </>
+          )}
         </Button>
       </a>
 
@@ -286,6 +306,8 @@ export default function RechargePage() {
                             amount={plan.price}
                             label={`Abonnement ${plan.name}`}
                             color={cardColor}
+                            planId={plan.id}
+                            purchaseType="abonnement"
                           />
                         </div>
                       )}
@@ -375,6 +397,8 @@ export default function RechargePage() {
                             paymentUrl={getPointsPaymentUrl(pkg.id)}
                             amount={pkg.price}
                             label={`Pack ${pkg.label} — ${pkg.points.toLocaleString('fr-FR')} points`}
+                            planId={pkg.id}
+                            purchaseType="points"
                           />
                         </div>
                       )}

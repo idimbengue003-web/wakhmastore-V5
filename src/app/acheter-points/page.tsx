@@ -13,6 +13,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/use-auth';
 import { getPointsPaymentUrl } from '@/lib/constants';
+import { createPendingPayment } from '@/lib/payment-pending-client';
 
 const POINT_PACKAGES = [
   { id: 'starter', amountFcfa: 1300, points: 7000, label: 'Starter', popular: false },
@@ -24,6 +25,18 @@ const POINT_PACKAGES = [
 // Payment block — direct checkout link
 function PkgPaymentBlock({ pkg }: { pkg: typeof POINT_PACKAGES[0] }) {
   const paymentUrl = getPointsPaymentUrl(pkg.id);
+  const [isPreparing, setIsPreparing] = useState(false);
+
+  async function handlePayClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    e.preventDefault();
+    setIsPreparing(true);
+    const result = await createPendingPayment({
+      planId: pkg.id,
+      amount: pkg.amountFcfa,
+      type: 'points',
+    });
+    window.location.href = result.paymentUrl;
+  }
 
   return (
     <div className="space-y-3">
@@ -44,13 +57,23 @@ function PkgPaymentBlock({ pkg }: { pkg: typeof POINT_PACKAGES[0] }) {
       </div>
 
       {/* Direct payment button */}
-      <a href={paymentUrl} target="_blank" rel="noopener noreferrer" className="block">
+      <a href={paymentUrl} target="_blank" rel="noopener noreferrer" onClick={handlePayClick} className="block">
         <Button
           className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl h-12 text-sm"
           type="button"
+          disabled={isPreparing}
         >
-          <CreditCard className="w-5 h-5 mr-2" />
-          Payer maintenant
+          {isPreparing ? (
+            <span className="flex items-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Préparation...
+            </span>
+          ) : (
+            <>
+              <CreditCard className="w-5 h-5 mr-2" />
+              Payer maintenant
+            </>
+          )}
         </Button>
       </a>
 
