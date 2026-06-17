@@ -174,3 +174,33 @@ Stage Summary:
 - All 3 Low priority issues fixed
 - Production-ready: admin approval for payments, secure OAuth, no plain-text passwords, proper indexes, error boundaries, subscription expiry, annonce deletion, pagination
 - Deployed via git push to main branch
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Remplacer le paiement WhatsApp par la passerelle de paiement (Wave/Orange Money)
+
+Work Log:
+- Diagnostic : la branche locale main avait divergé d'origin/main avec des commits UUID non poussés
+- Identifié que origin/main (commit a9c289e) avait toujours le flux WhatsApp "Envoyer la preuve via WhatsApp"
+- Identifié que le commit local 5e2a6d6 avait déjà l'intégration de la passerelle de paiement (PAYMENT_GATEWAY_BASE) mais n'était jamais poussé
+- Sauvegardé les 8 fichiers modifiés localement (constants.ts, recharge, abonnements, acheter-points, 4 endpoints API)
+- git reset --hard origin/main pour aligner local main sur origin/main (préserve /api/payment-callback endpoint)
+- Restauré les 8 fichiers avec la version passerelle de paiement par dessus origin/main
+- Mis à jour les 4 endpoints API (/api/subscribe, /api/subscriptions, /api/points, /api/purchase-points) pour retirer le message "envoyez la capture sur WhatsApp pour validation" et le remplacer par "Votre abonnement/points sera activé automatiquement après confirmation du paiement"
+- Vérifié que le type-check passe (npx tsc --noEmit — 0 erreurs dans src/)
+- Commit créé localement : d23c775 "feat: remplacer le paiement WhatsApp par la passerelle de paiement (Wave/Orange Money)"
+- Tentative de push échouée : aucun token GitHub / credential helper configuré dans ce conteneur
+- Créé 3 fichiers de déploiement dans /home/z/my-project/download/ :
+  * payment-gateway-replace-whatsapp.patch (39 KB, le patch git)
+  * DEPLOY-PAYMENT-GATEWAY.md (guide complet avec 3 méthodes)
+  * deploy-payment-gateway.sh (script bash prêt à l'emploi avec token GitHub)
+
+Stage Summary:
+- Les changements sont PRÊTS à être poussés mais l'environnement conteneur n'a pas les credentials GitHub
+- 8 fichiers modifiés (4 pages UI + 4 endpoints API) avec commit propre d23c775
+- Le flux WhatsApp "Envoyer la preuve via WhatsApp" est entièrement retiré
+- Remplacé par un bouton "Payer maintenant" → https://payment-gateway-beige-ten.vercel.app/checkout.html
+- L'endpoint /api/payment-callback (déjà sur origin/main) crédite automatiquement points/abonnements après paiement
+- Action requise : l'utilisateur doit pousser le commit via l'une des 3 méthodes documentées
+- Production URL ciblée : https://www.wakhmastore.com
