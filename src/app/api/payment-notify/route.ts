@@ -68,17 +68,79 @@ export async function POST(request: NextRequest) {
       raw_text = '',
     } = body;
 
-    console.log(`[PAYMENT-NOTIFY][${requestId}] Données: montant=${montant}, phone=${sender_phone}, ref=${ref}, source=${source}`);
+    console.log(`[PAYMENT-NOTIFY][${requestId}] Données: montant=${montant}, phone=${sender_phone}, ref=${ref}, source=${source}, raw_text="${raw_text}"`);
 
-    // ── ÉTAPE 3: Validation du montant ─────────────────────────────────────
-    const montantNum = Number(montant);
+    // ── ÉTAPE 3: Déterminer le montant (extraire depuis raw_text si nécessaire) ──
+    let montantNum = Number(montant);
+    let extractedPhone = sender_phone || '';
+    let extractedRef = ref || '';
+
+    // Si montant manquant ou invalide, l'extraire depuis raw_text
+    if ((!montantNum || montantNum < 100 || montantNum > 1000000) && raw_text) {
+      console.log(`[PAYMENT-NOTIFY][${requestId}] Montant manquant — extraction depuis raw_text...`);
+
+      // Patterns supportés (par ordre de priorité) :
+      // 1. "ENCAISSEMENT DE 1300F" (Wave Business)
+      // 2. "recu 2000 FCFA" ou "recus 2000 FCFA" ou "recue 2000 FCFA"
+      // 3. "2000 FCFA" tout court
+      // 4. "2000 F" tout court (si pas de FCFA)
+      const patterns = [
+        /ENCAISSEMENT\s+DE\s+(\d[\d\s.]*)\s*F/i,
+        /re[cç]u\w*\s+(\d[\d\s.]*)\s*FCFA/i,
+        /(\d[\d\s.]*)\s*FCFA/i,
+        /(\d[\d\s.]*)\s*F\b/i,
+      ];
+
+      for (const pattern of patterns) {
+        const match = String(raw_text).match(pattern);
+        if (match && match[1]) {
+          const cleaned = match[1].replace(/[\s.]/g, '');
+          const parsed = Number(cleaned);
+          if (parsed >= 100 && parsed <= 1000000) {
+            montantNum = parsed;
+            console.log(`[PAYMENT-NOTIFY][${requestId}] Montant extrait via ${pattern}: ${montantNum}`);
+            break;
+          }
+        }
+      }
+    }
+
+    // Si téléphone manquant, l'extraire depuis raw_text
+    if (!extractedPhone && raw_text) {
+      // Chercher un numéro de téléphone (au moins 8 chiffres)
+      const phoneMatch = String(raw_text).match(/(\+?\d[\d\s]{7,})/);
+      if (phoneMatch && phoneMatch[1]) {
+        // Mais éviter de prendre le montant comme téléphone
+        const candidate = phoneMatch[1].replace(/[\s+]/g, '');
+        if (candidate.length >= 8 && Number(candidate) !== montantNum) {
+          extractedPhone = phoneMatch[1].trim();
+          console.log(`[PAYMENT-NOTIFY][${requestId}] Téléphone extrait: ${extractedPhone}`);
+        }
+      }
+    }
+
+    // Si référence manquante, l'extraire depuis raw_text
+    if (!extractedRef && raw_text) {
+      const refMatch = String(raw_text).match(/(?:Ref|Réf|Reference|Transaction)[:\s#]*([A-Z0-9-]{4,})/i);
+      if (refMatch && refMatch[1]) {
+        extractedRef = refMatch[1];
+        console.log(`[PAYMENT-NOTIFY][${requestId}] Référence extraite: ${extractedRef}`);
+      }
+    }
+
+    // Validation finale du montant
     if (!montantNum || montantNum < 100 || montantNum > 1000000) {
-      console.error(`[PAYMENT-NOTIFY][${requestId}] Montant invalide: ${montant}`);
+      console.error(`[PAYMENT-NOTIFY][${requestId}] Montant invalide après parsing: montant=${montant}, raw_text="${raw_text}"`);
       return NextResponse.json(
-        { success: false, error: `Montant invalide: ${montant}` },
+        {
+          success: false,
+          error: `Montant invalide ou introuvable dans raw_text. montant=${montant}, raw_text="${raw_text?.substring(0, 200)}"`,
+        },
         { status: 400 }
       );
     }
+
+    const finalPhone = extractedPhone;
 
     // ── ÉTAPE 4: Chercher le pending qui matche ────────────────────────────
     // Date d'expiration : on prend les pendings créés dans les 30 dernières minutes
@@ -96,9 +158,9 @@ export async function POST(request: NextRequest) {
     let pending: any = null;
     let matchedByPhone = false;
 
-    if (sender_phone) {
+    if (finalPhone) {
       // Nettoyer le numéro (enlever espaces, +, etc.)
-      const cleanPhone = String(sender_phone).replace(/[\s+\-]/g, '');
+      const cleanPhone = String(finalPhone).replace(/[\s+\-]/g, '');
       const last8 = cleanPhone.slice(-8);
       console.log(`[PAYMENT-NOTIFY][${requestId}] Recherche par phone: clean=${cleanPhone}, last8=${last8}`);
 
@@ -243,8 +305,8 @@ export async function POST(request: NextRequest) {
         status: 'completed',
         pointsAdded,
         source,
-        senderPhone: sender_phone || null,
-        externalRef: ref || null,
+        senderPhone: finalPhone || null,
+        externalRef: extractedRef || null,
         confirmedAt: new Date(),
       },
     });
