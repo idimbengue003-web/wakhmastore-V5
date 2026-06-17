@@ -230,3 +230,45 @@ Stage Summary:
 - Apres paiement Wave reussi, la passerelle affiche un countdown 8s puis redirige vers /paiement/confirmation?status=succes&montant=X&points=Y
 - Notre page confirme le paiement, detecte automatiquement le credit des points (polling 60s), et met a jour le solde affiche
 - Production URL: https://www.wakhmastore.com
+
+---
+Task ID: 5
+Agent: main (Super Z)
+Task: Intégration Automate (LlamaLab) pour confirmation automatique des paiements Wave
+
+Work Log:
+- Étude du flux existant : le gateway payment-gateway-beige-ten.vercel.app utilisait
+  MacroDroid pour détecter les paiements. L'utilisateur veut utiliser Automate à la
+  place avec interception multi-source (notif app Wave + SMS Wave + SMS OM).
+- Architecture conçue : système de "pending payments" en DB + endpoint /api/payment-notify
+  appelé par Automate avec token URL secret.
+- Modification prisma/schema.prisma : ajout de 7 champs sur PointPurchase
+  (planId, purchaseType, source, senderPhone, externalRef, confirmedAt, expiresAt)
+  + 2 nouveaux index pour performance.
+- Création /api/payment-pending/route.ts : endpoint appelé par frontend AVANT
+  redirection Wave. Crée un PointPurchase 'pending' avec expiration 30 min.
+- Création /api/payment-notify/route.ts : endpoint appelé par Automate.
+  Auth par token URL. Matching intelligent : priorise téléphone client, fallback FIFO
+  par montant. Idempotence + race condition protection.
+- Création src/lib/payment-pending-client.ts : helper frontend réutilisable.
+- Modification 3 pages frontend (recharge, abonnements, acheter-points) :
+  bouton "Payer maintenant" appelle createPendingPayment avant redirection.
+- Modification /paiement/confirmation : polling 90s, détection auto du crédit,
+  switch vers vue 'succes' quand points/plan changent. Accepte param ?pending=.
+- Création download/WAKHMA-AUTOMATE-GUIDE.md : guide complet pas-à-pas
+  (8 étapes + dépannage + checklist).
+- Création download/test-payment-notify.sh : script de test du backend.
+- Mise à jour .env.example : documentation PAYMENT_AUTOMATE_TOKEN.
+- Build vérifié : npx tsc --noEmit OK, npm run build OK.
+- Commit c89072c pushed vers origin/main (GitHub).
+- Vercel auto-deploy en cours.
+
+Stage Summary:
+- 11 fichiers modifiés/créés (+1111 lignes, -20)
+- 2 nouveaux endpoints API : /api/payment-pending + /api/payment-notify
+- Architecture multi-source prête (3 méthodes d'interception en parallèle)
+- Guide d'installation Automate de 350+ lignes livré
+- Script de test backend livré
+- ⚠️ Action utilisateur requise : ajouter PAYMENT_AUTOMATE_TOKEN dans Vercel env vars
+- ⚠️ Action utilisateur requise : installer Automate sur le téléphone marchand
+  et configurer les 2 flows selon le guide
