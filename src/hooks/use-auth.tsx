@@ -78,7 +78,18 @@ export const useAuth = create<AuthState>((set, get) => ({
         set({ user, isLoading: false });
         return user;
       } else {
-        // Refresh failed — clear localStorage user and mark as not loading
+        // Refresh failed (401 = cookie expiré, 500 = erreur serveur)
+        // ⚠️ NE PAS effacer localStorage si on a déjà un user en cache.
+        // On garde le user en cache pour ne pas déconnecter l'utilisateur sur
+        // une erreur temporaire. Les API protégées rejoueront le refresh et
+        // renverront 401 si vraiment la session est invalide.
+        const currentUser = get().user;
+        if (currentUser) {
+          // On a un user en cache → on le garde, on marque juste comme "chargé"
+          set({ user: currentUser, isLoading: false });
+          return currentUser;
+        }
+        // Pas de user en cache → on est vraiment déconnecté
         if (typeof window !== 'undefined') {
           localStorage.removeItem('wakhma_user');
         }
@@ -86,7 +97,7 @@ export const useAuth = create<AuthState>((set, get) => ({
         return null;
       }
     } catch {
-      // Network error — don't clear existing user, just stop loading
+      // Erreur réseau — garder le user existant, juste arrêter le loading
       set(state => ({ isLoading: false, user: state.user }));
       return null;
     }
