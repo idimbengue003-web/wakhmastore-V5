@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     // Do NOT auto-credit points — wait for admin approval
     return securityHeaders(NextResponse.json({
       success: true,
-      message: `Redirection vers la page de paiement sécurisée pour ${pkg.points.toLocaleString('fr-FR')} points (${pkg.price.toLocaleString('fr-FR')} FCFA). Vos points seront crédités automatiquement après confirmation du paiement.`,
+      message: `Redirection vers la page de paiement sécurisée Wave pour ${pkg.points.toLocaleString('fr-FR')} points (${pkg.price.toLocaleString('fr-FR')} FCFA). Vos points seront crédités automatiquement après confirmation du paiement.`,
       purchaseId: pointPurchase.id,
       pointsRequested: pkg.points,
       amountFcfa: pkg.price,

@@ -44,7 +44,7 @@ export default function AnnonceCard({
             <div className={`h-44 sm:h-52 flex items-center justify-center transition-all duration-500 ease-out group-hover:bg-orange/5 ${
               isJeVends ? 'bg-green-50' : 'bg-orange-bg'
             }`}>
-              <span className="text-6xl sm:text-7xl transition-transform duration-500 ease-out group-hover:scale-125 drop-shadow-sm">{emoji}</span>
+              <span className="text-5xl sm:text-6xl transition-transform duration-300 ease-out group-hover:scale-110 drop-shadow-sm">{emoji}</span>
             </div>
             {/* Category badge */}
             <Badge

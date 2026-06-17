@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
       ));
     }
 
-    // Validate payment method
-    const validMethods = ['wave', 'orange_money'];
+    // Validate payment method (Wave only)
+    const validMethods = ['wave'];
     if (!paymentMethod || !validMethods.includes(paymentMethod)) {
       return securityHeaders(NextResponse.json(
         { error: 'Méthode de paiement invalide' },
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     // Do NOT auto-activate plan or credit points — wait for admin approval
     return securityHeaders(NextResponse.json({
       success: true,
-      message: `Redirection vers la page de paiement sécurisée pour l'abonnement ${planData.name} (${planData.price.toLocaleString('fr-FR')} FCFA). Votre abonnement sera activé automatiquement après confirmation du paiement.`,
+      message: `Redirection vers la page de paiement sécurisée Wave pour l'abonnement ${planData.name} (${planData.price.toLocaleString('fr-FR')} FCFA). Votre abonnement sera activé automatiquement après confirmation du paiement.`,
       subscription: {
         id: subscription.id,
         plan: planData.name,

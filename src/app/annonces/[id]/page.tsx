@@ -222,7 +222,7 @@ export default function AnnonceDetailPage() {
               annonce.type === 'je_vends' ? 'from-green-50 to-green-100/50' : 'from-orange/10 to-orange/5'
             } ${revealPhase >= 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
               <div className="h-48 sm:h-64 flex items-center justify-center relative overflow-hidden">
-                <span className={`text-8xl sm:text-9xl transition-all duration-1500 ease-out ${
+                <span className={`text-7xl sm:text-8xl transition-all duration-700 ease-out ${
                   revealPhase >= 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
                 }`}>{annonce.emoji}</span>
                 {/* Subtle shine animation */}

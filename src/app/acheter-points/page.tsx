@@ -57,7 +57,7 @@ function PkgPaymentBlock({ pkg }: { pkg: typeof POINT_PACKAGES[0] }) {
       <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 flex items-start gap-2">
         <ShieldCheck className="w-3.5 h-3.5 text-green-600 flex-shrink-0 mt-0.5" />
         <p className="text-[10px] text-green-800">
-          Paiement sécurisé via Wave ou Orange Money. Vos points sont crédités automatiquement après confirmation du paiement.
+          Paiement sécurisé via Wave. Vos points sont crédités automatiquement après confirmation du paiement.
         </p>
       </div>
     </div>

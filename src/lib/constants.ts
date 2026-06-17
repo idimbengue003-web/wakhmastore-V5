@@ -159,19 +159,27 @@ export const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '22178
 // --- Automated payment gateway links ---
 export const PAYMENT_GATEWAY_BASE = 'https://payment-gateway-beige-ten.vercel.app/checkout.html';
 
+// Production URL where users are redirected after payment confirmation.
+// The gateway appends ?txn=...&status=succes&montant=...&compte=...&plan=...&points=...
+const PAYMENT_RETURN_URL = encodeURIComponent('https://www.wakhmastore.com/paiement/confirmation');
+
+function buildGatewayUrl(planSlug: string): string {
+  return `${PAYMENT_GATEWAY_BASE}?plan=${planSlug}&callback_url=${PAYMENT_RETURN_URL}`;
+}
+
 export const SUBSCRIPTION_PAYMENT_LINKS: Record<string, string> = {
-  gratuit: `${PAYMENT_GATEWAY_BASE}?plan=bolt`,
-  diambar: `${PAYMENT_GATEWAY_BASE}?plan=diambar`,
-  vip_king: `${PAYMENT_GATEWAY_BASE}?plan=vip-king`,
+  gratuit: buildGatewayUrl('bolt'),
+  diambar: buildGatewayUrl('diambar'),
+  vip_king: buildGatewayUrl('vip-king'),
 };
 
 export const POINTS_PAYMENT_LINKS: Record<string, string> = {
-  starter: `${PAYMENT_GATEWAY_BASE}?plan=points-7000`,
-  standard: `${PAYMENT_GATEWAY_BASE}?plan=points-17000`,
-  pro: `${PAYMENT_GATEWAY_BASE}?plan=points-17000`,
-  business: `${PAYMENT_GATEWAY_BASE}?plan=points-50000`,
-  premium: `${PAYMENT_GATEWAY_BASE}?plan=points-50000`,
-  ultimate: `${PAYMENT_GATEWAY_BASE}?plan=points-105000`,
+  starter: buildGatewayUrl('points-7000'),
+  standard: buildGatewayUrl('points-17000'),
+  pro: buildGatewayUrl('points-17000'),
+  business: buildGatewayUrl('points-50000'),
+  premium: buildGatewayUrl('points-50000'),
+  ultimate: buildGatewayUrl('points-105000'),
 };
 
 // Helper to get subscription payment URL by plan id

@@ -59,7 +59,7 @@ function PaymentBlock({ paymentUrl, amount, label, color = 'orange' }: { payment
       <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 flex items-start gap-2">
         <ShieldCheck className="w-3.5 h-3.5 text-green-600 flex-shrink-0 mt-0.5" />
         <p className="text-[10px] text-green-800">
-          Paiement sécurisé via Wave ou Orange Money. Activation automatique après confirmation du paiement.
+          Paiement sécurisé via Wave. Activation automatique après confirmation du paiement.
         </p>
       </div>
     </div>
@@ -393,7 +393,7 @@ export default function RechargePage() {
                     <Coins className="w-5 h-5 text-orange" />
                   </div>
                   <p className="text-sm font-semibold text-gray-900">Achetez des points</p>
-                  <p className="text-xs text-gray-500 mt-1">Paiement sécurisé Wave / Orange Money en 1 clic</p>
+                  <p className="text-xs text-gray-500 mt-1">Paiement sécurisé Wave en 1 clic</p>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-4 text-center">
                   <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-2">
@@ -433,7 +433,7 @@ export default function RechargePage() {
                 Comment puis-je payer ?
               </h3>
               <p className="text-sm text-gray-600">
-                Nous acceptons Wave et Orange Money. Cliquez sur « Payer maintenant », vous serez redirigé vers notre page de paiement sécurisée. L&apos;activation est immédiate après confirmation du paiement.
+                Nous acceptons Wave. Cliquez sur « Payer maintenant », vous serez redirigé vers notre page de paiement sécurisée. L&apos;activation est immédiate après confirmation du paiement.
               </p>
             </div>
             <div className="bg-gray-50 rounded-xl p-5 transition-all duration-300 hover:bg-gray-100">

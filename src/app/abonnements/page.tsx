@@ -150,7 +150,7 @@ function PlanPaymentBlock({ plan }: { plan: typeof SUBSCRIPTION_PLANS[0] }) {
       <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 flex items-start gap-2">
         <ShieldCheck className="w-3.5 h-3.5 text-green-600 flex-shrink-0 mt-0.5" />
         <p className="text-[10px] text-green-800">
-          Paiement sécurisé via Wave ou Orange Money. Activation automatique de votre abonnement après confirmation du paiement.
+          Paiement sécurisé via Wave. Activation automatique de votre abonnement après confirmation du paiement.
         </p>
       </div>
     </div>
@@ -310,7 +310,7 @@ export default function AbonnementsPage() {
                 Comment payer ?
               </h3>
               <p className="text-xs text-gray-600">
-                Cliquez sur « Choisir » puis sur « Payer maintenant ». Vous serez redirigé vers notre page de paiement sécurisée où vous pourrez payer via Wave ou Orange Money. L&apos;activation de votre abonnement est automatique après confirmation du paiement.
+                Cliquez sur « Choisir » puis sur « Payer maintenant ». Vous serez redirigé vers notre page de paiement sécurisée Wave où vous pourrez payer. L&apos;activation de votre abonnement est automatique après confirmation du paiement.
               </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">

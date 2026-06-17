@@ -46,7 +46,7 @@ export const pageMetadata: Record<string, Metadata> = {
   "acheter-points": {
     title: "Acheter des points — Rechargez votre compte",
     description:
-      "Achetez des points Wakhma Store pour débloquer les coordonnées des vendeurs. Packs Starter, Standard, Premium et Ultimate. Paiement Wave ou Orange Money.",
+      "Achetez des points Wakhma Store pour débloquer les coordonnées des vendeurs. Packs Starter, Standard, Premium et Ultimate. Paiement Wave.",
     alternates: { canonical: "/acheter-points" },
     openGraph: {
       title: "Acheter des points — Wakhma Store",
