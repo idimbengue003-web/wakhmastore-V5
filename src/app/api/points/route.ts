@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     // Do NOT auto-credit points — wait for admin approval
     return securityHeaders(NextResponse.json({
       success: true,
-      message: `Demande envoyée ! Envoyez ${pkg.amountFcfa.toLocaleString('fr-FR')} FCFA via ${paymentMethod === 'wave' ? 'Wave' : 'Orange Money'} au ${process.env.PAYMENT_PHONE || '78 927 12 96'}, puis envoyez la capture sur WhatsApp pour validation.`,
+      message: `Redirection vers la page de paiement sécurisée pour ${pkg.points.toLocaleString('fr-FR')} points (${pkg.amountFcfa.toLocaleString('fr-FR')} FCFA). Vos points seront crédités automatiquement après confirmation du paiement.`,
       purchase: {
         id: purchase.id,
         amountFcfa: pkg.amountFcfa,

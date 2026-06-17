@@ -4,21 +4,20 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Check, Crown, Star, Zap, Coins, Sparkles, ShieldCheck,
-  Phone, Copy, MessageCircle, Send, Wallet, Smartphone,
-  AlertCircle, ChevronDown, ChevronUp
+  CreditCard, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useScrollReveal } from '@/hooks/use-scroll-reveal';
-import { PLANS, POINT_PACKAGES, PAYMENT_PHONE, WHATSAPP_LINK, WHATSAPP_NUMBER } from '@/lib/constants';
+import {
+  PLANS, POINT_PACKAGES,
+  getSubscriptionPaymentUrl, getPointsPaymentUrl
+} from '@/lib/constants';
 import type { PlanId } from '@/lib/constants';
 
 function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {
@@ -26,135 +25,41 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
   return <div ref={ref} className={`scroll-reveal ${className}`}>{children}</div>;
 }
 
-// Payment block component — reused inside each card
-function PaymentBlock({ amount, label, color = 'orange' }: { amount: number; label: string; color?: string }) {
-  const { toast } = useToast();
-  const [selectedPayment, setSelectedPayment] = useState<'wave' | 'orange_money'>('wave');
-  const [proofRef, setProofRef] = useState('');
-
-  const colorClass = color === 'amber' ? 'amber' : color === 'green' ? 'green' : 'orange';
+// Payment block component — now takes a payment URL and renders a direct checkout
+function PaymentBlock({ paymentUrl, amount, label, color = 'orange' }: { paymentUrl: string; amount: number; label: string; color?: string }) {
   const btnBg = color === 'amber' ? 'bg-amber-500 hover:bg-amber-600'
     : color === 'green' ? 'bg-green-500 hover:bg-green-600'
     : 'bg-orange hover:bg-orange-dark';
 
-  function getWhatsAppLink() {
-    const methodName = selectedPayment === 'wave' ? 'Wave' : 'Orange Money';
-    const message = `Bonjour Wakhma Store !\n\nJe souhaite payer : *${label}* (${amount.toLocaleString('fr-FR')} FCFA).\n\nMéthode : *${methodName}*\nRéférence : ${proofRef || '(à compléter)'}\n\nMerci de confirmer la réception !`;
-    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-  }
-
   return (
     <div className="space-y-3">
-      <Separator />
-
-      {/* Payment methods */}
-      <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
-        <span className={`w-5 h-5 rounded-full ${btnBg} text-white text-[10px] flex items-center justify-center font-bold`}>1</span>
-        Méthode de paiement
-      </p>
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 transition-all text-xs font-semibold ${
-            selectedPayment === 'wave'
-              ? `border-blue-500 bg-blue-50 text-blue-700`
-              : 'border-gray-100 text-gray-500 hover:border-gray-200'
-          }`}
-          onClick={() => setSelectedPayment('wave')}
-        >
-          <Wallet className="w-4 h-4" />
-          Wave
-          {selectedPayment === 'wave' && <Check className="w-3.5 h-3.5 ml-auto" />}
-        </button>
-        <button
-          type="button"
-          className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 transition-all text-xs font-semibold ${
-            selectedPayment === 'orange_money'
-              ? 'border-orange bg-orange/5 text-orange'
-              : 'border-gray-100 text-gray-500 hover:border-gray-200'
-          }`}
-          onClick={() => setSelectedPayment('orange_money')}
-        >
-          <Smartphone className="w-4 h-4" />
-          Orange Money
-          {selectedPayment === 'orange_money' && <Check className="w-3.5 h-3.5 ml-auto" />}
-        </button>
-      </div>
-
-      {/* Phone number + copy */}
-      <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
-        <span className={`w-5 h-5 rounded-full ${btnBg} text-white text-[10px] flex items-center justify-center font-bold`}>2</span>
-        Envoyez {amount.toLocaleString('fr-FR')} FCFA
-      </p>
-      <div className="flex items-center justify-between bg-green-50 rounded-xl px-3 py-2.5 border border-green-200">
-        <div>
-          <p className="text-[10px] text-gray-500">Numéro {selectedPayment === 'wave' ? 'Wave' : 'Orange Money'}</p>
-          <p className="text-base font-bold text-gray-900">{PAYMENT_PHONE}</p>
+      {/* Order summary */}
+      <div className="bg-gray-50 rounded-xl p-3 space-y-2">
+        <div className="flex justify-between text-xs">
+          <span className="text-gray-500">Détail</span>
+          <span className="font-medium text-gray-900">{label}</span>
         </div>
+        <div className="border-t border-gray-200 pt-2 flex justify-between">
+          <span className="font-medium text-gray-700 text-xs">Total à payer</span>
+          <span className="text-lg font-bold text-gray-900">{amount.toLocaleString('fr-FR')} FCFA</span>
+        </div>
+      </div>
+
+      {/* Direct payment button */}
+      <a href={paymentUrl} target="_blank" rel="noopener noreferrer" className="block">
         <Button
-          variant="ghost"
-          size="sm"
-          className="text-green-600 hover:text-green-700 hover:bg-green-50 h-8 px-2"
-          onClick={() => {
-            navigator.clipboard.writeText(PAYMENT_PHONE.replace(/\s/g, ''));
-            toast({ title: 'Copié !', description: 'Numéro copié' });
-          }}
+          className={`w-full ${btnBg} text-white font-semibold rounded-xl h-12 text-sm`}
+          type="button"
         >
-          <Copy className="w-4 h-4" />
+          <CreditCard className="w-5 h-5 mr-2" />
+          Payer maintenant
         </Button>
-      </div>
+      </a>
 
-      {/* Reference input */}
-      <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
-        <span className={`w-5 h-5 rounded-full ${btnBg} text-white text-[10px] flex items-center justify-center font-bold`}>3</span>
-        Référence du paiement
-      </p>
-      <Input
-        type="text"
-        placeholder="Ex: TXN123456 ou réf. Orange Money"
-        value={proofRef}
-        onChange={(e) => setProofRef(e.target.value)}
-        className="rounded-xl border-gray-200 h-10 text-xs"
-      />
-
-      {/* Two action buttons */}
-      <div className="space-y-2">
-        <a
-          href={getWhatsAppLink()}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block"
-        >
-          <Button
-            className={`w-full bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl h-11 text-sm transition-all duration-300`}
-            type="button"
-          >
-            <MessageCircle className="w-5 h-5 mr-2" />
-            Envoyer la preuve via WhatsApp
-            <Send className="w-4 h-4 ml-2" />
-          </Button>
-        </a>
-        <a
-          href={WHATSAPP_LINK}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block"
-        >
-          <Button
-            variant="outline"
-            className="w-full rounded-xl h-10 text-xs font-semibold border-green-300 text-green-700 hover:bg-green-50"
-            type="button"
-          >
-            <Phone className="w-4 h-4 mr-1.5" />
-            Accélérer ma demande sur WhatsApp
-          </Button>
-        </a>
-      </div>
-
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-2.5 flex items-start gap-2">
-        <AlertCircle className="w-3.5 h-3.5 text-blue-600 flex-shrink-0 mt-0.5" />
-        <p className="text-[10px] text-blue-800">
-          Votre {label.toLowerCase()} sera activé sous 30 min après validation du paiement.
+      <div className="bg-green-50 border border-green-200 rounded-xl p-2.5 flex items-start gap-2">
+        <ShieldCheck className="w-3.5 h-3.5 text-green-600 flex-shrink-0 mt-0.5" />
+        <p className="text-[10px] text-green-800">
+          Paiement sécurisé via Wave ou Orange Money. Activation automatique après confirmation du paiement.
         </p>
       </div>
     </div>
@@ -377,6 +282,7 @@ export default function RechargePage() {
                       {isExpanded && !isCurrentPlan && (
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                           <PaymentBlock
+                            paymentUrl={getSubscriptionPaymentUrl(plan.id)}
                             amount={plan.price}
                             label={`Abonnement ${plan.name}`}
                             color={cardColor}
@@ -466,6 +372,7 @@ export default function RechargePage() {
                       {isExpanded && (
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                           <PaymentBlock
+                            paymentUrl={getPointsPaymentUrl(pkg.id)}
                             amount={pkg.price}
                             label={`Pack ${pkg.label} — ${pkg.points.toLocaleString('fr-FR')} points`}
                           />
@@ -486,7 +393,7 @@ export default function RechargePage() {
                     <Coins className="w-5 h-5 text-orange" />
                   </div>
                   <p className="text-sm font-semibold text-gray-900">Achetez des points</p>
-                  <p className="text-xs text-gray-500 mt-1">Envoyez au {PAYMENT_PHONE} via Wave ou Orange Money</p>
+                  <p className="text-xs text-gray-500 mt-1">Paiement sécurisé Wave / Orange Money en 1 clic</p>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-4 text-center">
                   <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-2">
@@ -497,7 +404,7 @@ export default function RechargePage() {
                 </div>
                 <div className="bg-gray-50 rounded-xl p-4 text-center">
                   <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-2">
-                    <Phone className="w-5 h-5 text-blue-500" />
+                    <CreditCard className="w-5 h-5 text-blue-500" />
                   </div>
                   <p className="text-sm font-semibold text-gray-900">Contactez le vendeur</p>
                   <p className="text-xs text-gray-500 mt-1">Appelez ou envoyez un WhatsApp directement</p>
@@ -526,7 +433,7 @@ export default function RechargePage() {
                 Comment puis-je payer ?
               </h3>
               <p className="text-sm text-gray-600">
-                Nous acceptons Wave et Orange Money. Envoyez le montant au <strong>{PAYMENT_PHONE}</strong>, puis envoyez la capture d&apos;écran sur <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="text-green-600 font-semibold hover:underline">WhatsApp</a>. L&apos;activation est immédiate après confirmation.
+                Nous acceptons Wave et Orange Money. Cliquez sur « Payer maintenant », vous serez redirigé vers notre page de paiement sécurisée. L&apos;activation est immédiate après confirmation du paiement.
               </p>
             </div>
             <div className="bg-gray-50 rounded-xl p-5 transition-all duration-300 hover:bg-gray-100">

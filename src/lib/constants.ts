@@ -132,7 +132,12 @@ export const CATEGORIES = [
   { name: 'Mode & Vetements', emoji: '👗' },
   { name: 'Cosmétiques', emoji: '💄' },
   { name: 'Alimentation', emoji: '🍜' },
+  { name: 'Roblox', emoji: '🎮' },
+  { name: 'Brawl Stars', emoji: '⭐' },
+  { name: 'eFootball', emoji: '⚽' },
+  { name: 'Autres Jeux', emoji: '🕹️' },
   { name: 'Services', emoji: '🤝' },
+  { name: 'Moto', emoji: '🏍️' },
   { name: 'Transport', emoji: '🚗' },
   { name: 'Immobilier', emoji: '🏗️' },
   { name: 'Autre', emoji: '📦' },
@@ -144,12 +149,40 @@ export const CATEGORY_EMOJIS: Record<string, string> = Object.fromEntries(
 );
 
 // Quick categories shown in hero
-export const QUICK_CATEGORIES = ['Téléphones', 'TV & Écrans', 'Ordinateurs', 'Meubles', 'Transport', 'Immobilier'];
+export const QUICK_CATEGORIES = ['Téléphones', 'TV & Écrans', 'Ordinateurs', 'Meubles', 'Moto', 'Immobilier'];
 
 // --- Payment info (env vars with fallbacks) ---
 export const PAYMENT_PHONE = process.env.NEXT_PUBLIC_PAYMENT_PHONE || '78 927 12 96';
 export const WHATSAPP_LINK = process.env.NEXT_PUBLIC_WHATSAPP_LINK || 'https://wa.me/221789271296';
 export const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '221789271296';
+
+// --- Automated payment gateway links ---
+export const PAYMENT_GATEWAY_BASE = 'https://payment-gateway-beige-ten.vercel.app/checkout.html';
+
+export const SUBSCRIPTION_PAYMENT_LINKS: Record<string, string> = {
+  gratuit: `${PAYMENT_GATEWAY_BASE}?plan=bolt`,
+  diambar: `${PAYMENT_GATEWAY_BASE}?plan=diambar`,
+  vip_king: `${PAYMENT_GATEWAY_BASE}?plan=vip-king`,
+};
+
+export const POINTS_PAYMENT_LINKS: Record<string, string> = {
+  starter: `${PAYMENT_GATEWAY_BASE}?plan=points-7000`,
+  standard: `${PAYMENT_GATEWAY_BASE}?plan=points-17000`,
+  pro: `${PAYMENT_GATEWAY_BASE}?plan=points-17000`,
+  business: `${PAYMENT_GATEWAY_BASE}?plan=points-50000`,
+  premium: `${PAYMENT_GATEWAY_BASE}?plan=points-50000`,
+  ultimate: `${PAYMENT_GATEWAY_BASE}?plan=points-105000`,
+};
+
+// Helper to get subscription payment URL by plan id
+export function getSubscriptionPaymentUrl(planId: string): string {
+  return SUBSCRIPTION_PAYMENT_LINKS[planId] || PAYMENT_GATEWAY_BASE;
+}
+
+// Helper to get points payment URL by package id
+export function getPointsPaymentUrl(packageId: string): string {
+  return POINTS_PAYMENT_LINKS[packageId] || PAYMENT_GATEWAY_BASE;
+}
 
 // --- Helper: Is user a subscriber? ---
 export function isSubscriber(plan: string): boolean {

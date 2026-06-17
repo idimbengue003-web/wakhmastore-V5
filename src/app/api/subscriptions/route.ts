@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
 
     return securityHeaders(NextResponse.json({
       success: true,
-      message: `Demande d'abonnement ${plan.name} envoyée ! Envoyez ${plan.priceFcfa.toLocaleString('fr-FR')} FCFA via Wave ou Orange Money au ${process.env.PAYMENT_PHONE || '78 927 12 96'}, puis envoyez la capture sur WhatsApp pour validation.`,
+      message: `Redirection vers la page de paiement sécurisée pour l'abonnement ${plan.name} (${plan.priceFcfa.toLocaleString('fr-FR')} FCFA). Votre abonnement sera activé automatiquement après confirmation du paiement.`,
       subscription: {
         id: subscription.id,
         plan: plan.name,
