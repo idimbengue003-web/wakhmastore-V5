@@ -204,3 +204,29 @@ Stage Summary:
 - L'endpoint /api/payment-callback (déjà sur origin/main) crédite automatiquement points/abonnements après paiement
 - Action requise : l'utilisateur doit pousser le commit via l'une des 3 méthodes documentées
 - Production URL ciblée : https://www.wakhmastore.com
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Optimisations UI + paiement Wave uniquement + page confirmation paiement
+
+Work Log:
+- Emojis reduits : hero homepage opacity 15-25% -> 5-10%, taille 1.4-2.4rem -> 1.1-1.6rem ; AnnonceCard text-6xl/7xl -> text-5xl/6xl ; detail page text-8xl/9xl -> text-7xl/8xl
+- Orange Money retire partout : 3 endpoints API (validMethods reduit a ['wave']), 6 textes UI, 1 SEO, 1 layout metadata — 0 occurrences restantes
+- Accueil accelere : scroll-reveal 0.7s -> 0.4s, stagger-item 0.5s -> 0.3s, stagger-children 60ms steps -> 30ms steps, hero-fade-in 0.8s -> 0.4s avec delays 0.05-0.36s, float-emoji 11-18s -> 9-13s
+- Nouvelle page /paiement/confirmation creee (layout.tsx + page.tsx) :
+  * Recoit les params ?txn=...&status=succes&montant=...&plan=...&points=... de la passerelle
+  * Affiche 'Paiement confirme' avec badge points/abonnement et reference transaction
+  * Poll /api/auth/me toutes les 3s pendant 60s pour detecter le credit des points
+  * Refresh automatique du solde user via refreshAuth()
+  * Gere 4 statuts : succes, echec, attente, inconnu (cas sans params URL)
+- constants.ts mis a jour : tous les liens paiement incluent &callback_url=https://www.wakhmastore.com/paiement/confirmation (URL-encode)
+- tsconfig.json : exclude skills/ examples/ mini-services/ du build TypeScript (regle des erreurs non-bloquantes)
+- Build verifie : npx next build OK, page /paiement/confirmation pre-rendue (statique)
+- Commit 6f4d26f pousse sur origin/main (push OK avec token GitHub)
+
+Stage Summary:
+- Vercel redéploie automatiquement (2-3 min)
+- Apres paiement Wave reussi, la passerelle affiche un countdown 8s puis redirige vers /paiement/confirmation?status=succes&montant=X&points=Y
+- Notre page confirme le paiement, detecte automatiquement le credit des points (polling 60s), et met a jour le solde affiche
+- Production URL: https://www.wakhmastore.com
