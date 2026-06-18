@@ -173,19 +173,17 @@ export const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '22178
 
 // ── URL de paiement Wave Business (checkout avec montant pré-rempli) ───────
 // Format attendu (sans query string) :
-//   https://pay.wave.com/m/<merchant-slug>/pay/
+//   https://pay.wave.com/m/<merchant_opaque_id>/c/<country_code>/
 //
 // On y ajoute ensuite ?amount=<montant>&currency=XOF&client_reference=<pendingId>
 //
-// ⚠️ Cette URL est OBLIGATOIRE pour le bouton "Payer avec Wave". Sans elle,
-// le bouton affiche un message d'erreur à la place.
-//
-// Pour la trouver :
-// 1. Connecte-toi sur https://business.wave.com
-// 2. Va dans "Liens de paiement" ou "Payment Links"
-// 3. Crée un lien → copie l'URL (ex: https://pay.wave.com/m/wakhma-store/pay/)
-// 4. Mets NEXT_PUBLIC_WAVE_CHECKOUT_URL dans Vercel avec cette valeur
-export const WAVE_CHECKOUT_URL = process.env.NEXT_PUBLIC_WAVE_CHECKOUT_URL || '';
+// Cette URL est publique (visible sur la page de paiement Wave Business).
+// Valeur par défaut : lien de paiement Wave Business de Gaming Store.
+// Peut être surchargée via la variable d'environnement NEXT_PUBLIC_WAVE_CHECKOUT_URL
+// (utile si le marchand régénère le lien ou change de wallet).
+export const WAVE_CHECKOUT_URL =
+  process.env.NEXT_PUBLIC_WAVE_CHECKOUT_URL ||
+  'https://pay.wave.com/m/M_sn_qOVoZ_pVFkFD/c/sn/';
 
 /**
  * Construit l'URL de paiement Wave Business avec montant pré-rempli.
