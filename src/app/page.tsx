@@ -40,11 +40,23 @@ export default function HomePage() {
   const [annonces, setAnnonces] = useState<Annonce[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce search input to avoid spamming navigations
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery), 350);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
 
   useEffect(() => {
     async function fetchAnnonces() {
       try {
-        const res = await fetch('/api/annonces?_=' + Date.now());
+        // Cache navigateur + SWR : si on a déjà fetch récemment, on réutilise.
+        // Le cache permet aussi de naviguer back/forward sans refetch.
+        const res = await fetch('/api/annonces?limit=8', {
+          next: { revalidate: 30 }, // cache 30s côté Next.js data cache
+          headers: { 'Cache-Control': 'max-age=30' },
+        });
         if (res.ok) {
           const data = await res.json();
           setAnnonces(data);
@@ -85,7 +97,7 @@ export default function HomePage() {
         </div>
 
         <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 text-center">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tight">
+          <h1 className="wakhma-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tight">
             Wakhma Store
           </h1>
           <p className="text-white/90 mb-8 max-w-xl mx-auto text-base sm:text-lg md:text-xl font-medium">
@@ -106,7 +118,7 @@ export default function HomePage() {
                 />
               </div>
               <Link
-                href={searchQuery ? `/annonces?search=${encodeURIComponent(searchQuery)}` : '/annonces'}
+                href={debouncedSearch ? `/annonces?search=${encodeURIComponent(debouncedSearch)}` : '/annonces'}
               >
                 <Button className="btn-press bg-orange hover:bg-orange-dark text-white font-semibold rounded-lg px-6 h-12">
                   Rechercher

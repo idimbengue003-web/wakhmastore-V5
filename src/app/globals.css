@@ -305,3 +305,68 @@ a {
 .stagger-2col > *:nth-child(9) { transition-delay: 640ms; }
 .stagger-2col > *:nth-child(10) { transition-delay: 720ms; }
 .stagger-2col > *:nth-child(n+11) { transition-delay: 800ms; }
+
+/* ---- Reduced motion: respect user preference (accessibility + perf) ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .floating-emoji {
+    display: none !important;
+  }
+
+  .wakhma-title {
+    animation: none !important;
+  }
+
+  .scroll-reveal,
+  .stagger-item {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ---- Mobile perf: reduce floating emojis on small screens ---- */
+@media (max-width: 640px) {
+  .floating-emoji {
+    /* Hide every other emoji on mobile to reduce layout/paint cost */
+    animation-duration: var(--float-duration, 12s) !important;
+  }
+  .floating-emoji:nth-child(odd) {
+    display: none;
+  }
+}
+
+/* ---- Smooth scrolling on the whole document ---- */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ---- Better focus visibility (accessibility) ---- */
+a:focus-visible,
+button:focus-visible,
+[role='button']:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---- Hide scrollbar but keep scrollable on horizontal lists ---- */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ---- Smooth image rendering ---- */
+img, Image {
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* ---- Prevent layout shift on AnnonceCard hover ---- */
+.annonce-card-v2:hover {
+  will-change: transform, box-shadow;
+}

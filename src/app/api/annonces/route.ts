@@ -58,6 +58,10 @@ export async function GET(request: NextRequest) {
       _count: { purchases: a._count.purchases },
     })));
     response.headers.set('X-Total-Count', String(total));
+    // Cache navigateur 30s + cache CDN Vercel 60s avec SWR 5min
+    // Permet d'accélérer la homepage et la page /annonces sans stale data
+    // long-term (60s max avant refetch upstream).
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     return response;
   } catch (error) {
     console.error('Error fetching annonces:', error);

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Store, Menu, X, LogIn, LogOut, User, Gift, Award, UserCircle } from 'lucide-react';
+import Image from 'next/image';
+import { Menu, X, LogIn, LogOut, User, Gift, Award, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import {
@@ -45,11 +46,16 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 bg-orange rounded-xl flex items-center justify-center group-hover:bg-orange-dark transition-colors">
-              <Store className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-base font-bold text-orange">Wakhma Store</span>
+          <Link href="/" className="flex items-center gap-2 group" aria-label="Wakhma Store - Accueil">
+            <Image
+              src="/logo.svg"
+              alt="Logo Wakhma Store"
+              width={36}
+              height={36}
+              priority
+              className="w-9 h-9 rounded-xl group-hover:scale-110 transition-transform duration-300"
+            />
+            <span className="text-base font-bold text-orange group-hover:text-orange-dark transition-colors">Wakhma Store</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -186,9 +192,13 @@ export default function Navbar() {
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between p-4 border-b border-gray-100">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-orange rounded-xl flex items-center justify-center">
-                      <Store className="w-4 h-4 text-white" />
-                    </div>
+                    <Image
+                      src="/logo.svg"
+                      alt="Logo Wakhma Store"
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 rounded-lg"
+                    />
                     <span className="text-sm font-bold text-orange">Wakhma Store</span>
                   </div>
                   <SheetClose asChild>

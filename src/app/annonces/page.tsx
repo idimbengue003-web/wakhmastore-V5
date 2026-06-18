@@ -60,8 +60,12 @@ function AnnoncesContent() {
       }
       params.set('page', String(pageNum));
       params.set('limit', String(ITEMS_PER_PAGE));
-      params.set('_', String(Date.now())); // bust cache
-      const res = await fetch(`/api/annonces?${params.toString()}`);
+      // Plus de cache-buster (_=Date.now()) — le backend sert déjà
+      // Cache-Control: s-maxage=60, SWR 300s. On garde la fraîcheur
+      // sans pour autant bypass le cache navigateur à chaque clic.
+      const res = await fetch(`/api/annonces?${params.toString()}`, {
+        next: { revalidate: 30 },
+      });
       if (res.ok) {
         const data = await res.json();
         const total = parseInt(res.headers.get('X-Total-Count') || '0');

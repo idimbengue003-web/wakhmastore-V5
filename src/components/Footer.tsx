@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Store, MapPin, MessageCircle, Mail } from 'lucide-react';
+import Image from 'next/image';
+import { MapPin, MessageCircle, Mail } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -9,9 +10,13 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 bg-orange rounded-xl flex items-center justify-center">
-                <Store className="w-5 h-5 text-white" />
-              </div>
+              <Image
+                src="/logo.svg"
+                alt="Logo Wakhma Store"
+                width={36}
+                height={36}
+                className="w-9 h-9 rounded-xl"
+              />
               <span className="text-lg font-bold text-white">Wakhma Store</span>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed">
