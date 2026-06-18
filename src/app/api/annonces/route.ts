@@ -52,6 +52,10 @@ export async function GET(request: NextRequest) {
       vipType: a.vipType,
       phone: a.phone,
       whatsapp: a.whatsapp,
+      // On n'envoie que la première photo sur la liste (économise de la bande passante)
+      // La page détail renvoie le tableau complet.
+      coverImageUrl: a.imageUrls.length > 0 ? a.imageUrls[0] : null,
+      imageCount: a.imageUrls.length,
       authorId: a.authorId,
       authorName: a.author.name || 'Vendeur',
       createdAt: a.createdAt,
@@ -84,13 +88,31 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, price, category, emoji, type, location, phone, whatsapp } = body;
+    const { title, description, price, category, emoji, type, location, phone, whatsapp, imageUrls } = body;
 
     if (!title || !price || !category) {
       return NextResponse.json(
         { error: 'Titre, prix et catégorie sont obligatoires' },
         { status: 400 }
       );
+    }
+
+    // ── Validation des photos ──
+    // - Max 3 photos
+    // - Chaque entrée doit être un data URL ≤ 600 Ko (sinon DB gonflée)
+    // - Format attendu : data:image/(jpeg|png|webp);base64,...
+    const SAFE_PHOTO_LIMIT = 3;
+    const SAFE_PHOTO_BYTES = 600 * 1024; // 600 Ko/photo après compression
+    let safeImageUrls: string[] = [];
+    if (Array.isArray(imageUrls)) {
+      safeImageUrls = imageUrls
+        .filter((u): u is string => typeof u === 'string' && u.startsWith('data:image/'))
+        .slice(0, SAFE_PHOTO_LIMIT)
+        .filter(u => {
+          const base64 = u.split(',')[1] || '';
+          const sizeBytes = Math.round((base64.length * 3) / 4);
+          return sizeBytes <= SAFE_PHOTO_BYTES;
+        });
     }
 
     // Use the authenticated user's ID from the token — never trust client-sent authorId
@@ -124,6 +146,7 @@ export async function POST(request: NextRequest) {
         location: location || 'Dakar',
         phone: phone || null,
         whatsapp: whatsapp || null,
+        imageUrls: safeImageUrls,
         authorId,
       },
     });

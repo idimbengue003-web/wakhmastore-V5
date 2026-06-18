@@ -18,6 +18,8 @@ interface AnnonceCardProps {
   vipType?: string | null;
   createdAt: string;
   description?: string | null;
+  coverImageUrl?: string | null;
+  imageCount?: number;
 }
 
 export default function AnnonceCard({
@@ -32,8 +34,11 @@ export default function AnnonceCard({
   vipType,
   createdAt,
   description,
+  coverImageUrl,
+  imageCount = 0,
 }: AnnonceCardProps) {
   const isJeVends = type === 'je_vends';
+  const hasPhoto = !!coverImageUrl;
 
   return (
     <Link href={`/annonces/${id}`} className="block">
@@ -41,11 +46,28 @@ export default function AnnonceCard({
         <CardContent className="p-0 h-full flex flex-col">
           {/* Photo / Emoji area - BIG */}
           <div className="relative">
-            <div className={`h-44 sm:h-52 flex items-center justify-center transition-all duration-500 ease-out group-hover:bg-orange/5 ${
+            <div className={`relative h-44 sm:h-52 flex items-center justify-center transition-all duration-500 ease-out group-hover:bg-orange/5 ${
               isJeVends ? 'bg-green-50' : 'bg-orange-bg'
             }`}>
-              <span className="text-5xl sm:text-6xl transition-transform duration-300 ease-out group-hover:scale-110 drop-shadow-sm">{emoji}</span>
+              {hasPhoto ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={coverImageUrl}
+                  alt={title}
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                />
+              ) : (
+                <span className="text-5xl sm:text-6xl transition-transform duration-300 ease-out group-hover:scale-110 drop-shadow-sm">{emoji}</span>
+              )}
             </div>
+            {/* Badge nombre de photos */}
+            {hasPhoto && imageCount > 1 && (
+              <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 text-white text-xs font-medium backdrop-blur-sm rounded-full px-2 py-1">
+                <span>📊</span>
+                <span>{imageCount}</span>
+              </div>
+            )}
             {/* Category badge */}
             <Badge
               variant="secondary"
@@ -63,7 +85,7 @@ export default function AnnonceCard({
             </Badge>
             {/* VIP badge */}
             {isVip && (
-              <Badge className={`absolute top-3 right-3 text-xs font-bold border-0 text-white shadow-sm ${
+              <Badge className={`absolute bottom-3 right-3 text-xs font-bold border-0 text-white shadow-sm ${
                 vipType === 'vip_king' ? 'bg-amber-500' : 'bg-green-500'
               }`}>
                 {vipType === 'vip_king' ? '👑 VIP KING' : '💪🏽 DIAMBAR'}

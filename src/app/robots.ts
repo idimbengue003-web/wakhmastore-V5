@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/auth/', '/complete-profile/'],
+        disallow: ['/api/', '/auth/', '/complete-profile/', '/admin'],
       },
     ],
     sitemap: 'https://wakhmastore.com/sitemap.xml',

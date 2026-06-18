@@ -41,6 +41,11 @@ model Annonce {
   type        String    @default("je_cherche") // je_cherche, je_vends
   phone       String?   // Numéro de téléphone du vendeur
   whatsapp    String?   // Numéro WhatsApp du vendeur
+  // ── Photos ──
+  // Tableau de data URLs (base64) ou URLs distantes.
+  // Limité côté API à 3 photos ≤ ~500KB chacune après compression.
+  // Si vide → la carte affiche l'emoji par défaut lié à la catégorie.
+  imageUrls   String[] @default([])
   isVip       Boolean   @default(false)
   vipType     String?   // diambar, vip_king
   authorId    String

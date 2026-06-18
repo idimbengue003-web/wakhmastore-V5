@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Send, ArrowLeft, Phone, MessageCircle, Info, Crown, Star, Zap, AlertTriangle } from 'lucide-react';
+import { Send, ArrowLeft, Phone, MessageCircle, Info, Crown, Star, Zap, AlertTriangle, Camera, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,6 +13,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
+import { compressImage, IMAGE_UPLOAD_LIMITS } from '@/lib/image-compress';
 import Link from 'next/link';
 import { PLANS, CATEGORY_EMOJIS, CATEGORIES, isSubscriber as checkSubscriber } from '@/lib/constants';
 
@@ -22,6 +23,9 @@ export default function DeposerPage() {
   const { user, isLoading, login } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [annonceCount, setAnnonceCount] = useState<number | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]); // data URLs
+  const [photoProcessing, setPhotoProcessing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -115,6 +119,49 @@ export default function DeposerPage() {
     }
   }, [isSubscriber]);
 
+  // ── Gestion des photos ──
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    if (photos.length + files.length > IMAGE_UPLOAD_LIMITS.MAX_PHOTOS) {
+      toast({
+        title: 'Trop de photos',
+        description: `Maximum ${IMAGE_UPLOAD_LIMITS.MAX_PHOTOS} photos par annonce.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setPhotoProcessing(true);
+    try {
+      const compressed: string[] = [];
+      for (const file of files) {
+        try {
+          const result = await compressImage(file);
+          compressed.push(result.dataUrl);
+        } catch (err) {
+          toast({
+            title: 'Image ignorée',
+            description: err instanceof Error ? err.message : 'Compression échouée',
+            variant: 'destructive',
+          });
+        }
+      }
+      if (compressed.length) {
+        setPhotos(prev => [...prev, ...compressed].slice(0, IMAGE_UPLOAD_LIMITS.MAX_PHOTOS));
+      }
+    } finally {
+      setPhotoProcessing(false);
+      // Reset input value to allow re-selecting same file
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
+
+  function removePhoto(index: number) {
+    setPhotos(prev => prev.filter((_, i) => i !== index));
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -148,6 +195,7 @@ export default function DeposerPage() {
           price: parseInt(form.price),
           emoji: CATEGORY_EMOJIS[form.category] || '📦',
           type: isSubscriber ? form.type : 'je_cherche',
+          imageUrls: photos,
         }),
       });
 
@@ -354,6 +402,83 @@ export default function DeposerPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* ── Photos (optionnel) ── */}
+              <div className="space-y-2">
+                <Label className="font-medium text-gray-700 flex items-center gap-1.5">
+                  <Camera className="w-4 h-4 text-orange" />
+                  Photos <span className="text-xs text-gray-400 font-normal">(optionnel, max {IMAGE_UPLOAD_LIMITS.MAX_PHOTOS})</span>
+                </Label>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Slots existants */}
+                  {photos.map((photo, idx) => (
+                    <div
+                      key={idx}
+                      className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group/photo"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo}
+                        alt={`Photo ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(idx)}
+                        className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-opacity shadow-md"
+                        aria-label="Supprimer cette photo"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                      {idx === 0 && (
+                        <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                          Couverture
+                        </span>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Slot d'ajout */}
+                  {photos.length < IMAGE_UPLOAD_LIMITS.MAX_PHOTOS && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={photoProcessing || isAtLimit}
+                      className="aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-orange hover:bg-orange-bg flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-orange transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {photoProcessing ? (
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                      ) : (
+                        <>
+                          <Camera className="w-6 h-6" />
+                          <span className="text-[11px] font-medium">Ajouter</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                <p className="text-xs text-gray-400 mt-1">
+                  {photos.length > 0 ? (
+                    <span className="flex items-center gap-1">
+                      <ImageIcon className="w-3 h-3" />
+                      {photos.length}/{IMAGE_UPLOAD_LIMITS.MAX_PHOTOS} photos • Sans photo, l&apos;emoji <span className="text-base">{CATEGORY_EMOJIS[form.category] || '📦'}</span> sera affiché
+                    </span>
+                  ) : (
+                    <span>Ajoutez jusqu&apos;à {IMAGE_UPLOAD_LIMITS.MAX_PHOTOS} photos. Sans photo, l&apos;emoji de la catégorie sera utilisé.</span>
+                  )}
+                </p>
               </div>
 
               <div className="space-y-2">

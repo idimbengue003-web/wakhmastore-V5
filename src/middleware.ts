@@ -8,6 +8,7 @@ const PROTECTED_ROUTES = [
   '/abonnements',
   '/parrainage',
   '/acheter-points',
+  '/admin',
 ];
 
 // Routes that are admin-only

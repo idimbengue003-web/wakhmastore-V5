@@ -35,6 +35,7 @@ interface AnnonceDetail {
   whatsapp: string | null;
   hasAccess: boolean;
   unlockCost: number;
+  imageUrls?: string[];
 }
 
 export default function AnnonceDetailPage() {
@@ -47,6 +48,7 @@ export default function AnnonceDetailPage() {
   const [purchasing, setPurchasing] = useState(false);
   const [revealPhase, setRevealPhase] = useState(0); // 0: loading, 1: card appear, 2: header reveal, 3: details appear, 4: paywall/contact appear, 5: contact revealed
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
 
   // Load user on mount — try localStorage then refresh from httpOnly cookies
   useEffect(() => {
@@ -217,17 +219,46 @@ export default function AnnonceDetailPage() {
         {/* Annonce Card - Slow reveal with smooth transitions */}
         <div className={`transition-all duration-1000 ease-out ${revealPhase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
           <Card className="border-gray-100 rounded-2xl overflow-hidden shadow-lg">
-            {/* Emoji Header - Slides down smoothly */}
+            {/* Header (Photo ou Emoji) - Slides down smoothly */}
             <div className={`relative bg-gradient-to-br transition-all duration-1200 ease-out ${
               annonce.type === 'je_vends' ? 'from-green-50 to-green-100/50' : 'from-orange/10 to-orange/5'
             } ${revealPhase >= 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
               <div className="h-48 sm:h-64 flex items-center justify-center relative overflow-hidden">
-                <span className={`text-7xl sm:text-8xl transition-all duration-700 ease-out ${
-                  revealPhase >= 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
-                }`}>{annonce.emoji}</span>
+                {annonce.imageUrls && annonce.imageUrls.length > 0 ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={annonce.imageUrls[activeImageIdx]}
+                    alt={annonce.title}
+                    className={`w-full h-full object-cover transition-all duration-700 ease-out ${
+                      revealPhase >= 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+                    }`}
+                    onLoad={() => setImageLoaded(true)}
+                  />
+                ) : (
+                  <span className={`text-7xl sm:text-8xl transition-all duration-700 ease-out ${
+                    revealPhase >= 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+                  }`}>{annonce.emoji}</span>
+                )}
                 {/* Subtle shine animation */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shine" />
               </div>
+              {/* Gallery thumbnails if multiple photos */}
+              {annonce.imageUrls && annonce.imageUrls.length > 1 && (
+                <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 transition-all duration-700 ease-out ${
+                  revealPhase >= 2 ? 'opacity-100' : 'opacity-0'
+                }`}>
+                  {annonce.imageUrls.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveImageIdx(idx)}
+                      className={`w-2.5 h-2.5 rounded-full transition-all ${
+                        activeImageIdx === idx ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'
+                      }`}
+                      aria-label={`Photo ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
               {/* Type Badge */}
               <Badge className={`absolute bottom-4 left-4 text-sm font-bold border-0 px-3 py-1 transition-all duration-700 ease-out ${
                 revealPhase >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'

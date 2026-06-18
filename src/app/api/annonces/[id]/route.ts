@@ -63,6 +63,8 @@ export async function GET(
       authorId: annonce.authorId,
       authorName: annonce.author.name || 'Vendeur',
       createdAt: annonce.createdAt,
+      // Galerie photos complète (max 3)
+      imageUrls: annonce.imageUrls,
       // Only include contact info if user has access
       phone: hasAccess ? annonce.phone : null,
       whatsapp: hasAccess ? annonce.whatsapp : null,
