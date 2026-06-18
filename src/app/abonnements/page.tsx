@@ -182,16 +182,21 @@ function PlanPaymentBlock({ plan }: { plan: typeof SUBSCRIPTION_PLANS[0] }) {
 
 export default function AbonnementsPage() {
   const router = useRouter();
-  const { user, loadFromStorage } = useAuth();
+  const { user, isLoading, loadFromStorage } = useAuth();
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
 
   useEffect(() => { loadFromStorage(); }, [loadFromStorage]);
 
   useEffect(() => {
-    if (!user) {
+    // ⚠️ NE PAS rediriger tant que isLoading est true — sinon on boucle
+    // entre /abonnements et /login car user est null au premier render
+    // (état initial Zustand) avant que loadFromStorage() ne le peuple.
+    if (!isLoading && !user) {
       router.push('/login?redirect=/abonnements');
     }
-  }, [user, router]);
+  }, [user, isLoading, router]);
+
+  if (isLoading || !user) return null;
 
   return (
     <div className="min-h-screen flex flex-col">

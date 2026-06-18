@@ -89,7 +89,7 @@ function PkgPaymentBlock({ pkg }: { pkg: typeof POINT_PACKAGES[0] }) {
 
 export default function AcheterPointsPage() {
   const router = useRouter();
-  const { user, loadFromStorage } = useAuth();
+  const { user, isLoading, loadFromStorage } = useAuth();
   const [expandedPkg, setExpandedPkg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -97,12 +97,15 @@ export default function AcheterPointsPage() {
   }, [loadFromStorage]);
 
   useEffect(() => {
-    if (!user) {
+    // ⚠️ NE PAS rediriger tant que isLoading est true — sinon on boucle
+    // entre /acheter-points et /login car user est null au premier render
+    // (état initial Zustand) avant que loadFromStorage() ne le peuple.
+    if (!isLoading && !user) {
       router.push('/login?redirect=/acheter-points');
     }
-  }, [user, router]);
+  }, [user, isLoading, router]);
 
-  if (!user) return null;
+  if (isLoading || !user) return null;
 
   return (
     <div className="min-h-screen flex flex-col">

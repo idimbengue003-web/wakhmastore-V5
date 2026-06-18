@@ -17,7 +17,7 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const { login, loadFromStorage, user } = useAuth();
+  const { login, loadFromStorage, user, isLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
 
@@ -49,10 +49,16 @@ function LoginContent() {
   }, [loadFromStorage]);
 
   useEffect(() => {
+    // ⚠️ NE PAS rediriger tant que isLoading est true — sinon on boucle
+    // entre /login et les pages protégées. user est null au premier render
+    // (état initial Zustand) avant que loadFromStorage() ne le peuple, donc
+    // si on redirige ici basé sur user seul, on manque le cas où l'utilisateur
+    // est en fait déjà connecté.
+    if (isLoading) return;
     if (user) {
       router.push(redirectUrl);
     }
-  }, [user, redirectUrl, router]);
+  }, [user, isLoading, redirectUrl, router]);
 
   useEffect(() => {
     if (referralCodeFromUrl) {

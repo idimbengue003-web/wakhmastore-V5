@@ -59,7 +59,7 @@ interface ProfileData {
 
 export default function ProfilPage() {
   const router = useRouter();
-  const { user: authUser, loadFromStorage } = useAuth();
+  const { user: authUser, isLoading, loadFromStorage } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,12 +70,16 @@ export default function ProfilPage() {
   }, [loadFromStorage]);
 
   useEffect(() => {
+    // ⚠️ NE PAS rediriger tant que isLoading est true — sinon on boucle
+    // entre /profil et /login car authUser est null au premier render
+    // (état initial Zustand) avant que loadFromStorage() ne le peuple.
+    if (isLoading) return;
     if (!authUser) {
       router.push('/login?redirect=/profil');
       return;
     }
     fetchProfile();
-  }, [authUser, router]);
+  }, [authUser, isLoading, router]);
 
   async function fetchProfile() {
     try {
