@@ -331,3 +331,39 @@ Stage Summary:
   * CALLMEBOT_API_KEY
 - Automate (payment-notify) conservé en parallèle temporairement (safety net)
   → sera supprimé une fois Wave Business validé en production
+
+---
+Task ID: 7
+Agent: Main Agent
+Task: Configuration réelle Wave Business GraphQL API
+
+Work Log:
+- User a capturé (après plusieurs tentatives) le cURL complet d'une requête
+  GraphQL de business.wave.com via DevTools Network > Copy as cURL
+- Décodage du header authorization: Basic OlVTX3Rva19zbl8wM2IzNmY5NmM5ZTQ0OGFlNmNkYWQ0ZmE5YmNmNzRkMQ==
+  → base64 decode → ":US_tok_sn_03b36f96c9e448ae6cdad4fa9bcf74d1"
+  → username="" (vide), password="US_tok_sn_03b36f96c9e448ae6cdad4fa9bcf74d1"
+  → C'EST UNE API KEY STATIQUE ! Pas besoin de cookies de session
+- Endpoint confirmé : https://sn.mmapp.wave.com/a/business_graphql (POST GraphQL)
+- wave-business.ts entièrement réécrit :
+  * URL hardcoded: https://sn.mmapp.wave.com/a/business_graphql
+  * Auth: Basic base64(":" + apiKey) — beaucoup plus simple que cookies
+  * Format: GraphQL POST avec query + variables
+  * Parser adapté pour structure GraphQL nested
+    (data.me.businessUser.business.transactions.edges[].node)
+  * Détection flexible des champs (id/uuid/reference, amount/value, etc.)
+  * Gestion des erreurs GraphQL (data.errors array)
+  * User-Agent Android Chrome (celui capturé)
+  * Var env renommée: WAVE_BUSINESS_API_KEY (au lieu de WAVE_BUSINESS_COOKIE)
+- ⚠️ La query GraphQL actuelle est estimée (HistoryEntries_BusinessWalletHistoryQuery)
+  La query capturée était BusinessReportsTabNewQuery (pour rapports PDF, pas transactions)
+  Il faut récupérer la vraie query en allant sur la page Transactions
+- Build OK, commit 05c6983 poussé sur origin/main
+
+Stage Summary:
+- 1 fichier modifié (+187 lignes, -79)
+- API key statique Wave Business = setup simplifié énormément
+  (une seule var env à configurer, pas de refresh session)
+- En attente de la capture de la VRAIE query Transactions pour finaliser
+- Action user requise : capturer le cURL de la page Transactions
+  (pas Reports) → extraire la query GraphQL → me l'envoyer
