@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/use-auth';
-import { getSubscriptionPaymentUrl } from '@/lib/constants';
 import { createPendingPayment } from '@/lib/payment-pending-client';
 
 const SUBSCRIPTION_PLANS = [
@@ -110,10 +109,9 @@ const PLAN_COLORS: Record<string, { bg: string; bgLight: string; text: string; b
   },
 };
 
-// Payment block — now just a direct checkout link
+// Payment block — handlePayClick crée un pending puis redirige vers /paiement/confirmation
 function PlanPaymentBlock({ plan }: { plan: typeof SUBSCRIPTION_PLANS[0] }) {
   const colors = PLAN_COLORS[plan.id];
-  const paymentUrl = getSubscriptionPaymentUrl(plan.id);
   const [isPreparing, setIsPreparing] = useState(false);
 
   async function handlePayClick(e: React.MouseEvent<HTMLAnchorElement>) {
@@ -149,8 +147,8 @@ function PlanPaymentBlock({ plan }: { plan: typeof SUBSCRIPTION_PLANS[0] }) {
         </div>
       </div>
 
-      {/* Direct payment button */}
-      <a href={paymentUrl} target="_blank" rel="noopener noreferrer" onClick={handlePayClick} className="block">
+      {/* Direct payment button — href="#" car le vrai redirect se fait dans handlePayClick */}
+      <a href="#" onClick={handlePayClick} className="block">
         <Button
           className={`w-full ${colors.btn} text-white font-semibold rounded-xl h-12 text-sm`}
           type="button"

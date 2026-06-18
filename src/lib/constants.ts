@@ -87,8 +87,7 @@ export type PlanId = keyof typeof PLANS;
 // --- Point Packages (purchase with FCFA) ---
 // ⚠️ SOURCE UNIQUE DE VÉRITÉ — utilisée par :
 //   - /api/payment-pending (validation planId + montant)
-//   - /api/payment-status  (crédit des points après confirmation Wave)
-//   - /api/payment-notify  (match SMS callback)
+//   - /api/payment-status  (crédit des points après confirmation Wave Business)
 //   - /recharge             (onglet "Acheter des Points")
 //   - /acheter-points       (page d'achat dédiée)
 // Toute modification ici se propage partout. NE PAS redéfinir POINT_PACKAGES
@@ -206,40 +205,6 @@ export function buildWaveCheckoutUrl(amount: number, pendingId: string): string 
     client_reference: pendingId,
   });
   return `${base}${separator}${params.toString()}`;
-}
-
-// --- Automated payment gateway links ---
-export const PAYMENT_GATEWAY_BASE = 'https://payment-gateway-beige-ten.vercel.app/checkout.html';
-
-// Production URL where users are redirected after payment confirmation.
-// The gateway appends ?txn=...&status=succes&montant=...&compte=...&plan=...&points=...
-const PAYMENT_RETURN_URL = encodeURIComponent('https://www.wakhmastore.com/paiement/confirmation');
-
-function buildGatewayUrl(planSlug: string): string {
-  return `${PAYMENT_GATEWAY_BASE}?plan=${planSlug}&callback_url=${PAYMENT_RETURN_URL}`;
-}
-
-export const SUBSCRIPTION_PAYMENT_LINKS: Record<string, string> = {
-  gratuit: buildGatewayUrl('bolt'),
-  diambar: buildGatewayUrl('diambar'),
-  vip_king: buildGatewayUrl('vip-king'),
-};
-
-export const POINTS_PAYMENT_LINKS: Record<string, string> = {
-  starter: buildGatewayUrl('points-7000'),
-  standard: buildGatewayUrl('points-17000'),
-  premium: buildGatewayUrl('points-50000'),
-  ultimate: buildGatewayUrl('points-105000'),
-};
-
-// Helper to get subscription payment URL by plan id
-export function getSubscriptionPaymentUrl(planId: string): string {
-  return SUBSCRIPTION_PAYMENT_LINKS[planId] || PAYMENT_GATEWAY_BASE;
-}
-
-// Helper to get points payment URL by package id
-export function getPointsPaymentUrl(packageId: string): string {
-  return POINTS_PAYMENT_LINKS[packageId] || PAYMENT_GATEWAY_BASE;
 }
 
 // --- Helper: Is user a subscriber? ---

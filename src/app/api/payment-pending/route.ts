@@ -2,17 +2,19 @@
 // WAKHMA STORE — /api/payment-pending
 // ============================================================================
 // Endpoint appelé par le frontend AVANT de rediriger l'utilisateur vers Wave.
-// Crée un enregistrement "pending" en DB qui sera matché plus tard par Automate
-// (via /api/payment-notify) quand le paiement Wave sera intercepté.
+// Crée un enregistrement "pending" en DB qui sera matché plus tard par
+// /api/payment-status quand le paiement Wave sera détecté via Wave Business.
 //
 // Flux :
 // 1. Client clique "Payer X FCFA" sur /recharge ou /abonnements ou /acheter-points
 // 2. Frontend appelle CE endpoint avec { planId, amount, type }
 // 3. On crée un PointPurchase { status: 'pending', expiresAt: now+30min }
-// 4. Frontend redirige vers la page Wave (ou checkout gateway)
-// 5. Client paie sur Wave
-// 6. Automate intercepte la notif/SMS Wave sur le téléphone marchand
-// 7. Automate POST vers /api/payment-notify → match par montant → crédite
+// 4. Frontend redirige vers /paiement/confirmation?pending=<id>&montant=...
+// 5. La page /paiement/confirmation affiche le bouton "Payer avec Wave"
+//    (URL Wave Business checkout avec montant pré-rempli + client_reference=<pendingId>)
+// 6. Client paie sur Wave (paiement marchand non annulable)
+// 7. /api/payment-status interroge Wave Business GraphQL → match par montant
+//    + client_reference → crédite les points/active l'abonnement
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -109,7 +111,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log(`[PAYMENT-PENDING] Créé: ${pending.id} — user=${user.phone} — plan=${planId} — montant=${amount} FCFA — expire à ${expiresAt.toISOString()}`);
+    console.log(
+      `[PAYMENT-PENDING] Créé: id=${pending.id} | user=${user.phone || user.email} | ` +
+      `plan=${planId} | montant=${amount} FCFA | type=${type} | ` +
+      `client_reference=${pending.id} | expire=${expiresAt.toISOString()}`
+    );
 
     return NextResponse.json({
       success: true,

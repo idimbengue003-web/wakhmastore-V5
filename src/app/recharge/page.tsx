@@ -15,8 +15,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 import {
-  PLANS, POINT_PACKAGES,
-  getSubscriptionPaymentUrl, getPointsPaymentUrl
+  PLANS, POINT_PACKAGES
 } from '@/lib/constants';
 import type { PlanId } from '@/lib/constants';
 import { createPendingPayment } from '@/lib/payment-pending-client';
@@ -55,8 +54,8 @@ function PaymentBlock({ paymentUrl, amount, label, color = 'orange', planId, pur
         </div>
       </div>
 
-      {/* Direct payment button */}
-      <a href={paymentUrl} target="_blank" rel="noopener noreferrer" onClick={handlePayClick} className="block">
+      {/* Direct payment button — href="#" car le vrai redirect se fait dans handlePayClick */}
+      <a href="#" onClick={handlePayClick} className="block">
         <Button
           className={`w-full ${btnBg} text-white font-semibold rounded-xl h-12 text-sm`}
           type="button"
@@ -302,7 +301,7 @@ export default function RechargePage() {
                       {isExpanded && !isCurrentPlan && (
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                           <PaymentBlock
-                            paymentUrl={getSubscriptionPaymentUrl(plan.id)}
+                            paymentUrl="#"
                             amount={plan.price}
                             label={`Abonnement ${plan.name}`}
                             color={cardColor}
@@ -394,7 +393,7 @@ export default function RechargePage() {
                       {isExpanded && (
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                           <PaymentBlock
-                            paymentUrl={getPointsPaymentUrl(pkg.id)}
+                            paymentUrl="#"
                             amount={pkg.price}
                             label={`Pack ${pkg.label} — ${pkg.points.toLocaleString('fr-FR')} points`}
                             planId={pkg.id}

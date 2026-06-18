@@ -12,12 +12,11 @@ import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/use-auth';
-import { POINT_PACKAGES, getPointsPaymentUrl } from '@/lib/constants';
+import { POINT_PACKAGES } from '@/lib/constants';
 import { createPendingPayment } from '@/lib/payment-pending-client';
 
-// Payment block — direct checkout link
+// Payment block — handlePayClick crée un pending puis redirige vers /paiement/confirmation
 function PkgPaymentBlock({ pkg }: { pkg: typeof POINT_PACKAGES[number] }) {
-  const paymentUrl = getPointsPaymentUrl(pkg.id);
   const [isPreparing, setIsPreparing] = useState(false);
 
   async function handlePayClick(e: React.MouseEvent<HTMLAnchorElement>) {
@@ -49,8 +48,8 @@ function PkgPaymentBlock({ pkg }: { pkg: typeof POINT_PACKAGES[number] }) {
         </div>
       </div>
 
-      {/* Direct payment button */}
-      <a href={paymentUrl} target="_blank" rel="noopener noreferrer" onClick={handlePayClick} className="block">
+      {/* Direct payment button — href="#" car le vrai redirect se fait dans handlePayClick */}
+      <a href="#" onClick={handlePayClick} className="block">
         <Button
           className="w-full bg-orange hover:bg-orange-dark text-white font-semibold rounded-xl h-12 text-sm"
           type="button"
