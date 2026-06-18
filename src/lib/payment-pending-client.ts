@@ -1,8 +1,33 @@
 // ============================================================================
-// Helper : créer un pending payment avant redirection vers Wave
+// Helper : créer un pending payment avant redirection vers la page de paiement
+// ============================================================================
+//
+// ⚠️ DEPUIS LE 19/06/2026 — LA PASSERELLE EXTERNE N'EST PLUS UTILISÉE.
+//
+// Raison : la passerelle (payment-gateway-beige-ten.vercel.app) est un projet
+// Vercel sans Git, donc non déployable. De plus, son callback HMAC
+// (/api/payment-callback) matchait l'utilisateur par numéro de téléphone —
+// mais le format téléphonique ne correspondait jamais (DB : "77 123 45 67",
+// passerelle : "771234567"), donc AUCUN paiement n'était jamais crédité.
+//
+// Nouveau flux (100% interne à wakhmastore.com) :
+// 1. Frontend appelle /api/payment-pending → crée un PointPurchase pending
+// 2. Frontend redirige vers /paiement/confirmation?pending=<id>&montant=<m>&...
+// 3. La page /paiement/confirmation affiche le montant + le numéro marchand Wave
+// 4. L'utilisateur ouvre Wave, envoie l'argent au numéro affiché
+// 5. La page poll /api/payment-status?id=<pending> toutes les 3s
+// 6. /api/payment-status interroge l'API Wave Business (GraphQL) toutes les 30s
+// 7. Dès qu'une transaction entrante de ±10 FCFA est trouvée → crédit atomique
+// 8. La page affiche "Paiement confirmé" + points crédités
+//
+// Avantages :
+// - Plus besoin de la passerelle externe (un projet Vercel de moins à gérer)
+// - Plus besoin de détection SMS (Automate/MacroDroid)
+// - Plus de bug de matching téléphone (on a l'userId depuis la session)
+// - Tout est dans le repo Git wakhmastore-V5, donc déployable normalement
 // ============================================================================
 
-import { getSubscriptionPaymentUrl, getPointsPaymentUrl } from '@/lib/constants';
+import { PLANS, POINT_PACKAGES } from '@/lib/constants';
 
 interface CreatePendingOptions {
   planId: string;
@@ -18,18 +43,20 @@ interface CreatePendingResult {
 }
 
 /**
- * Crée un enregistrement pending en DB puis retourne l'URL de paiement Wave.
- * À appeler AVANT de rediriger l'utilisateur vers la page de paiement.
+ * Crée un enregistrement pending en DB puis retourne l'URL interne de la page
+ * de confirmation/paiement. À appeler AVANT de rediriger l'utilisateur.
+ *
+ * L'URL retournée est du type :
+ *   /paiement/confirmation?pending=<id>&montant=<m>&plan=<planId>&points=<p>
+ *
+ * La page /paiement/confirmation gère ensuite l'affichage des instructions
+ * de paiement (montant + numéro marchand) et le polling automatique.
  */
 export async function createPendingPayment({
   planId,
   amount,
   type,
 }: CreatePendingOptions): Promise<CreatePendingResult> {
-  const paymentUrl = type === 'abonnement'
-    ? getSubscriptionPaymentUrl(planId)
-    : getPointsPaymentUrl(planId);
-
   try {
     const res = await fetch('/api/payment-pending', {
       method: 'POST',
@@ -41,28 +68,43 @@ export async function createPendingPayment({
 
     if (!res.ok || !data.success) {
       console.warn('[createPendingPayment] Erreur:', data.error);
-      // On redirige quand même vers la page de paiement — le matching pourrait
-      // encore fonctionner si l'utilisateur a déjà un pending récent pour ce montant
-      return { success: false, paymentUrl, error: data.error };
+      // En cas d'erreur, rediriger quand même vers la page de confirmation
+      // sans pending ID — l'utilisateur verra l'état "inconnu" et pourra
+      // réessayer.
+      return { success: false, paymentUrl: '/paiement/confirmation', error: data.error };
     }
 
-    // Ajouter le pendingId dans l'URL de retour pour le tracking
-    const returnUrl = encodeURIComponent(
-      `https://www.wakhmastore.com/paiement/confirmation?pending=${data.pendingId}`
-    );
-    // Remplacer le callback_url existant dans l'URL
-    const finalUrl = paymentUrl.replace(
-      /callback_url=[^&]+/,
-      `callback_url=${returnUrl}`
-    );
+    // Construire l'URL interne avec tous les paramètres nécessaires
+    const params = new URLSearchParams();
+    params.set('pending', data.pendingId);
+    params.set('montant', String(amount));
+    params.set('plan', planId);
+
+    // Pour les achats de points, passer le nombre de points pour l'affichage
+    if (type === 'points') {
+      const pkg = POINT_PACKAGES.find((p) => p.id === planId);
+      if (pkg) params.set('points', String(pkg.points));
+    }
+
+    // Pour les abonnements, indiquer que c'est un abonnement (la page utilisera
+    // le paramètre `plan` pour afficher "Abonnement activé" au lieu de "+X pts")
+    if (type === 'abonnement') {
+      params.set('type', 'abonnement');
+    }
+
+    const paymentUrl = `/paiement/confirmation?${params.toString()}`;
 
     return {
       success: true,
       pendingId: data.pendingId,
-      paymentUrl: finalUrl,
+      paymentUrl,
     };
   } catch (err) {
     console.error('[createPendingPayment] Exception:', err);
-    return { success: false, paymentUrl, error: 'Erreur réseau' };
+    return {
+      success: false,
+      paymentUrl: '/paiement/confirmation',
+      error: 'Erreur réseau',
+    };
   }
 }

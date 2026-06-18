@@ -4,7 +4,8 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   CheckCircle2, XCircle, Loader2, Coins, Crown, Sparkles,
-  ArrowRight, RefreshCw, Home, AlertCircle
+  ArrowRight, RefreshCw, Home, AlertCircle, Copy, Check, ShieldCheck,
+  Smartphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/use-auth';
+import { PAYMENT_PHONE } from '@/lib/constants';
 
 type PaymentStatus = 'succes' | 'echec' | 'attente' | 'inconnu';
 
@@ -39,6 +41,7 @@ function ConfirmationContent() {
   const [status, setStatus] = useState<PaymentStatus>(initialStatus);
   const [pointsBefore, setPointsBefore] = useState<number | null>(null);
   const [pollCount, setPollCount] = useState(0);
+  const [phoneCopied, setPhoneCopied] = useState(false);
   const initialPointsStored = useRef(false);
 
   // Capture the user's points balance on first mount (before refresh).
@@ -49,6 +52,26 @@ function ConfirmationContent() {
       initialPointsStored.current = true;
     }
   }, [user]);
+
+  // Copy vendor phone to clipboard
+  const copyVendorPhone = async () => {
+    const phone = PAYMENT_PHONE.replace(/\s/g, '');
+    try {
+      await navigator.clipboard.writeText(phone);
+      setPhoneCopied(true);
+      setTimeout(() => setPhoneCopied(false), 2000);
+    } catch {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = phone;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      setPhoneCopied(true);
+      setTimeout(() => setPhoneCopied(false), 2000);
+    }
+  };
 
   // When status is 'attente' with a pendingId, poll /api/payment-status every 3s.
   // This endpoint checks Wave Business directly and confirms the payment server-side.
@@ -78,13 +101,6 @@ function ConfirmationContent() {
             // ⭐ Paiement confirmé côté serveur — points crédités
             await refreshAuth?.();
             setStatus('succes');
-            // Si on a les points crédit depuis la réponse, on les affiche
-            if (data.points) {
-              // Remplacer pointsFromUrl par la vraie valeur si pas déjà présente
-              if (!pointsFromUrl) {
-                searchParams.get('points'); // no-op — juste pour référence
-              }
-            }
             return; // stop polling
           }
 
@@ -178,6 +194,8 @@ function ConfirmationContent() {
       ? Math.max(0, pointsAfter - pointsBefore)
       : null;
 
+  const montantNum = Number(montant || 0);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -199,7 +217,7 @@ function ConfirmationContent() {
                   Paiement confirmé !
                 </h1>
                 <p className="text-gray-600 text-sm sm:text-base">
-                  Votre paiement de <strong>{Number(montant || 0).toLocaleString('fr-FR')} FCFA</strong> a bien été reçu.
+                  Votre paiement de <strong>{montantNum.toLocaleString('fr-FR')} FCFA</strong> a bien été reçu.
                 </p>
               </div>
 
@@ -349,29 +367,177 @@ function ConfirmationContent() {
           </Card>
         )}
 
-        {/* ATTENTE */}
+        {/* ATTENTE — with full payment instructions */}
         {status === 'attente' && (
-          <Card className="border-amber-200 shadow-lg">
-            <CardContent className="p-8 sm:p-10 text-center space-y-6">
-              <div className="flex justify-center">
-                <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center">
-                  <Loader2 className="w-12 h-12 text-amber-600 animate-spin" />
+          <div className="space-y-4">
+            {/* Title card */}
+            <Card className="border-amber-200 shadow-lg">
+              <CardContent className="p-6 sm:p-8 text-center space-y-4">
+                <div className="flex justify-center">
+                  <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center">
+                    <Loader2 className="w-10 h-10 text-amber-600 animate-spin" />
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <h1 className="text-2xl sm:text-3xl font-black text-gray-900">
-                  Paiement en cours de vérification
-                </h1>
-                <p className="text-gray-600 text-sm sm:text-base">
-                  Nous vérifions votre paiement. Cette page se mettra à jour automatiquement.
+                <div className="space-y-1">
+                  <h1 className="text-2xl sm:text-3xl font-black text-gray-900">
+                    Paiement en attente
+                  </h1>
+                  <p className="text-gray-600 text-sm">
+                    Envoyez l&apos;argent via Wave pour valider votre achat. La vérification est automatique.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Amount to pay */}
+            {montantNum > 0 && (
+              <Card className="border-2 border-orange">
+                <CardContent className="p-6 text-center space-y-2">
+                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                    Montant à envoyer
+                  </p>
+                  <p className="text-4xl font-black text-orange">
+                    {montantNum.toLocaleString('fr-FR')}
+                    <span className="text-lg font-semibold text-gray-500 ml-2">FCFA</span>
+                  </p>
+                  {pointsFromUrl && (
+                    <p className="text-sm text-gray-600">
+                      pour <strong>{Number(pointsFromUrl).toLocaleString('fr-FR')} points</strong>
+                    </p>
+                  )}
+                  {plan && !pointsFromUrl && (
+                    <p className="text-sm text-gray-600">
+                      abonnement <strong className="capitalize">{plan}</strong>
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Vendor phone — copy button */}
+            <Card className="border-gray-200">
+              <CardContent className="p-5 space-y-3">
+                <div className="flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                  <Smartphone className="w-3.5 h-3.5" />
+                  Numéro Wave marchand
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs text-gray-500">Wakhma Store</p>
+                    <p className="text-2xl font-black text-gray-900 tracking-wide font-mono">
+                      {PAYMENT_PHONE}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={copyVendorPhone}
+                    variant={phoneCopied ? 'default' : 'outline'}
+                    className={phoneCopied ? 'bg-green-600 hover:bg-green-700 text-white' : ''}
+                  >
+                    {phoneCopied ? (
+                      <>
+                        <Check className="w-4 h-4 mr-1.5" />
+                        Copié
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 mr-1.5" />
+                        Copier
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Instructions */}
+            <Card className="border-blue-100 bg-blue-50/50">
+              <CardContent className="p-5 space-y-3">
+                <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+                  Comment payer
+                </h2>
+                <ol className="space-y-2.5 text-sm text-gray-700">
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange text-white text-xs font-bold flex items-center justify-center">
+                      1
+                    </span>
+                    <span>
+                      Ouvrez l&apos;application <strong>Wave</strong> sur votre téléphone
+                    </span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange text-white text-xs font-bold flex items-center justify-center">
+                      2
+                    </span>
+                    <span>
+                      Allez dans <strong>« Transfert »</strong> et collez le numéro marchand ci-dessus
+                    </span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange text-white text-xs font-bold flex items-center justify-center">
+                      3
+                    </span>
+                    <span>
+                      Entrez le montant exact : <strong>{montantNum.toLocaleString('fr-FR')} FCFA</strong>
+                    </span>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange text-white text-xs font-bold flex items-center justify-center">
+                      4
+                    </span>
+                    <span>
+                      Confirmez le paiement. Vos points seront crédités <strong>automatiquement</strong> dans quelques secondes.
+                    </span>
+                  </li>
+                </ol>
+              </CardContent>
+            </Card>
+
+            {/* Polling status */}
+            <Card className="border-amber-200 bg-amber-50/50">
+              <CardContent className="p-5 text-center space-y-2">
+                <div className="flex items-center justify-center gap-2 text-amber-700">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="font-semibold text-sm">
+                    Vérification automatique en cours...
+                  </span>
+                </div>
+                <p className="text-xs text-amber-600">
+                  {pollCount > 0
+                    ? `Vérification #${pollCount} · Nous interrogeons Wave Business toutes les 3s.`
+                    : 'Nous interrogeons Wave Business pour détecter votre paiement.'}
                 </p>
-              </div>
-              <Button onClick={() => window.location.reload()} variant="outline" className="h-12">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Rafraîchir
+                <Button
+                  onClick={() => window.location.reload()}
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                  J'ai payé — Relancer la vérification
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Security reassurance */}
+            <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-start gap-2">
+              <ShieldCheck className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-green-800">
+                Paiement 100% sécurisé via Wave Business. Aucune information bancaire n&apos;est stockée sur notre serveur. Si vous fermez cette page, vous pouvez y revenir via le lien dans votre email.
+              </p>
+            </div>
+
+            {/* Cancel */}
+            <div className="text-center pt-2">
+              <Button
+                onClick={() => router.push('/recharge')}
+                variant="ghost"
+                size="sm"
+                className="text-gray-500"
+              >
+                Annuler et retourner aux offres
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* INCONNU — pas de params URL */}
