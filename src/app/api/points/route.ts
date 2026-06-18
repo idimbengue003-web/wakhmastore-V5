@@ -3,14 +3,7 @@ import { db } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/get-user';
 import { rateLimit } from '@/lib/rate-limit';
 import { securityHeaders } from '@/lib/security-headers';
-
-// Point purchase pricing tiers
-export const POINT_PACKAGES = [
-  { id: 'starter', amountFcfa: 1300, points: 7000, label: 'Starter', popular: false },
-  { id: 'standard', amountFcfa: 2500, points: 17000, label: 'Standard', popular: true },
-  { id: 'premium', amountFcfa: 5000, points: 50000, label: 'Premium', popular: false },
-  { id: 'ultimate', amountFcfa: 10000, points: 105000, label: 'Ultimate', popular: false },
-] as const;
+import { POINT_PACKAGES } from '@/lib/constants';
 
 export async function POST(request: NextRequest) {
   try {
@@ -70,7 +63,7 @@ export async function POST(request: NextRequest) {
     const purchase = await db.pointPurchase.create({
       data: {
         userId: user.id,
-        amountFcfa: pkg.amountFcfa,
+        amountFcfa: pkg.price,
         pointsAdded: pkg.points,
         paymentMethod,
         status: 'pending',
@@ -80,10 +73,10 @@ export async function POST(request: NextRequest) {
     // Do NOT auto-credit points — wait for admin approval
     return securityHeaders(NextResponse.json({
       success: true,
-      message: `Redirection vers la page de paiement sécurisée Wave pour ${pkg.points.toLocaleString('fr-FR')} points (${pkg.amountFcfa.toLocaleString('fr-FR')} FCFA). Vos points seront crédités automatiquement après confirmation du paiement.`,
+      message: `Redirection vers la page de paiement sécurisée Wave pour ${pkg.points.toLocaleString('fr-FR')} points (${pkg.price.toLocaleString('fr-FR')} FCFA). Vos points seront crédités automatiquement après confirmation du paiement.`,
       purchase: {
         id: purchase.id,
-        amountFcfa: pkg.amountFcfa,
+        amountFcfa: pkg.price,
         pointsAdded: pkg.points,
         paymentMethod,
         status: 'pending',

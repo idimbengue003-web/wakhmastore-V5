@@ -12,18 +12,11 @@ import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/use-auth';
-import { getPointsPaymentUrl } from '@/lib/constants';
+import { POINT_PACKAGES, getPointsPaymentUrl } from '@/lib/constants';
 import { createPendingPayment } from '@/lib/payment-pending-client';
 
-const POINT_PACKAGES = [
-  { id: 'starter', amountFcfa: 1300, points: 7000, label: 'Starter', popular: false },
-  { id: 'standard', amountFcfa: 2500, points: 17000, label: 'Standard', popular: true },
-  { id: 'premium', amountFcfa: 5000, points: 50000, label: 'Premium', popular: false },
-  { id: 'ultimate', amountFcfa: 10000, points: 105000, label: 'Ultimate', popular: false },
-];
-
 // Payment block — direct checkout link
-function PkgPaymentBlock({ pkg }: { pkg: typeof POINT_PACKAGES[0] }) {
+function PkgPaymentBlock({ pkg }: { pkg: typeof POINT_PACKAGES[number] }) {
   const paymentUrl = getPointsPaymentUrl(pkg.id);
   const [isPreparing, setIsPreparing] = useState(false);
 
@@ -32,7 +25,7 @@ function PkgPaymentBlock({ pkg }: { pkg: typeof POINT_PACKAGES[0] }) {
     setIsPreparing(true);
     const result = await createPendingPayment({
       planId: pkg.id,
-      amount: pkg.amountFcfa,
+      amount: pkg.price,
       type: 'points',
     });
     window.location.href = result.paymentUrl;
@@ -52,7 +45,7 @@ function PkgPaymentBlock({ pkg }: { pkg: typeof POINT_PACKAGES[0] }) {
         </div>
         <div className="border-t border-gray-200 pt-2 flex justify-between">
           <span className="font-medium text-gray-700 text-xs">Total à payer</span>
-          <span className="text-lg font-bold text-gray-900">{pkg.amountFcfa.toLocaleString('fr-FR')} FCFA</span>
+          <span className="text-lg font-bold text-gray-900">{pkg.price.toLocaleString('fr-FR')} FCFA</span>
         </div>
       </div>
 
@@ -163,7 +156,7 @@ export default function AcheterPointsPage() {
                   </div>
 
                   <div className="bg-orange-bg rounded-xl py-2.5 px-4 text-center">
-                    <span className="text-lg font-bold text-gray-900">{pkg.amountFcfa.toLocaleString('fr-FR')}</span>
+                    <span className="text-lg font-bold text-gray-900">{pkg.price.toLocaleString('fr-FR')}</span>
                     <span className="text-sm font-normal text-gray-500"> FCFA</span>
                   </div>
 

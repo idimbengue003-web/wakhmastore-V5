@@ -68,10 +68,19 @@ export async function createPendingPayment({
 
     if (!res.ok || !data.success) {
       console.warn('[createPendingPayment] Erreur:', data.error);
-      // En cas d'erreur, rediriger quand même vers la page de confirmation
-      // sans pending ID — l'utilisateur verra l'état "inconnu" et pourra
-      // réessayer.
-      return { success: false, paymentUrl: '/paiement/confirmation', error: data.error };
+      // En cas d'erreur, rediriger vers la page de confirmation avec status=echec
+      // et le message d'erreur encodé — l'utilisateur verra le vrai problème
+      // au lieu du message générique "Aucun paiement en cours".
+      const errParams = new URLSearchParams();
+      errParams.set('status', 'echec');
+      errParams.set('error', data.error || 'Erreur inconnue');
+      errParams.set('plan', planId);
+      errParams.set('montant', String(amount));
+      return {
+        success: false,
+        paymentUrl: `/paiement/confirmation?${errParams.toString()}`,
+        error: data.error,
+      };
     }
 
     // Construire l'URL interne avec tous les paramètres nécessaires
@@ -101,9 +110,14 @@ export async function createPendingPayment({
     };
   } catch (err) {
     console.error('[createPendingPayment] Exception:', err);
+    const errParams = new URLSearchParams();
+    errParams.set('status', 'echec');
+    errParams.set('error', 'Erreur réseau');
+    errParams.set('plan', planId);
+    errParams.set('montant', String(amount));
     return {
       success: false,
-      paymentUrl: '/paiement/confirmation',
+      paymentUrl: `/paiement/confirmation?${errParams.toString()}`,
       error: 'Erreur réseau',
     };
   }

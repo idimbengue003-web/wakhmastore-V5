@@ -28,6 +28,7 @@ function ConfirmationContent() {
   const plan = searchParams.get('plan') || '';
   const pointsFromUrl = searchParams.get('points') || '';
   const pendingId = searchParams.get('pending') || '';
+  const errorMsg = searchParams.get('error') || '';
 
   // Compute initial status from URL params
   // If we have a pendingId but no explicit status, treat as 'attente' (pending payment in progress)
@@ -325,6 +326,18 @@ function ConfirmationContent() {
                   La transaction n&apos;a pas pu être validée. Aucun montant n&apos;a été débité de votre compte.
                 </p>
               </div>
+
+              {errorMsg && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-left">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-600" />
+                    <div className="text-xs text-red-800">
+                      <p className="font-semibold mb-0.5">Détail de l&apos;erreur :</p>
+                      <p className="font-mono break-all">{decodeURIComponent(errorMsg)}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-left text-sm text-amber-800 space-y-2">
                 <div className="flex items-start gap-2">

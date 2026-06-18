@@ -85,6 +85,14 @@ export const PLANS = {
 export type PlanId = keyof typeof PLANS;
 
 // --- Point Packages (purchase with FCFA) ---
+// ⚠️ SOURCE UNIQUE DE VÉRITÉ — utilisée par :
+//   - /api/payment-pending (validation planId + montant)
+//   - /api/payment-status  (crédit des points après confirmation Wave)
+//   - /api/payment-notify  (match SMS callback)
+//   - /recharge             (onglet "Acheter des Points")
+//   - /acheter-points       (page d'achat dédiée)
+// Toute modification ici se propage partout. NE PAS redéfinir POINT_PACKAGES
+// localement dans une page — ça désynchroniserait le frontend du backend.
 export const POINT_PACKAGES = [
   {
     id: 'starter',
@@ -94,17 +102,24 @@ export const POINT_PACKAGES = [
     popular: false,
   },
   {
-    id: 'pro',
+    id: 'standard',
     points: 17000,
     price: 2500,
-    label: 'Pro',
+    label: 'Standard',
     popular: true,
   },
   {
-    id: 'business',
-    points: 29000,
+    id: 'premium',
+    points: 50000,
     price: 5000,
-    label: 'Business',
+    label: 'Premium',
+    popular: false,
+  },
+  {
+    id: 'ultimate',
+    points: 105000,
+    price: 10000,
+    label: 'Ultimate',
     popular: false,
   },
 ] as const;
@@ -176,8 +191,6 @@ export const SUBSCRIPTION_PAYMENT_LINKS: Record<string, string> = {
 export const POINTS_PAYMENT_LINKS: Record<string, string> = {
   starter: buildGatewayUrl('points-7000'),
   standard: buildGatewayUrl('points-17000'),
-  pro: buildGatewayUrl('points-17000'),
-  business: buildGatewayUrl('points-50000'),
   premium: buildGatewayUrl('points-50000'),
   ultimate: buildGatewayUrl('points-105000'),
 };
