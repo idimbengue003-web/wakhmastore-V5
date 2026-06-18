@@ -11,17 +11,22 @@
 // - Détection session expirée (HTTP 401) → alerte admin via WhatsApp
 //
 // 🔑 VARIABLES D'ENVIRONNEMENT REQUISES :
-// - WAVE_BUSINESS_API_KEY   : token API (ex: "US_tok_sn_03b36f96c9e448ae6cdad4fa9bcf74d1")
-//                             → capturé via DevTools > Network > business_graphql
-//                               > authorization header (base64 decoded)
-// - WAVE_BUSINESS_USER_AGENT: User-Agent du navigateur utilisé (optionnel)
+// - WAVE_BUSINESS_API_KEY    : token API (ex: "US_tok_sn_03b36f96c9e448ae6cdad4fa9bcf74d1")
+//                              → capturé via DevTools > Network > business_graphql
+//                                > authorization header (base64 decoded)
+// - WAVE_BUSINESS_WALLET_ID  : ID du wallet business (ex: "W_sn_LUvGY4hJVmNP")
+//                              → capturé dans les variables de la requête GraphQL
+//                                (champ walletOpaqueId)
+// - WAVE_BUSINESS_USER_AGENT : User-Agent du navigateur utilisé (optionnel)
 //
-// 📋 RÉCUPÉRER L'API KEY (côté admin, une fois) :
+// 📋 RÉCUPÉRER LES IDENTIFIANTS (côté admin, une fois) :
 // 1. Sur PC : F12 → Network → recharge business.wave.com (page Transactions)
 // 2. Clic droit sur la requête business_graphql → Copy as cURL
 // 3. Cherche le header "authorization: Basic XXX"
 // 4. Décode XXX en base64 → tu obtiens ":US_tok_sn_..."
 // 5. La partie après ":" est ta clé API → colle dans WAVE_BUSINESS_API_KEY
+// 6. Dans le body JSON, cherche "walletOpaqueId":"W_sn_XXX"
+//    → colle la valeur dans WAVE_BUSINESS_WALLET_ID
 //
 // 🌐 ENDPOINT :
 // - URL: https://sn.mmapp.wave.com/a/business_graphql
@@ -76,6 +81,7 @@ const WAVE_GRAPHQL_URL = 'https://sn.mmapp.wave.com/a/business_graphql';
 function getConfig() {
   return {
     apiKey: process.env.WAVE_BUSINESS_API_KEY || '',
+    walletOpaqueId: process.env.WAVE_BUSINESS_WALLET_ID || '',
     userAgent:
       process.env.WAVE_BUSINESS_USER_AGENT ||
       'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36',
@@ -84,46 +90,215 @@ function getConfig() {
 
 /**
  * Indique si le client Wave Business est configuré
- * (API key présente en variable d'environnement)
+ * (API key ET wallet ID présents en variables d'environnement)
  */
 export function isWaveBusinessConfigured(): boolean {
-  return !!getConfig().apiKey;
+  return !!(getConfig().apiKey && getConfig().walletOpaqueId);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// QUERY GraphQL
+// QUERY GraphQL — HistoryEntries_BusinessWalletHistoryQuery
 // ─────────────────────────────────────────────────────────────────────────────
 //
-// ⚠️ TODO : cette query est estimée. Il faut la remplacer par la VRAIE query
-// capturée depuis business.wave.com > page Transactions > DevTools > Network.
+// ✅ Query exacte capturée depuis business.wave.com > page Transactions
+// via DevTools > Network > business_graphql > Copy as cURL.
 //
-// D'après les observations, la query s'appelle probablement :
-//   HistoryEntries_BusinessWalletHistoryQuery
+// Cette query retourne l'historique des transactions du wallet business sur
+// une période donnée. Les fragments (...) gèrent les différents types
+// d'entrées (vente client, remboursement, transfert reçu, etc.)
 //
-// Une fois qu'on aura le cURL complet de cette requête, on remplacera
-// HISTORY_QUERY par la query exacte.
+// Pour WakhmaStore, ce qui nous intéresse principalement ce sont les
+// `MerchantSaleEntry` (paiements reçus de la part de clients via Wave).
 // -----------------------------------------------------------------------------
 
-const HISTORY_QUERY = `
-query HistoryEntries_BusinessWalletHistoryQuery(
-  $first: Int
-  $after: String
-  $filter: TransactionFilter
+const HISTORY_QUERY = `query HistoryEntries_BusinessWalletHistoryQuery(
+  $start: Date!
+  $end: Date!
+  $walletOpaqueId: String!
+  $limit: Int
+  $transactionId: String
+  $customerMobileStr: String
+  $searchTerm: String
+  $surrogateEmployeeId: String
+  $includePending: Boolean
+  $transactionType: TransactionType
 ) {
   me {
+    merchant {
+      canRefund
+      name
+      id
+    }
     businessUser {
+      rolePermissions
+      user {
+        merchant {
+          needsPinToRefund
+          id
+        }
+        id
+      }
       business {
-        transactions(first: $first, after: $after, filter: $filter) {
-          edges {
-            node {
-              id
-              amount
-              currency
-              direction
-              whenCreated
-              counterparty {
-                msisdn
+        name
+        showGrossAmount
+        showSurrogateOptions
+        walletHistory(start: $start, end: $end, walletOpaqueId: $walletOpaqueId, limit: $limit, transactionId: $transactionId, customerMobileStr: $customerMobileStr, surrogateEmployeeId: $surrogateEmployeeId, searchTerm: $searchTerm, includePending: $includePending, transactionType: $transactionType) {
+          batches {
+            __typename
+            id
+            totalCost
+            whenCreated
+            senderName
+            senderMobile
+          }
+          historyEntries {
+            __typename
+            id
+            summary
+            whenEntered
+            amount
+            isPending
+            isCancelled
+            baseReceiptFields {
+              formatType
+              label
+              value
+            }
+            ... on AgentTransactionEntry {
+              agentTransactionId
+              isDeposit
+              agentName
+              type
+              atxCashierName: counterpartyNameOnly
+              atxCashierMobile: customerMobile
+            }
+            ... on BillPaymentEntry {
+              billName
+              billAccount
+              transferOpaqueId: transferId
+            }
+            ... on MerchantSaleEntry {
+              isRefunded
+              isCheckout
+              clientReference
+              transferId
+              customerMobile: unmaskedSenderMobile
+              customerName: senderName
+              cashierName: merchantUName
+              grossAmount
+              feeAmount
+              actionSource
+              overrideBusinessName
+              businessSurrogate {
+                name
+                employeeIdNumber
+                id
               }
+              customFields {
+                label
+                value
+              }
+            }
+            ... on MerchantSubAccountFundingEntry {
+              fundingTransferId
+              baseReceiptFields {
+                label
+                value
+              }
+              summary
+              subAccountFundingMerchantName: sendingMerchantName
+              receivingMerchantName
+              isReversal
+            }
+            ... on MerchantRefundEntry {
+              transferId
+              customerMobile: unmaskedSenderMobile
+              customerName: senderName
+              cashierName: merchantUName
+              businessSurrogate {
+                name
+                employeeIdNumber
+                id
+              }
+            }
+            ... on PayoutTransferEntry {
+              tcid
+              maybeRecipientName: recipientName
+              recipientMobile
+              isReversal
+              isReversed
+              reversalSource
+              grossAmount
+            }
+            ... on TransferReceivedReversalEntry {
+              transferOpaqueId: transferId
+              senderName
+              senderMobile
+            }
+            ... on TransferSentEntry {
+              isRefunded
+              recipientName
+              recipientMobile
+              transferOpaqueId: transferId
+            }
+            ... on TransferSentReversalEntry {
+              transferOpaqueId: transferId
+              senderName
+              senderMobile
+            }
+            ... on MerchantSweepSentEntry {
+              sweepGrossVolume
+              businessSurrogate {
+                name
+                employeeIdNumber
+                id
+              }
+            }
+            ... on MerchantSweepReceivedEntry {
+              sweepGrossVolume
+              businessSurrogate {
+                name
+                employeeIdNumber
+                id
+              }
+              sendingMerchantName
+            }
+            ... on B2BPaymentEntry {
+              transferId
+              isReversed
+              isReversal
+              grossAmount
+              businessSurrogate {
+                name
+                employeeIdNumber
+                id
+              }
+            }
+            ... on RemittanceTransferReceivedEntry {
+              opaqueId
+              isReversed
+              externalReference
+            }
+            ... on RemittanceTransferReversalEntry {
+              opaqueId
+            }
+            ... on UserLinkedAccountTransferB2WEntry {
+              liaTransferId
+            }
+            ... on UserLinkedAccountTransferW2BEntry {
+              liaTransferId
+            }
+            ... on UserLinkedAccountTransferB2WEntryReversal {
+              liaTransferId
+            }
+            ... on UserLinkedAccountTransferW2BEntryReversal {
+              liaTransferId
+            }
+            ... on BusinessLoanDisbursementEntry {
+              userFacingTransactionId
+            }
+            ... on BusinessLoanRepaymentEntry {
+              userFacingTransactionId
             }
           }
         }
@@ -140,23 +315,25 @@ query HistoryEntries_BusinessWalletHistoryQuery(
 // PARSING DE LA RÉPONSE GRAPHQL
 // ─────────────────────────────────────────────────────────────────────────────
 //
-// Format probable de la réponse GraphQL :
+// Format EXACT de la réponse (confirmé par la query capturée) :
 // {
 //   "data": {
 //     "me": {
 //       "businessUser": {
 //         "business": {
-//           "transactions": {
-//             "edges": [
+//           "walletHistory": {
+//             "historyEntries": [
 //               {
-//                 "node": {
-//                   "id": "...",
-//                   "amount": 2000,
-//                   "currency": "XOF",
-//                   "direction": "INCOMING",
-//                   "whenCreated": "2025-01-15T10:30:00Z",
-//                   "counterparty": { "msisdn": "+221761234567" }
-//                 }
+//                 "__typename": "MerchantSaleEntry",  // ← ce qu'on veut
+//                 "id": "...",
+//                 "summary": "...",
+//                 "whenEntered": "2025-01-15T10:30:00Z",
+//                 "amount": 2000,                     // en FCFA
+//                 "isPending": false,
+//                 "isCancelled": false,
+//                 "customerMobile": "+221761234567",  // (sur MerchantSaleEntry)
+//                 "customerName": "...",
+//                 "transferId": "..."
 //               }
 //             ]
 //           }
@@ -166,53 +343,77 @@ query HistoryEntries_BusinessWalletHistoryQuery(
 //   }
 // }
 //
-// ⚠️ À AJUSTER une fois qu'on aura la vraie réponse.
+// On garde uniquement les entrées qui sont des ENCAISSEMENTS (paiements
+// entrants vers le compte business) :
+// - __typename === 'MerchantSaleEntry' (vente client via checkout/payment link)
+// - isPending === false (transaction confirmée)
+// - isCancelled === false (pas annulée)
+// - amount > 0
+//
+// Les autres types (MerchantRefundEntry, PayoutTransferEntry, etc.) sont
+// des sorties d'argent ou des remboursements — on les ignore.
 // -----------------------------------------------------------------------------
 
 function parseWaveResponse(data: any): WaveTransaction[] {
-  // Navigation flexible dans la structure GraphQL
-  const txConnection =
-    data?.data?.me?.businessUser?.business?.transactions ||
-    data?.data?.me?.business?.transactions ||
-    data?.data?.transactions ||
+  const walletHistory =
+    data?.data?.me?.businessUser?.business?.walletHistory ||
+    data?.data?.me?.business?.walletHistory ||
     null;
 
-  if (!txConnection) {
-    console.warn('[WAVE-BUSINESS] Structure de réponse inattendue:', JSON.stringify(data).substring(0, 500));
+  if (!walletHistory) {
+    console.warn(
+      '[WAVE-BUSINESS] Structure de réponse inattendue:',
+      JSON.stringify(data).substring(0, 500)
+    );
     return [];
   }
 
-  const edges = txConnection.edges || txConnection.nodes || txConnection || [];
-  if (!Array.isArray(edges)) return [];
+  const entries = walletHistory.historyEntries;
+  if (!Array.isArray(entries)) return [];
 
-  return edges
-    .map((edge: any): WaveTransaction | null => {
+  // Types d'entrées qui représentent des ENCAISSEMENTS (argent entrant)
+  const INCOMING_TYPES = new Set([
+    'MerchantSaleEntry',                  // Vente client (checkout, payment link, etc.)
+    'RemittanceTransferReceivedEntry',    // Transfert reçu
+    'MerchantSweepReceivedEntry',         // Sweep entrant
+    'UserLinkedAccountTransferW2BEntry',  // Wallet → Business (incoming pour business)
+  ]);
+
+  return entries
+    .map((entry: any): WaveTransaction | null => {
       try {
-        const tx = edge.node || edge;
+        if (!entry) return null;
 
-        const amount = Number(tx.amount ?? tx.amountFcfa ?? tx.value ?? 0);
-        if (!amount) return null;
+        // Filtrer par type — on ne garde que les encaissements
+        const typename = String(entry.__typename || '');
+        if (!INCOMING_TYPES.has(typename)) return null;
 
-        const direction = String(tx.direction ?? tx.type ?? '').toUpperCase();
-        const isIncoming =
-          direction === 'INCOMING' ||
-          direction === 'IN' ||
-          direction === 'RECEIVED' ||
-          direction === 'CREDIT';
-        if (!isIncoming) return null;
+        // Ignorer les transactions annulées
+        if (entry.isCancelled === true) return null;
 
-        const id = String(tx.id ?? tx.uuid ?? tx.reference ?? tx.txId ?? '');
+        // Ignorer les transactions en attente (pas encore confirmées)
+        if (entry.isPending === true) return null;
+
+        // Montant — sur MerchantSaleEntry, on peut avoir grossAmount ou amount
+        const amount = Number(entry.grossAmount ?? entry.amount ?? 0);
+        if (!amount || amount <= 0) return null;
+
+        // ID — on utilise l'id de l'entry ou le transferId si disponible
+        const id = String(
+          entry.transferId || entry.id || entry.opaqueId || entry.transferOpaqueId || ''
+        );
         if (!id) return null;
 
+        // Numéro de téléphone du client (sur MerchantSaleEntry c'est customerMobile)
         const senderPhone =
-          tx.counterparty?.msisdn ||
-          tx.counterparty?.phone ||
-          tx.sender?.msisdn ||
-          tx.senderPhone ||
-          tx.from ||
+          entry.customerMobile ||
+          entry.senderMobile ||
+          entry.atxCashierMobile ||
+          entry.recipientMobile ||
           '';
 
-        const timestampRaw = tx.whenCreated || tx.createdAt || tx.timestamp || tx.date;
+        // Timestamp — whenEntered est le champ principal
+        const timestampRaw = entry.whenEntered || entry.whenCreated;
         const timestamp = timestampRaw ? new Date(timestampRaw) : new Date();
         if (isNaN(timestamp.getTime())) return null;
 
@@ -222,7 +423,7 @@ function parseWaveResponse(data: any): WaveTransaction[] {
           senderPhone: String(senderPhone),
           timestamp,
           type: 'in' as const,
-          rawText: JSON.stringify(tx),
+          rawText: JSON.stringify(entry).substring(0, 500), // limité pour économiser mémoire
         };
       } catch {
         return null;
@@ -241,21 +442,40 @@ async function fetchWaveTransactions(): Promise<WaveTransaction[]> {
   if (!config.apiKey) {
     throw new Error('WAVE_BUSINESS_API_KEY not configured');
   }
+  if (!config.walletOpaqueId) {
+    throw new Error('WAVE_BUSINESS_WALLET_ID not configured');
+  }
 
   // Construction du header Authorization: Basic base64(":" + apiKey)
   // Format observé : username vide, password = API key
   const basicAuth = Buffer.from(`:${config.apiKey}`).toString('base64');
 
-  // Variables : on demande les 50 dernières transactions
+  // Variables GraphQL — correspond exactement à la query capturée
+  // Période : 7 derniers jours (suffisant pour matcher les paiements en attente
+  // qui ont un TTL de 10 min, tout en évitant de charger trop de données)
+  const today = new Date();
+  const weekAgo = new Date(today);
+  weekAgo.setDate(weekAgo.getDate() - 7);
+
+  // Format Date attendu par GraphQL : "YYYY-MM-DD"
+  const formatDate = (d: Date) => d.toISOString().split('T')[0];
+
   const variables = {
-    first: 50,
-    filter: {
-      // Si possible, filtrer par direction incoming uniquement
-      // (à ajuster selon le schéma GraphQL réel)
-    },
+    start: formatDate(weekAgo),
+    end: formatDate(today),
+    walletOpaqueId: config.walletOpaqueId,
+    limit: 100,
+    transactionId: null,
+    customerMobileStr: null,
+    searchTerm: null,
+    surrogateEmployeeId: null,
+    includePending: false, // on ne veut que les transactions confirmées
+    transactionType: 'ALL', // on filtre côté parser (plus sûr)
   };
 
-  console.log(`[WAVE-BUSINESS] Calling GraphQL endpoint`);
+  console.log(
+    `[WAVE-BUSINESS] Calling GraphQL endpoint (wallet=${config.walletOpaqueId}, period=${variables.start} → ${variables.end})`
+  );
 
   const response = await fetch(WAVE_GRAPHQL_URL, {
     method: 'POST',
