@@ -482,3 +482,35 @@ Stage Summary:
 - ✅ wakhmastore.com : tolérance ±10 FCFA déployée (commit 6d9cafd)
 - ⏳ checkout.html : nouveau fichier prêt dans download/ — doit être déployé par l'utilisateur sur le repo GitHub du projet payment-gateway-beige-ten
 - ✅ Architecture fallback en place : même si le SMS est raté, le polling serveur Wave Business créditera les points via /api/payment-status
+
+---
+Task ID: checkout-internalize-2026-06-19
+Agent: main (Super Z)
+Task: Internaliser le checkout dans wakhmastore.com (éliminer la passerelle externe)
+
+Work Log:
+- User a indiqué que la passerelle payment-gateway-beige-ten.vercel.app est un projet Vercel SANS Git, donc non déployable
+- Analyse approfondie du code existant : découvert que /api/payment-callback (recevant les callbacks HMAC de la passerelle) matchait l'utilisateur par numéro de téléphone, mais le format ne correspondait JAMAIS (DB : "77 123 45 67" vs passerelle : "771234567"). C'est le VRAI bug : aucun paiement n'était jamais crédité malgré que l'admin voit l'argent arriver dans Wave Business.
+- Décision : éliminer la passerelle externe entièrement. Tout le flux passe maintenant par wakhmastore.com directement.
+
+Modifications :
+1. src/lib/payment-pending-client.ts (réécrit)
+   - createPendingPayment() ne retourne plus l'URL de la passerelle externe
+   - Retourne une URL interne : /paiement/confirmation?pending=<id>&montant=<m>&plan=<p>&points=<p>
+   - Le matching utilisateur se fait via la session (userId), plus via le téléphone
+2. src/app/paiement/confirmation/page.tsx (réécrit l'état 'attente')
+   - Affiche le montant à payer en grand
+   - Affiche le numéro Wave marchand (PAYMENT_PHONE) avec bouton Copier
+   - Instructions détaillées en 4 étapes (ouvrir Wave, coller numéro, entrer montant, confirmer)
+   - Indicateur de polling visible (compteur #1, #2, ...)
+   - Bouton "J'ai payé — Relancer la vérification" pour rafraîchir manuellement
+   - Bouton "Annuler et retourner aux offres"
+   - Reassurance sécurité (Wave Business, pas de stockage bancaire)
+- Commit 528cb8c poussé sur main → Vercel redéploie automatiquement
+
+Stage Summary:
+- ✅ Passerelle externe éliminée — plus besoin de déployer payment-gateway-beige-ten.vercel.app
+- ✅ Bug matching téléphone corrigé (par élimination du code fautif)
+- ✅ UX : la page d'attente affiche maintenant les instructions complètes (montant + numéro + étapes)
+- ✅ Flow : user clique → /api/payment-pending → /paiement/confirmation → poll /api/payment-status → crédit atomique via Wave Business API
+- ⏳ En attente de validation user en production
