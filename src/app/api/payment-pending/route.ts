@@ -18,6 +18,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { PLANS, POINT_PACKAGES } from '@/lib/constants';
+import { getUserFromRequest } from '@/lib/get-user';
 
 // Durée de validité d'un pending (30 minutes)
 const PENDING_TTL_MINUTES = 30;
@@ -27,27 +28,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { planId, amount, type, userPhone } = body;
 
-    // ── Auth : récupérer l'utilisateur depuis le cookie session ────────────
-    // Le frontend envoie déjà le cookie d'auth via fetch standard
-    const cookie = request.headers.get('cookie') || '';
-    const sessionMatch = cookie.match(/session=([^;]+)/);
-    if (!sessionMatch) {
+    // ── Auth : récupérer l'utilisateur depuis le cookie httpOnly wakhma_access
+    // (mécanique standard du projet — utilisée par /api/subscriptions, etc.)
+    const session = getUserFromRequest(request);
+    if (!session) {
       return NextResponse.json(
         { success: false, error: 'Non authentifié' },
         { status: 401 }
       );
     }
 
-    // Décoder le session token (format: userId:hash)
-    const sessionToken = decodeURIComponent(sessionMatch[1]);
-    const userId = sessionToken.split(':')[0];
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Session invalide' },
-        { status: 401 }
-      );
-    }
-
+    const userId = session.userId;
     const user = await db.user.findUnique({ where: { id: userId } });
     if (!user) {
       return NextResponse.json(
