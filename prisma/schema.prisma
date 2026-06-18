@@ -92,14 +92,14 @@ model PointPurchase {
   pointsAdded   Int
   status        String   @default("pending") // pending, completed, rejected, expired
   paymentMethod String?
-  // ── Champs pour matching Automate (interception multi-source) ──
+  // ── Champs pour matching paiement (Wave Business polling + Automate legacy) ──
   planId        String?  // 'gratuit' | 'diambar' | 'vip_king' | 'starter' | 'pro' | 'business'
   purchaseType  String?  // 'abonnement' | 'points'
-  source        String?  // 'automate_wave_notif' | 'automate_wave_sms' | 'automate_om_sms' | 'gateway_webhook'
-  senderPhone   String?  // téléphone du client (extrait de la notif/SMS Wave)
-  externalRef   String?  // référence Wave (WV-XXXX) si disponible
+  source        String?  // 'wave_business' | 'automate_wave_notif' | 'automate_wave_sms' | 'gateway_webhook'
+  senderPhone   String?  // téléphone du client (extrait de la transaction Wave)
+  externalRef   String?  @unique // id transaction Wave Business (anti-doublon)
   confirmedAt   DateTime?
-  expiresAt     DateTime? // expiration du pending (default 30 min)
+  expiresAt     DateTime? // expiration du pending (default 10 min)
   createdAt     DateTime @default(now())
 
   user          User     @relation(fields: [userId], references: [id])
@@ -108,6 +108,7 @@ model PointPurchase {
   @@index([status])
   @@index([amountFcfa])
   @@index([status, expiresAt])
+  @@index([status, createdAt])
 }
 
 model Subscription {
