@@ -404,3 +404,54 @@ Stage Summary:
   3. (optionnel) CALLMEBOT_PHONE + CALLMEBOT_API_KEY pour alertes WhatsApp
 - Une fois ces variables ajoutées dans Vercel, le système sera totalement
   opérationnel : paiements auto-confirmés en 30-60s après paiement Wave
+
+---
+Task ID: 9
+Agent: Main Agent
+Task: Correction urgent — "les pages se sont mélangées" sur /acheter-points et /profil
+
+Work Log:
+- User report : "ya encore un probleme les pages se sont melanger encore plus
+  de acheter et profil aussi" + "avant ton dernier deployement il etait bien"
+- Diagnostic : pas lié au commit wave-business.ts (06a9ac7) qui n'a touché que
+  le client Wave. Le vrai coupable = bug auth pré-existant dans 4 pages :
+    * /acheter-points/page.tsx
+    * /profil/page.tsx
+    * /abonnements/page.tsx
+    * /login/page.tsx
+- Bug : ces 4 pages vérifiaient if (!user) SANS attendre isLoading===false.
+  Comme useAuth() démarre avec {user: null, isLoading: true} (état initial
+  Zustand) et que loadFromStorage() est appelé dans un useEffect séparé,
+  le useEffect de redirection se déclenchait au premier render AVANT que
+  user ne soit peuplé depuis localStorage.
+- Conséquence : boucle infinie
+    /acheter-points -> /login?redirect=/acheter-points
+    /login (après loadFromStorage) -> /acheter-points (user est set)
+    /acheter-points remonte avec user=null (Zustand reset) -> /login
+    => effet visuel "pages mélangées"
+- /recharge, /parrainage, /deposer avaient déjà le bon pattern
+  (!isLoading && !user) mais la correction n'avait pas été propagée
+  aux 4 autres pages protégées.
+- Fix appliqué sur les 4 fichiers : ajout isLoading dans le destructuring
+  useAuth() + guard if (isLoading) return avant la logique de redirection.
+  Sur les pages protégées on retourne null tant que isLoading || !user
+  pour éviter le flash de contenu non autorisé.
+- Build OK, commit c957803 poussé sur origin/main. Vercel auto-deploy en cours.
+
+Stage Summary:
+- 4 fichiers modifiés (+29 lignes, -11)
+- Bug causait : boucle infinie /acheter-points <-> /login, /profil <-> /login,
+  /abonnements <-> /login, etait perçu par user comme "pages mélangées"
+- Corrige aussi incidentiellement les anciens bugs ouverts :
+  * "Recharger déconnecte l'user" — /recharge avait déjà le fix, mais le
+    tunnel passait par /acheter-points qui n'avait pas le fix, donc le user
+    était quand même bouclé
+  * "Parrainage disparue" — /parrainage avait déjà le fix, mais le menu
+    Navbar (qui affiche le lien seulement si user) voyait user=null au
+    premier render et masquait le lien. Maintenant que les pages cessent
+    de boucler, le user reste set dans le store et le lien reste visible.
+- Une fois le deploiement Vercel terminé (~1-2 min), tester :
+  1. Login sur /login
+  2. Cliquer "Mon Profil" — doit rester sur /profil sans flash /login
+  3. Cliquer "Recharger" -> "Acheter des points" — doit rester sur la page
+  4. Vérifier que le menu "Parrainage" reste visible dans la navbar

@@ -1,0 +1,662 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect } from 'react';
+     4→import { useRouter } from 'next/navigation';
+     5→import Link from 'next/link';
+     6→import {
+     7→  User, ArrowLeft, Package, ShoppingBag, TrendingUp, Award,
+     8→  Gift, Calendar, BarChart3, Eye, ChevronRight, Crown, Star, Zap,
+     9→  Loader2, Phone, Mail, Hash, Wallet
+    10→} from 'lucide-react';
+    11→import { Button } from '@/components/ui/button';
+    12→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+    13→import { Badge } from '@/components/ui/badge';
+    14→import Navbar from '@/components/Navbar';
+    15→import Footer from '@/components/Footer';
+    16→import { useAuth } from '@/hooks/use-auth';
+    17→import { useToast } from '@/hooks/use-toast';
+    18→
+    19→interface ProfileData {
+    20→  user: {
+    21→    id: string;
+    22→    email: string;
+    23→    name: string;
+    24→    phone: string | null;
+    25→    role: string;
+    26→    plan: string;
+    27→    planLabel: string;
+    28→    points: number;
+    29→    referralCode: string;
+    30→    createdAt: string;
+    31→    _count: { annonces: number; referrals: number; purchases: number };
+    32→  };
+    33→  stats: {
+    34→    totalAnnonces: number;
+    35→    totalAnnoncesVendues: number;
+    36→    totalPurchasesReceived: number;
+    37→    totalRevenusPoints: number;
+    38→    totalValeurAnnonces: number;
+    39→    totalAchats: number;
+    40→    totalParrainages: number;
+    41→    totalPointsParrainage: number;
+    42→  };
+    43→  categoryStats: Record<string, { count: number; purchases: number }>;
+    44→  monthlyData: { month: string; annonces: number; ventes: number }[];
+    45→  mesAnnonces: {
+    46→    id: string; title: string; price: number; category: string;
+    47→    emoji: string; isVip: boolean; vipType: string | null; createdAt: string;
+    48→    _count: { purchases: number };
+    49→  }[];
+    50→  mesAchats: {
+    51→    id: string; points: number; createdAt: string;
+    52→    annonce: { id: string; title: string; price: number; emoji: string; category: string };
+    53→  }[];
+    54→  recentSales: {
+    55→    id: string; buyerName: string; annonceTitle: string;
+    56→    annonceEmoji: string; points: number; date: string;
+    57→  }[];
+    58→}
+    59→
+    60→export default function ProfilPage() {
+    61→  const router = useRouter();
+    62→  const { user: authUser, loadFromStorage } = useAuth();
+    63→  const { toast } = useToast();
+    64→  const [profile, setProfile] = useState<ProfileData | null>(null);
+    65→  const [loading, setLoading] = useState(true);
+    66→  const [activeSection, setActiveSection] = useState<'overview' | 'annonces' | 'achats' | 'analytics'>('overview');
+    67→
+    68→  useEffect(() => {
+    69→    loadFromStorage();
+    70→  }, [loadFromStorage]);
+    71→
+    72→  useEffect(() => {
+    73→    if (!authUser) {
+    74→      router.push('/login?redirect=/profil');
+    75→      return;
+    76→    }
+    77→    fetchProfile();
+    78→  }, [authUser, router]);
+    79→
+    80→  async function fetchProfile() {
+    81→    try {
+    82→      const res = await fetch('/api/auth/me');
+    83→      if (res.ok) {
+    84→        const data = await res.json();
+    85→        setProfile(data);
+    86→      } else {
+    87→        toast({ title: 'Erreur', description: 'Impossible de charger le profil', variant: 'destructive' });
+    88→      }
+    89→    } catch {
+    90→      toast({ title: 'Erreur', description: 'Erreur réseau', variant: 'destructive' });
+    91→    } finally {
+    92→      setLoading(false);
+    93→    }
+    94→  }
+    95→
+    96→  function formatDate(dateStr: string) {
+    97→    return new Date(dateStr).toLocaleDateString('fr-FR', {
+    98→      day: 'numeric', month: 'short', year: 'numeric'
+    99→    });
+   100→  }
+   101→
+   102→  function formatPrice(price: number) {
+   103→    return price.toLocaleString('fr-FR') + ' FCFA';
+   104→  }
+   105→
+   106→  function getPlanBadge(plan: string) {
+   107→    if (plan === 'vip_king') return <Badge className="bg-amber-500 text-white gap-1"><Crown className="w-3 h-3" />VIP KING 👑</Badge>;
+   108→    if (plan === 'diambar') return <Badge className="bg-green-500 text-white gap-1"><Star className="w-3 h-3" />DIAMBAR 💪🏽</Badge>;
+   109→    if (plan === 'gratuit') return <Badge className="bg-blue-500 text-white gap-1"><Zap className="w-3 h-3" />BOLT ⚡</Badge>;
+   110→    return <Badge className="bg-gray-500 text-white gap-1">Sans abonnement</Badge>;
+   111→  }
+   112→
+   113→  const maxMonthlyValue = profile?.monthlyData
+   114→    ? Math.max(...profile.monthlyData.map(m => Math.max(m.annonces, m.ventes)), 1)
+   115→    : 1;
+   116→
+   117→  if (loading) {
+   118→    return (
+   119→      <div className="min-h-screen flex flex-col">
+   120→        <Navbar />
+   121→        <main className="flex-1 flex items-center justify-center">
+   122→          <Loader2 className="w-8 h-8 text-orange animate-spin" />
+   123→        </main>
+   124→        <Footer />
+   125→      </div>
+   126→    );
+   127→  }
+   128→
+   129→  if (!profile) {
+   130→    return (
+   131→      <div className="min-h-screen flex flex-col">
+   132→        <Navbar />
+   133→        <main className="flex-1 flex items-center justify-center">
+   134→          <p className="text-gray-500">Impossible de charger le profil</p>
+   135→        </main>
+   136→        <Footer />
+   137→      </div>
+   138→    );
+   139→  }
+   140→
+   141→  const { user, stats, categoryStats, monthlyData, mesAnnonces, mesAchats, recentSales } = profile;
+   142→
+   143→  return (
+   144→    <div className="min-h-screen flex flex-col bg-gray-50">
+   145→      <Navbar />
+   146→
+   147→      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
+   148→        {/* Header */}
+   149→        <div className="flex items-center gap-3 mb-6">
+   150→          <Button variant="ghost" className="text-gray-600 hover:text-orange -ml-2" onClick={() => router.back()}>
+   151→            <ArrowLeft className="w-4 h-4 mr-2" />
+   152→            Retour
+   153→          </Button>
+   154→        </div>
+   155→
+   156→        {/* Profile Card */}
+   157→        <Card className="border-gray-100 rounded-2xl mb-6 overflow-hidden">
+   158→          <div className="bg-gradient-to-r from-orange-dark to-orange h-24 relative">
+   159→            <div className="absolute -bottom-8 left-6">
+   160→              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg border-4 border-white">
+   161→                <User className="w-8 h-8 text-orange" />
+   162→              </div>
+   163→            </div>
+   164→          </div>
+   165→          <CardContent className="pt-12 pb-4 px-6">
+   166→            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+   167→              <div>
+   168→                <div className="flex items-center gap-3">
+   169→                  <h1 className="text-xl font-bold text-gray-900">{user.name || 'Utilisateur'}</h1>
+   170→                  {getPlanBadge(user.plan)}
+   171→                </div>
+   172→                <div className="flex flex-col gap-1 mt-2 text-sm text-gray-500">
+   173→                  <div className="flex items-center gap-2">
+   174→                    <Mail className="w-3.5 h-3.5" />
+   175→                    {user.email}
+   176→                  </div>
+   177→                  {user.phone && (
+   178→                    <div className="flex items-center gap-2">
+   179→                      <Phone className="w-3.5 h-3.5" />
+   180→                      {user.phone}
+   181→                    </div>
+   182→                  )}
+   183→                  <div className="flex items-center gap-2">
+   184→                    <Calendar className="w-3.5 h-3.5" />
+   185→                    Membre depuis {formatDate(user.createdAt)}
+   186→                  </div>
+   187→                </div>
+   188→              </div>
+   189→              <div className="flex gap-2 flex-wrap">
+   190→                <Link href="/recharge" className="inline-flex">
+   191→                  <Button variant="outline" className="rounded-xl text-orange border-orange/30 hover:bg-orange-bg text-sm">
+   192→                    <Award className="w-4 h-4 mr-1.5" />
+   193→                    {user.points.toLocaleString('fr-FR')} pts
+   194→                  </Button>
+   195→                </Link>
+   196→                <Link href="/parrainage" className="inline-flex">
+   197→                  <Button variant="outline" className="rounded-xl text-green-600 border-green-300 hover:bg-green-50 text-sm">
+   198→                    <Gift className="w-4 h-4 mr-1.5" />
+   199→                    Parrainage
+   200→                  </Button>
+   201→                </Link>
+   202→              </div>
+   203→            </div>
+   204→          </CardContent>
+   205→        </Card>
+   206→
+   207→        {/* Quick Stats */}
+   208→        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+   209→          <Card className="rounded-xl border-gray-100">
+   210→            <CardContent className="p-4 text-center">
+   211→              <Package className="w-6 h-6 text-orange mx-auto mb-1" />
+   212→              <p className="text-2xl font-bold text-gray-900">{stats.totalAnnonces}</p>
+   213→              <p className="text-xs text-gray-500">Annonces</p>
+   214→            </CardContent>
+   215→          </Card>
+   216→          <Card className="rounded-xl border-gray-100">
+   217→            <CardContent className="p-4 text-center">
+   218→              <TrendingUp className="w-6 h-6 text-green-500 mx-auto mb-1" />
+   219→              <p className="text-2xl font-bold text-gray-900">{stats.totalAnnoncesVendues}</p>
+   220→              <p className="text-xs text-gray-500">Vendues</p>
+   221→            </CardContent>
+   222→          </Card>
+   223→          <Card className="rounded-xl border-gray-100">
+   224→            <CardContent className="p-4 text-center">
+   225→              <ShoppingBag className="w-6 h-6 text-blue-500 mx-auto mb-1" />
+   226→              <p className="text-2xl font-bold text-gray-900">{stats.totalAchats}</p>
+   227→              <p className="text-xs text-gray-500">Achats</p>
+   228→            </CardContent>
+   229→          </Card>
+   230→          <Card className="rounded-xl border-gray-100">
+   231→            <CardContent className="p-4 text-center">
+   232→              <Wallet className="w-6 h-6 text-purple-500 mx-auto mb-1" />
+   233→              <p className="text-2xl font-bold text-gray-900">{stats.totalRevenusPoints.toLocaleString('fr-FR')}</p>
+   234→              <p className="text-xs text-gray-500">Pts gagnés</p>
+   235→            </CardContent>
+   236→          </Card>
+   237→        </div>
+   238→
+   239→        {/* Section Tabs */}
+   240→        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+   241→          {[
+   242→            { key: 'overview', label: 'Vue d\'ensemble', icon: BarChart3 },
+   243→            { key: 'annonces', label: 'Mes annonces', icon: Package },
+   244→            { key: 'achats', label: 'Mes achats', icon: ShoppingBag },
+   245→            { key: 'analytics', label: 'Analytique', icon: TrendingUp },
+   246→          ].map(({ key, label, icon: Icon }) => (
+   247→            <Button
+   248→              key={key}
+   249→              variant={activeSection === key ? 'default' : 'outline'}
+   250→              className={`rounded-xl whitespace-nowrap text-sm ${activeSection === key ? 'bg-orange hover:bg-orange-dark text-white' : 'border-gray-200 text-gray-600 hover:text-orange'}`}
+   251→              onClick={() => setActiveSection(key as typeof activeSection)}
+   252→            >
+   253→              <Icon className="w-4 h-4 mr-1.5" />
+   254→              {label}
+   255→            </Button>
+   256→          ))}
+   257→        </div>
+   258→
+   259→        {/* ============ OVERVIEW ============ */}
+   260→        {activeSection === 'overview' && (
+   261→          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   262→            {/* Sales Chart (simple bar) */}
+   263→            <Card className="rounded-2xl border-gray-100">
+   264→              <CardHeader className="pb-2">
+   265→                <CardTitle className="text-base font-semibold flex items-center gap-2">
+   266→                  <BarChart3 className="w-4 h-4 text-orange" />
+   267→                  Activité des 6 derniers mois
+   268→                </CardTitle>
+   269→              </CardHeader>
+   270→              <CardContent>
+   271→                <div className="flex items-end gap-2 h-40">
+   272→                  {monthlyData.map((m, i) => (
+   273→                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+   274→                      <div className="flex gap-0.5 items-end w-full justify-center h-32">
+   275→                        <div
+   276→                          className="w-3 bg-orange/80 rounded-t-sm transition-all"
+   277→                          style={{ height: `${(m.annonces / maxMonthlyValue) * 100}%`, minHeight: m.annonces > 0 ? 4 : 0 }}
+   278→                          title={`${m.annonces} annonces`}
+   279→                        />
+   280→                        <div
+   281→                          className="w-3 bg-green-400 rounded-t-sm transition-all"
+   282→                          style={{ height: `${(m.ventes / maxMonthlyValue) * 100}%`, minHeight: m.ventes > 0 ? 4 : 0 }}
+   283→                          title={`${m.ventes} ventes`}
+   284→                        />
+   285→                      </div>
+   286→                      <span className="text-[10px] text-gray-400">{m.month}</span>
+   287→                    </div>
+   288→                  ))}
+   289→                </div>
+   290→                <div className="flex items-center justify-center gap-4 mt-3 text-xs text-gray-500">
+   291→                  <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 bg-orange/80 rounded-sm" /> Annonces</div>
+   292→                  <div className="flex items-center gap-1"><div className="w-2.5 h-2.5 bg-green-400 rounded-sm" /> Ventes</div>
+   293→                </div>
+   294→              </CardContent>
+   295→            </Card>
+   296→
+   297→            {/* Recent Sales */}
+   298→            <Card className="rounded-2xl border-gray-100">
+   299→              <CardHeader className="pb-2">
+   300→                <CardTitle className="text-base font-semibold flex items-center gap-2">
+   301→                  <TrendingUp className="w-4 h-4 text-green-500" />
+   302→                  Dernières ventes
+   303→                </CardTitle>
+   304→              </CardHeader>
+   305→              <CardContent>
+   306→                {recentSales.length === 0 ? (
+   307→                  <p className="text-sm text-gray-400 text-center py-6">Aucune vente pour le moment</p>
+   308→                ) : (
+   309→                  <div className="space-y-3">
+   310→                    {recentSales.map((sale) => (
+   311→                      <div key={sale.id} className="flex items-center justify-between">
+   312→                        <div className="flex items-center gap-2">
+   313→                          <span className="text-lg">{sale.annonceEmoji}</span>
+   314→                          <div>
+   315→                            <p className="text-sm font-medium text-gray-900 truncate max-w-[180px]">{sale.annonceTitle}</p>
+   316→                            <p className="text-xs text-gray-400">par {sale.buyerName} · {formatDate(sale.date)}</p>
+   317→                          </div>
+   318→                        </div>
+   319→                        <span className="text-sm font-semibold text-green-600">+{sale.points} pts</span>
+   320→                      </div>
+   321→                    ))}
+   322→                  </div>
+   323→                )}
+   324→              </CardContent>
+   325→            </Card>
+   326→
+   327→            {/* Category Stats */}
+   328→            <Card className="rounded-2xl border-gray-100">
+   329→              <CardHeader className="pb-2">
+   330→                <CardTitle className="text-base font-semibold flex items-center gap-2">
+   331→                  <Package className="w-4 h-4 text-blue-500" />
+   332→                  Par catégorie
+   333→                </CardTitle>
+   334→              </CardHeader>
+   335→              <CardContent>
+   336→                {Object.keys(categoryStats).length === 0 ? (
+   337→                  <p className="text-sm text-gray-400 text-center py-6">Aucune annonce publiée</p>
+   338→                ) : (
+   339→                  <div className="space-y-3">
+   340→                    {Object.entries(categoryStats).map(([cat, data]) => {
+   341→                      const maxCount = Math.max(...Object.values(categoryStats).map(c => c.count), 1);
+   342→                      return (
+   343→                        <div key={cat}>
+   344→                          <div className="flex justify-between text-sm mb-1">
+   345→                            <span className="font-medium text-gray-700">{cat}</span>
+   346→                            <span className="text-gray-400">{data.count} annonce{data.count > 1 ? 's' : ''} · {data.purchases} vente{data.purchases > 1 ? 's' : ''}</span>
+   347→                          </div>
+   348→                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+   349→                            <div
+   350→                              className="h-full bg-orange/70 rounded-full transition-all"
+   351→                              style={{ width: `${(data.count / maxCount) * 100}%` }}
+   352→                            />
+   353→                          </div>
+   354→                        </div>
+   355→                      );
+   356→                    })}
+   357→                  </div>
+   358→                )}
+   359→              </CardContent>
+   360→            </Card>
+   361→
+   362→            {/* Referral Stats */}
+   363→            <Card className="rounded-2xl border-gray-100">
+   364→              <CardHeader className="pb-2">
+   365→                <CardTitle className="text-base font-semibold flex items-center gap-2">
+   366→                  <Gift className="w-4 h-4 text-green-500" />
+   367→                  Parrainage
+   368→                </CardTitle>
+   369→              </CardHeader>
+   370→              <CardContent>
+   371→                <div className="grid grid-cols-2 gap-3">
+   372→                  <div className="bg-green-50 rounded-xl p-3 text-center">
+   373→                    <p className="text-xl font-bold text-green-700">{stats.totalParrainages}</p>
+   374→                    <p className="text-xs text-green-600">Filleuls</p>
+   375→                  </div>
+   376→                  <div className="bg-orange-bg rounded-xl p-3 text-center">
+   377→                    <p className="text-xl font-bold text-orange">{stats.totalPointsParrainage.toLocaleString('fr-FR')}</p>
+   378→                    <p className="text-xs text-orange">Points gagnés</p>
+   379→                  </div>
+   380→                </div>
+   381→                <div className="mt-3 bg-gray-50 rounded-xl p-3">
+   382→                  <p className="text-xs text-gray-500 mb-1">Code de parrainage</p>
+   383→                  <div className="flex items-center justify-between">
+   384→                    <span className="font-mono font-bold text-gray-900">{user.referralCode}</span>
+   385→                    <Button
+   386→                      variant="ghost"
+   387→                      size="sm"
+   388→                      className="text-orange text-xs h-7"
+   389→                      onClick={() => {
+   390→                        navigator.clipboard.writeText(user.referralCode);
+   391→                        toast({ title: 'Copié !', description: 'Code de parrainage copié' });
+   392→                      }}
+   393→                    >
+   394→                      Copier
+   395→                    </Button>
+   396→                  </div>
+   397→                </div>
+   398→              </CardContent>
+   399→            </Card>
+   400→          </div>
+   401→        )}
+   402→
+   403→        {/* ============ MES ANNONCES ============ */}
+   404→        {activeSection === 'annonces' && (
+   405→          <Card className="rounded-2xl border-gray-100">
+   406→            <CardHeader>
+   407→              <div className="flex items-center justify-between">
+   408→                <CardTitle className="text-base font-semibold">Mes annonces ({stats.totalAnnonces})</CardTitle>
+   409→                <Link href="/deposer">
+   410→                  <Button className="bg-orange hover:bg-orange-dark text-white rounded-xl text-sm h-9">
+   411→                    + Nouvelle
+   412→                  </Button>
+   413→                </Link>
+   414→              </div>
+   415→            </CardHeader>
+   416→            <CardContent>
+   417→              {mesAnnonces.length === 0 ? (
+   418→                <div className="text-center py-10">
+   419→                  <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+   420→                  <p className="text-gray-500 mb-3">Vous n&apos;avez pas encore d&apos;annonce</p>
+   421→                  <Link href="/deposer">
+   422→                    <Button className="bg-orange hover:bg-orange-dark text-white rounded-xl">
+   423→                      Déposer une annonce
+   424→                    </Button>
+   425→                  </Link>
+   426→                </div>
+   427→              ) : (
+   428→                <div className="space-y-3">
+   429→                  {mesAnnonces.map((annonce) => (
+   430→                    <div
+   431→                      key={annonce.id}
+   432→                      className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer transition-colors"
+   433→                      onClick={() => router.push(`/annonces/${annonce.id}`)}
+   434→                    >
+   435→                      <div className="flex items-center gap-3">
+   436→                        <span className="text-2xl">{annonce.emoji}</span>
+   437→                        <div>
+   438→                          <p className="text-sm font-medium text-gray-900 line-clamp-1">{annonce.title}</p>
+   439→                          <div className="flex items-center gap-2 text-xs text-gray-400">
+   440→                            <span>{annonce.category}</span>
+   441→                            <span>·</span>
+   442→                            <span>{formatPrice(annonce.price)}</span>
+   443→                            <span>·</span>
+   444→                            <span>{formatDate(annonce.createdAt)}</span>
+   445→                          </div>
+   446→                        </div>
+   447→                      </div>
+   448→                      <div className="flex items-center gap-2">
+   449→                        {annonce._count.purchases > 0 && (
+   450→                          <Badge className="bg-green-100 text-green-700 text-xs">
+   451→                            <Eye className="w-3 h-3 mr-0.5" />
+   452→                            {annonce._count.purchases}
+   453→                          </Badge>
+   454→                        )}
+   455→                        {annonce.isVip && (
+   456→                          <Badge className="bg-yellow-100 text-yellow-700 text-xs">
+   457→                            <Crown className="w-3 h-3 mr-0.5" />
+   458→                            {annonce.vipType === 'vip_king' ? 'KING' : 'VIP'}
+   459→                          </Badge>
+   460→                        )}
+   461→                        <ChevronRight className="w-4 h-4 text-gray-400" />
+   462→                      </div>
+   463→                    </div>
+   464→                  ))}
+   465→                </div>
+   466→              )}
+   467→            </CardContent>
+   468→          </Card>
+   469→        )}
+   470→
+   471→        {/* ============ MES ACHATS ============ */}
+   472→        {activeSection === 'achats' && (
+   473→          <Card className="rounded-2xl border-gray-100">
+   474→            <CardHeader>
+   475→              <CardTitle className="text-base font-semibold">Mes achats ({stats.totalAchats})</CardTitle>
+   476→            </CardHeader>
+   477→            <CardContent>
+   478→              {mesAchats.length === 0 ? (
+   479→                <div className="text-center py-10">
+   480→                  <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+   481→                  <p className="text-gray-500 mb-3">Vous n&apos;avez pas encore acheté de contact</p>
+   482→                  <Link href="/annonces">
+   483→                    <Button className="bg-orange hover:bg-orange-dark text-white rounded-xl">
+   484→                      Voir les annonces
+   485→                    </Button>
+   486→                  </Link>
+   487→                </div>
+   488→              ) : (
+   489→                <div className="space-y-3">
+   490→                  {mesAchats.map((achat) => (
+   491→                    <div
+   492→                      key={achat.id}
+   493→                      className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 cursor-pointer transition-colors"
+   494→                      onClick={() => router.push(`/annonces/${achat.annonce.id}`)}
+   495→                    >
+   496→                      <div className="flex items-center gap-3">
+   497→                        <span className="text-2xl">{achat.annonce.emoji}</span>
+   498→                        <div>
+   499→                          <p className="text-sm font-medium text-gray-900 line-clamp-1">{achat.annonce.title}</p>
+   500→                          <div className="flex items-center gap-2 text-xs text-gray-400">
+   501→                            <span>{achat.annonce.category}</span>
+   502→                            <span>·</span>
+   503→                            <span>{formatPrice(achat.annonce.price)}</span>
+   504→                          </div>
+   505→                        </div>
+   506→                      </div>
+   507→                      <div className="text-right">
+   508→                        <p className="text-sm font-semibold text-orange">-{achat.points} pts</p>
+   509→                        <p className="text-xs text-gray-400">{formatDate(achat.createdAt)}</p>
+   510→                      </div>
+   511→                    </div>
+   512→                  ))}
+   513→                </div>
+   514→              )}
+   515→            </CardContent>
+   516→          </Card>
+   517→        )}
+   518→
+   519→        {/* ============ ANALYTICS ============ */}
+   520→        {activeSection === 'analytics' && (
+   521→          <div className="space-y-4">
+   522→            {/* Revenue Stats */}
+   523→            <Card className="rounded-2xl border-gray-100">
+   524→              <CardHeader>
+   525→                <CardTitle className="text-base font-semibold flex items-center gap-2">
+   526→                  <Wallet className="w-4 h-4 text-purple-500" />
+   527→                  Revenus & Valeur
+   528→                </CardTitle>
+   529→              </CardHeader>
+   530→              <CardContent>
+   531→                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+   532→                  <div className="bg-green-50 rounded-xl p-4 text-center">
+   533→                    <p className="text-xs text-green-600 mb-1">Points gagnés (ventes)</p>
+   534→                    <p className="text-2xl font-bold text-green-700">{stats.totalRevenusPoints.toLocaleString('fr-FR')}</p>
+   535→                  </div>
+   536→                  <div className="bg-orange-bg rounded-xl p-4 text-center">
+   537→                    <p className="text-xs text-orange mb-1">Valeur totale annonces</p>
+   538→                    <p className="text-xl font-bold text-orange">{formatPrice(stats.totalValeurAnnonces)}</p>
+   539→                  </div>
+   540→                  <div className="bg-purple-50 rounded-xl p-4 text-center col-span-2 sm:col-span-1">
+   541→                    <p className="text-xs text-purple-600 mb-1">Points parrainage</p>
+   542→                    <p className="text-2xl font-bold text-purple-700">{stats.totalPointsParrainage.toLocaleString('fr-FR')}</p>
+   543→                  </div>
+   544→                </div>
+   545→              </CardContent>
+   546→            </Card>
+   547→
+   548→            {/* Monthly Chart */}
+   549→            <Card className="rounded-2xl border-gray-100">
+   550→              <CardHeader>
+   551→                <CardTitle className="text-base font-semibold flex items-center gap-2">
+   552→                  <BarChart3 className="w-4 h-4 text-orange" />
+   553→                  Évolution mensuelle
+   554→                </CardTitle>
+   555→              </CardHeader>
+   556→              <CardContent>
+   557→                <div className="flex items-end gap-3 h-48">
+   558→                  {monthlyData.map((m, i) => (
+   559→                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+   560→                      <div className="flex gap-1 items-end w-full justify-center h-40">
+   561→                        <div
+   562→                          className="w-4 bg-orange/80 rounded-t transition-all"
+   563→                          style={{ height: `${(m.annonces / maxMonthlyValue) * 100}%`, minHeight: m.annonces > 0 ? 4 : 0 }}
+   564→                          title={`${m.annonces} annonces`}
+   565→                        />
+   566→                        <div
+   567→                          className="w-4 bg-green-400 rounded-t transition-all"
+   568→                          style={{ height: `${(m.ventes / maxMonthlyValue) * 100}%`, minHeight: m.ventes > 0 ? 4 : 0 }}
+   569→                          title={`${m.ventes} ventes`}
+   570→                        />
+   571→                      </div>
+   572→                      <span className="text-xs text-gray-400 font-medium">{m.month}</span>
+   573→                    </div>
+   574→                  ))}
+   575→                </div>
+   576→                <div className="flex items-center justify-center gap-6 mt-4 text-sm text-gray-500">
+   577→                  <div className="flex items-center gap-2"><div className="w-3 h-3 bg-orange/80 rounded" /> Annonces créées</div>
+   578→                  <div className="flex items-center gap-2"><div className="w-3 h-3 bg-green-400 rounded" /> Contacts vendus</div>
+   579→                </div>
+   580→              </CardContent>
+   581→            </Card>
+   582→
+   583→            {/* Category Performance */}
+   584→            <Card className="rounded-2xl border-gray-100">
+   585→              <CardHeader>
+   586→                <CardTitle className="text-base font-semibold flex items-center gap-2">
+   587→                  <Package className="w-4 h-4 text-blue-500" />
+   588→                  Performance par catégorie
+   589→                </CardTitle>
+   590→              </CardHeader>
+   591→              <CardContent>
+   592→                {Object.keys(categoryStats).length === 0 ? (
+   593→                  <p className="text-sm text-gray-400 text-center py-6">Aucune donnée disponible</p>
+   594→                ) : (
+   595→                  <div className="space-y-4">
+   596→                    {Object.entries(categoryStats)
+   597→                      .sort((a, b) => b[1].purchases - a[1].purchases)
+   598→                      .map(([cat, data]) => {
+   599→                        const maxCount = Math.max(...Object.values(categoryStats).map(c => c.count), 1);
+   600→                        const conversionRate = data.count > 0 ? ((data.purchases / data.count) * 100).toFixed(0) : '0';
+   601→                        return (
+   602→                          <div key={cat} className="bg-gray-50 rounded-xl p-4">
+   603→                            <div className="flex justify-between items-center mb-2">
+   604→                              <span className="font-semibold text-gray-800">{cat}</span>
+   605→                              <div className="flex items-center gap-3 text-xs">
+   606→                                <span className="text-gray-500">{data.count} annonce{data.count > 1 ? 's' : ''}</span>
+   607→                                <span className="text-green-600 font-medium">{data.purchases} vente{data.purchases > 1 ? 's' : ''}</span>
+   608→                                <Badge variant={parseInt(conversionRate) > 0 ? 'default' : 'secondary'} className={`text-xs ${parseInt(conversionRate) > 0 ? 'bg-green-100 text-green-700' : ''}`}>
+   609→                                  {conversionRate}% conv.
+   610→                                </Badge>
+   611→                              </div>
+   612→                            </div>
+   613→                            <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
+   614→                              <div
+   615→                                className="h-full bg-gradient-to-r from-orange to-green-400 rounded-full transition-all"
+   616→                                style={{ width: `${(data.count / maxCount) * 100}%` }}
+   617→                              />
+   618→                            </div>
+   619→                          </div>
+   620→                        );
+   621→                      })}
+   622→                  </div>
+   623→                )}
+   624→              </CardContent>
+   625→            </Card>
+   626→
+   627→            {/* Conversion Rate */}
+   628→            <Card className="rounded-2xl border-gray-100">
+   629→              <CardHeader>
+   630→                <CardTitle className="text-base font-semibold flex items-center gap-2">
+   631→                  <TrendingUp className="w-4 h-4 text-green-500" />
+   632→                  Taux de conversion
+   633→                </CardTitle>
+   634→              </CardHeader>
+   635→              <CardContent>
+   636→                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+   637→                  <div className="bg-blue-50 rounded-xl p-4 text-center">
+   638→                    <p className="text-xs text-blue-600 mb-1">Annonces publiées</p>
+   639→                    <p className="text-3xl font-bold text-blue-700">{stats.totalAnnonces}</p>
+   640→                  </div>
+   641→                  <div className="bg-green-50 rounded-xl p-4 text-center">
+   642→                    <p className="text-xs text-green-600 mb-1">Annonces vendues</p>
+   643→                    <p className="text-3xl font-bold text-green-700">{stats.totalAnnoncesVendues}</p>
+   644→                  </div>
+   645→                  <div className="bg-purple-50 rounded-xl p-4 text-center">
+   646→                    <p className="text-xs text-purple-600 mb-1">Taux de conversion</p>
+   647→                    <p className="text-3xl font-bold text-purple-700">
+   648→                      {stats.totalAnnonces > 0 ? ((stats.totalAnnoncesVendues / stats.totalAnnonces) * 100).toFixed(1) : '0'}%
+   649→                    </p>
+   650→                  </div>
+   651→                </div>
+   652→              </CardContent>
+   653→            </Card>
+   654→          </div>
+   655→        )}
+   656→      </main>
+   657→
+   658→      <Footer />
+   659→    </div>
+   660→  );
+   661→}
+   662→
