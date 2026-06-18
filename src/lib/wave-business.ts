@@ -1,25 +1,38 @@
 // ============================================================================
-// WAKHMA STORE — Wave Business API Client
+// WAKHMA STORE — Wave Business GraphQL Client
 // ============================================================================
-// Client HTTP qui interroge l'API interne de business.wave.com pour récupérer
-// les transactions entrantes et matcher les paiements en attente.
+// Client HTTP qui interroge l'API GraphQL interne de Wave Business pour
+// récupérer les transactions entrantes et matcher les paiements en attente.
 //
 // ⚙️ FONCTIONNEMENT :
-// - Utilise les cookies de session Wave Business (à fournir via env var)
+// - Utilise une API key statique (US_tok_sn_...) — pas de cookies à rafraîchir
 // - Debounce global de 30s : un seul appel Wave toutes les 30s max
 // - Cache mémoire entre les appels pour servir plusieurs polls utilisateur
 // - Détection session expirée (HTTP 401) → alerte admin via WhatsApp
 //
 // 🔑 VARIABLES D'ENVIRONNEMENT REQUISES :
-// - WAVE_BUSINESS_COOKIE    : cookies de session (Format: "key1=val1; key2=val2")
-// - WAVE_BUSINESS_API_BASE  : ex "https://business.wave.com"
-// - WAVE_BUSINESS_ACCOUNT_ID: identifiant du compte marchand (si nécessaire dans l'URL)
-// - WAVE_BUSINESS_USER_AGENT: User-Agent du navigateur utilisé pour la capture (optionnel)
+// - WAVE_BUSINESS_API_KEY   : token API (ex: "US_tok_sn_03b36f96c9e448ae6cdad4fa9bcf74d1")
+//                             → capturé via DevTools > Network > business_graphql
+//                               > authorization header (base64 decoded)
+// - WAVE_BUSINESS_USER_AGENT: User-Agent du navigateur utilisé (optionnel)
 //
-// 📋 RÉCUPÉRER LES COOKIES (côté admin, une fois toutes les 2-4 semaines) :
-// 1. Sur PC : F12 → Network → recharge business.wave.com
-// 2. Copie en cURL la requête vers /api/...transactions...
-// 3. Ouvre le cURL, copie tout le bloc "Cookie: ..." → colle dans WAVE_BUSINESS_COOKIE
+// 📋 RÉCUPÉRER L'API KEY (côté admin, une fois) :
+// 1. Sur PC : F12 → Network → recharge business.wave.com (page Transactions)
+// 2. Clic droit sur la requête business_graphql → Copy as cURL
+// 3. Cherche le header "authorization: Basic XXX"
+// 4. Décode XXX en base64 → tu obtiens ":US_tok_sn_..."
+// 5. La partie après ":" est ta clé API → colle dans WAVE_BUSINESS_API_KEY
+//
+// 🌐 ENDPOINT :
+// - URL: https://sn.mmapp.wave.com/a/business_graphql
+// - Méthode: POST
+// - Auth: Basic (username vide, password = API key)
+// - Content-Type: application/json
+// - Body: { query: "...", variables: {...} }
+//
+// 📊 QUERY UTILISÉE :
+// - HistoryEntries_BusinessWalletHistoryQuery (à confirmer avec la capture
+//   de la vraie requête GraphQL de la page Transactions)
 // ============================================================================
 
 import { alertAdmin } from '@/lib/admin-alert';
@@ -39,7 +52,7 @@ export interface WaveTransaction {
 
 export class WaveSessionExpiredError extends Error {
   constructor() {
-    super('Wave Business session expired — admin action required');
+    super('Wave Business API key expired or invalid — admin action required');
     this.name = 'WaveSessionExpiredError';
   }
 }
@@ -55,78 +68,151 @@ let cachedTransactions: WaveTransaction[] = [];
 let lastFetchError: Error | null = null;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CONFIG (avec valeurs par défaut pour ne pas crasher si env manquant)
+// CONFIG
 // ─────────────────────────────────────────────────────────────────────────────
+
+const WAVE_GRAPHQL_URL = 'https://sn.mmapp.wave.com/a/business_graphql';
 
 function getConfig() {
   return {
-    cookie: process.env.WAVE_BUSINESS_COOKIE || '',
-    apiBase: process.env.WAVE_BUSINESS_API_BASE || 'https://business.wave.com',
-    accountId: process.env.WAVE_BUSINESS_ACCOUNT_ID || '',
+    apiKey: process.env.WAVE_BUSINESS_API_KEY || '',
     userAgent:
       process.env.WAVE_BUSINESS_USER_AGENT ||
-      'Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+      'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36',
   };
 }
 
 /**
  * Indique si le client Wave Business est configuré
- * (cookies présents en variable d'environnement)
+ * (API key présente en variable d'environnement)
  */
 export function isWaveBusinessConfigured(): boolean {
-  return !!getConfig().cookie;
+  return !!getConfig().apiKey;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PARSING DE LA RÉPONSE WAVE BUSINESS
+// QUERY GraphQL
 // ─────────────────────────────────────────────────────────────────────────────
 //
-// ⚠️ À ADAPTER SELON LE FORMAT RÉEL DE L'API WAVE BUSINESS
-// Cette fonction sera ajustée une fois qu'on aura capturé un vrai cURL
-// de l'endpoint /api/transactions de business.wave.com
+// ⚠️ TODO : cette query est estimée. Il faut la remplacer par la VRAIE query
+// capturée depuis business.wave.com > page Transactions > DevTools > Network.
 //
+// D'après les observations, la query s'appelle probablement :
+//   HistoryEntries_BusinessWalletHistoryQuery
+//
+// Une fois qu'on aura le cURL complet de cette requête, on remplacera
+// HISTORY_QUERY par la query exacte.
+// -----------------------------------------------------------------------------
+
+const HISTORY_QUERY = `
+query HistoryEntries_BusinessWalletHistoryQuery(
+  $first: Int
+  $after: String
+  $filter: TransactionFilter
+) {
+  me {
+    businessUser {
+      business {
+        transactions(first: $first, after: $after, filter: $filter) {
+          edges {
+            node {
+              id
+              amount
+              currency
+              direction
+              whenCreated
+              counterparty {
+                msisdn
+              }
+            }
+          }
+        }
+        id
+      }
+      id
+    }
+    id
+  }
+}
+`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PARSING DE LA RÉPONSE GRAPHQL
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Format probable de la réponse GraphQL :
+// {
+//   "data": {
+//     "me": {
+//       "businessUser": {
+//         "business": {
+//           "transactions": {
+//             "edges": [
+//               {
+//                 "node": {
+//                   "id": "...",
+//                   "amount": 2000,
+//                   "currency": "XOF",
+//                   "direction": "INCOMING",
+//                   "whenCreated": "2025-01-15T10:30:00Z",
+//                   "counterparty": { "msisdn": "+221761234567" }
+//                 }
+//               }
+//             ]
+//           }
+//         }
+//       }
+//     }
+//   }
+// }
+//
+// ⚠️ À AJUSTER une fois qu'on aura la vraie réponse.
+// -----------------------------------------------------------------------------
+
 function parseWaveResponse(data: any): WaveTransaction[] {
-  // Format probable (à confirmer avec le cURL) :
-  // {
-  //   "transactions": [
-  //     {
-  //       "id": "txn_abc123",
-  //       "amount": 2000,
-  //       "currency": "XOF",
-  //       "direction": "in",
-  //       "counterparty": { "msisdn": "+221761234567" },
-  //       "created_at": "2025-01-15T10:30:00Z"
-  //     }
-  //   ]
-  // }
+  // Navigation flexible dans la structure GraphQL
+  const txConnection =
+    data?.data?.me?.businessUser?.business?.transactions ||
+    data?.data?.me?.business?.transactions ||
+    data?.data?.transactions ||
+    null;
 
-  const transactions = data?.transactions || data?.data || data || [];
-  if (!Array.isArray(transactions)) return [];
+  if (!txConnection) {
+    console.warn('[WAVE-BUSINESS] Structure de réponse inattendue:', JSON.stringify(data).substring(0, 500));
+    return [];
+  }
 
-  return transactions
-    .map((tx: any): WaveTransaction | null => {
+  const edges = txConnection.edges || txConnection.nodes || txConnection || [];
+  if (!Array.isArray(edges)) return [];
+
+  return edges
+    .map((edge: any): WaveTransaction | null => {
       try {
-        const amount = Number(tx.amount ?? tx.amount_fcfa ?? tx.value ?? 0);
+        const tx = edge.node || edge;
+
+        const amount = Number(tx.amount ?? tx.amountFcfa ?? tx.value ?? 0);
         if (!amount) return null;
 
-        const direction = String(tx.direction ?? tx.type ?? 'in').toLowerCase();
-        if (direction !== 'in' && direction !== 'received' && direction !== 'credit') {
-          return null;
-        }
+        const direction = String(tx.direction ?? tx.type ?? '').toUpperCase();
+        const isIncoming =
+          direction === 'INCOMING' ||
+          direction === 'IN' ||
+          direction === 'RECEIVED' ||
+          direction === 'CREDIT';
+        if (!isIncoming) return null;
 
-        const id = String(tx.id ?? tx.uuid ?? tx.reference ?? tx.tx_id ?? '');
+        const id = String(tx.id ?? tx.uuid ?? tx.reference ?? tx.txId ?? '');
         if (!id) return null;
 
         const senderPhone =
           tx.counterparty?.msisdn ||
           tx.counterparty?.phone ||
           tx.sender?.msisdn ||
-          tx.sender_phone ||
+          tx.senderPhone ||
           tx.from ||
           '';
 
-        const timestampRaw =
-          tx.created_at || tx.timestamp || tx.date || tx.received_at;
+        const timestampRaw = tx.whenCreated || tx.createdAt || tx.timestamp || tx.date;
         const timestamp = timestampRaw ? new Date(timestampRaw) : new Date();
         if (isNaN(timestamp.getTime())) return null;
 
@@ -146,50 +232,55 @@ function parseWaveResponse(data: any): WaveTransaction[] {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// APPEL PRINCIPAL À WAVE BUSINESS
+// APPEL PRINCIPAL À WAVE BUSINESS (GraphQL POST)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Appelle l'API interne Wave Business pour récupérer les transactions récentes.
- *
- * 📌 TODO : ajuster l'URL exacte + headers selon le cURL capturé par l'admin.
- *           Actuellement, on suppose l'endpoint :
- *           GET {apiBase}/api/v1/accounts/{accountId}/transactions?limit=50
- */
 async function fetchWaveTransactions(): Promise<WaveTransaction[]> {
   const config = getConfig();
 
-  if (!config.cookie) {
-    throw new Error('WAVE_BUSINESS_COOKIE not configured');
+  if (!config.apiKey) {
+    throw new Error('WAVE_BUSINESS_API_KEY not configured');
   }
 
-  // Endpoint probable (à confirmer avec cURL)
-  // On commence par un endpoint générique qui marche sur la plupart des dashboards
-  const url = config.accountId
-    ? `${config.apiBase}/api/v1/accounts/${config.accountId}/transactions?limit=50`
-    : `${config.apiBase}/api/transactions?limit=50`;
+  // Construction du header Authorization: Basic base64(":" + apiKey)
+  // Format observé : username vide, password = API key
+  const basicAuth = Buffer.from(`:${config.apiKey}`).toString('base64');
 
-  console.log(`[WAVE-BUSINESS] Fetching transactions from ${url}`);
-
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      Cookie: config.cookie,
-      'User-Agent': config.userAgent,
-      Accept: 'application/json',
-      'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
-      Referer: config.apiBase + '/',
-      'X-Requested-With': 'XMLHttpRequest',
+  // Variables : on demande les 50 dernières transactions
+  const variables = {
+    first: 50,
+    filter: {
+      // Si possible, filtrer par direction incoming uniquement
+      // (à ajuster selon le schéma GraphQL réel)
     },
+  };
+
+  console.log(`[WAVE-BUSINESS] Calling GraphQL endpoint`);
+
+  const response = await fetch(WAVE_GRAPHQL_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${basicAuth}`,
+      'Content-Type': 'application/json',
+      Accept: '*/*',
+      Origin: 'https://business.wave.com',
+      Referer: 'https://business.wave.com/',
+      'User-Agent': config.userAgent,
+      'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
+    },
+    body: JSON.stringify({
+      query: HISTORY_QUERY,
+      variables,
+    }),
     cache: 'no-store',
   });
 
   // Détection session expirée → alerter admin
   if (response.status === 401 || response.status === 403) {
-    console.error(`[WAVE-BUSINESS] Session expired (HTTP ${response.status})`);
+    console.error(`[WAVE-BUSINESS] Auth failed (HTTP ${response.status})`);
     await alertAdmin(
-      `⚠️ Session Wave Business expirée (HTTP ${response.status}). ` +
-      `Reconnecte-toi sur business.wave.com et mets à jour WAVE_BUSINESS_COOKIE dans Vercel.`
+      `⚠️ Clé API Wave Business invalide ou expirée (HTTP ${response.status}). ` +
+      `Reconnecte-toi sur business.wave.com, capture la nouvelle clé API et mets à jour WAVE_BUSINESS_API_KEY dans Vercel.`
     );
     throw new WaveSessionExpiredError();
   }
@@ -201,8 +292,25 @@ async function fetchWaveTransactions(): Promise<WaveTransaction[]> {
   }
 
   const data = await response.json();
+
+  // Vérifier les erreurs GraphQL
+  if (data?.errors?.length > 0) {
+    console.error('[WAVE-BUSINESS] GraphQL errors:', JSON.stringify(data.errors).substring(0, 500));
+    // Si l'erreur est liée à l'auth, alerter
+    if (data.errors.some((e: any) => String(e.message).toLowerCase().includes('unauthorized') ||
+                                       String(e.message).toLowerCase().includes('auth'))) {
+      await alertAdmin(
+        `⚠️ Erreur d'authentification Wave Business (GraphQL). ` +
+        `Vérifie ta clé API dans Vercel. Détails: ${data.errors[0]?.message}`
+      );
+      throw new WaveSessionExpiredError();
+    }
+    // Sinon on continue avec un tableau vide
+    return [];
+  }
+
   const transactions = parseWaveResponse(data);
-  console.log(`[WAVE-BUSINESS] Received ${transactions.length} transactions`);
+  console.log(`[WAVE-BUSINESS] Received ${transactions.length} incoming transactions`);
 
   return transactions;
 }
@@ -230,7 +338,7 @@ export async function getRecentTransactions(): Promise<WaveTransaction[]> {
 
   // Pas configuré : retourner vide (ne pas crasher)
   if (!isWaveBusinessConfigured()) {
-    console.warn('[WAVE-BUSINESS] Not configured — WAVE_BUSINESS_COOKIE missing');
+    console.warn('[WAVE-BUSINESS] Not configured — WAVE_BUSINESS_API_KEY missing');
     return [];
   }
 
