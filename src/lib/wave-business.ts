@@ -394,8 +394,10 @@ function parseWaveResponse(data: any): WaveTransaction[] {
         // Ignorer les transactions en attente (pas encore confirmées)
         if (entry.isPending === true) return null;
 
-        // Montant — sur MerchantSaleEntry, on peut avoir grossAmount ou amount
-        const amount = Number(entry.grossAmount ?? entry.amount ?? 0);
+        // ⚠️ Montant — l'API Wave renvoie le montant sous forme de STRING
+        // formatée "CFA 2500", "CFA 1.300", "2.500F" etc. (pas un nombre).
+        // Number("CFA 2500") => NaN => il faut extraire les digits.
+        const amount = parseAmount(entry.grossAmount ?? entry.amount);
         if (!amount || amount <= 0) return null;
 
         // ID — on utilise l'id de l'entry ou le transferId si disponible
@@ -430,6 +432,41 @@ function parseWaveResponse(data: any): WaveTransaction[] {
       }
     })
     .filter((tx): tx is WaveTransaction => tx !== null);
+}
+
+/**
+ * Parse un montant Wave qui peut arriver sous plusieurs formes :
+ * - "CFA 2500"     → 2500
+ * - "CFA 1.300"    → 1300  (séparateur de milliers français)
+ * - "2.500F"       → 2500
+ * - "CFA 2500 F"   → 2500
+ * - 2500 (nombre)  → 2500
+ * - "-CFA 5000"    → -5000 (utile pour détecter les sorties, même si on filtre ensuite)
+ *
+ * Renvoie 0 si non parsable.
+ */
+function parseAmount(value: any): number {
+  if (value == null) return 0;
+  if (typeof value === 'number') return isNaN(value) ? 0 : value;
+
+  const str = String(value).trim();
+  if (!str) return 0;
+
+  // Retirer tout ce qui n'est pas un chiffre ou un signe moins
+  // (gère "CFA 2.500F", "CFA 2500", "2,500 FCFA", "-CFA 5000", etc.)
+  const cleaned = str
+    .replace(/CFA/gi, '')
+    .replace(/FCFA/gi, '')
+    .replace(/XOF/gi, '')
+    .replace(/F\b/g, '')
+    .replace(/\s+/g, '')
+    // Séparateurs de milliers : retirer les points et les virgules non significatifs
+    .replace(/[.,](?=\d{3}\b)/g, '')   // "1.300" → "1300", "2,500" → "2500"
+    .replace(/[.,](?=\d{3}(?!\d))/g, ''); // cas "12.345" → "12345"
+
+  // Maintenant on doit avoir une string type "2500" ou "-5000"
+  const num = parseInt(cleaned, 10);
+  return isNaN(num) ? 0 : num;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
