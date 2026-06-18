@@ -622,7 +622,12 @@ export async function getRecentTransactions(): Promise<WaveTransaction[]> {
  * Cherche une transaction Wave qui matche un pending.
  *
  * Critères de matching (tous obligatoires) :
- * 1. amount === expectedAmount (montant exact)
+ * 1. amount ∈ [expectedAmount - TOLERANCE, expectedAmount + TOLERANCE]
+ *    ⚠️ Tolérance de ±10 FCFA car la passerelle de paiement ajoute parfois
+ *    une variation de +1/+2 FCFA au montant demandé pour garantir l'unicité
+ *    de la transaction (ex: 1300 → 1301, 1302, etc.). Sans tolérance, ces
+ *    transactions ne seraient jamais matchées et le paiement resterait en
+ *    attente pour toujours côté wakhmastore.com.
  * 2. timestamp >= since (créé après la création du pending)
  * 3. type === 'in' (encaissement)
  * 4. externalRef (id Wave) pas déjà utilisé par un autre PointPurchase
@@ -631,6 +636,8 @@ export async function getRecentTransactions(): Promise<WaveTransaction[]> {
  * @param since Date minimale de la transaction
  * @param usedExternalRefs IDs Wave déjà utilisés (pour anti-doublon)
  */
+const AMOUNT_TOLERANCE_FCFA = 10;
+
 export async function findMatchingTransaction(
   expectedAmount: number,
   since: Date,
@@ -638,10 +645,14 @@ export async function findMatchingTransaction(
 ): Promise<WaveTransaction | null> {
   const transactions = await getRecentTransactions();
 
-  // Filtrer par montant + date + type
+  // Filtrer par montant (avec tolérance) + date + type
+  const minAmount = expectedAmount - AMOUNT_TOLERANCE_FCFA;
+  const maxAmount = expectedAmount + AMOUNT_TOLERANCE_FCFA;
+
   const candidates = transactions.filter(
     (tx) =>
-      tx.amount === expectedAmount &&
+      tx.amount >= minAmount &&
+      tx.amount <= maxAmount &&
       tx.timestamp >= since &&
       tx.type === 'in' &&
       !usedExternalRefs.has(tx.id)
