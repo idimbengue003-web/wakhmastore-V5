@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wakhma Store — Paiement Wave</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --border-strong: #cbd5e1;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-dim: #94a3b8;
+            --accent: #1DC3E0;       /* Wave blue — seul accent couleur */
+            --accent-dark: #17a8c4;
+            --accent-soft: #e6f8fb;
+            --success: #059669;
+            --success-soft: #ecfdf5;
+            --warning: #d97706;
+            --warning-soft: #fffbeb;
+            --error: #dc2626;
+            --error-soft: #fef2f2;
+            --radius: 12px;
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            --mono: 'SF Mono', 'Cascadia Code', Consolas, monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .card-header .brand {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
+        .card-header .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        .card-footer {
+            padding: 14px 24px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+
+        /* ── Loader ─────────────────────────────────────────── */
+        .loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 32px 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        .spinner {
+            width: 24px; height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Form ───────────────────────────────────────────── */
+        .form h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+        .form p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 11px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-family: var(--mono);
+            transition: border-color 0.15s, background 0.15s;
+            outline: none;
+        }
+        .form-group input::placeholder { color: var(--text-dim); font-family: var(--font); }
+        .form-group input:focus {
+            border-color: var(--accent);
+            background: var(--bg);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover { background: var(--accent-dark); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background: #f1f5f9; }
+
+        /* ── Plan preview ───────────────────────────────────── */
+        .plan-preview {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+        }
+        .plan-preview .plan-icon { font-size: 1.4rem; line-height: 1; }
+        .plan-preview .plan-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+            display: block;
+        }
+        .plan-preview .plan-price {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* ── Amount block ───────────────────────────────────── */
+        .amount-block {
+            text-align: center;
+            padding: 20px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .amount-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+        .amount-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1;
+            font-family: var(--mono);
+        }
+        .amount-currency {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* ── Vendor block ───────────────────────────────────── */
+        .vendor-block {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .vendor-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+        .vendor-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .vendor-phone {
+            font-size: 1.4rem;
+            font-weight: 700;
+            font-family: var(--mono);
+            color: var(--text);
+            letter-spacing: 1px;
+        }
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 14px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 10px;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .copy-btn:hover { background: #f1f5f9; color: var(--text); }
+        .copy-btn.copied {
+            background: var(--success-soft);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        /* ── Wave button (the only colored element) ────────── */
+        .wave-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: inherit;
+            margin-bottom: 6px;
+        }
+        .wave-btn:hover { background: var(--accent-dark); }
+        .wave-btn:active { transform: translateY(1px); }
+        .wave-btn .wave-icon {
+            width: 18px; height: 18px;
+            display: inline-block;
+        }
+
+        .wave-hint {
+            text-align: center;
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+        }
+
+        /* ── Steps ──────────────────────────────────────────── */
+        .steps {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px 14px 36px;
+            margin-bottom: 16px;
+        }
+        .steps h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .steps ol {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+        .steps ol li strong { color: var(--text); }
+
+        /* ── Status ─────────────────────────────────────────── */
+        .status-block {
+            border-radius: 8px;
+            padding: 18px 14px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .status-block.pending {
+            background: var(--warning-soft);
+            border: 1px solid #fde68a;
+        }
+        .status-block.success {
+            background: var(--success-soft);
+            border: 1px solid #a7f3d0;
+        }
+        .status-block.error {
+            background: var(--error-soft);
+            border: 1px solid #fecaca;
+        }
+        .status-block .spinner {
+            margin: 0 auto 10px;
+            border-top-color: var(--warning);
+        }
+        .status-block.success .spinner { display: none; }
+        .status-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .status-subtext {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ── Tx details ─────────────────────────────────────── */
+        .tx-details {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            text-align: center;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+        .tx-details > div { margin: 3px 0; }
+        .tx-details .label { color: var(--text-dim); }
+        .tx-details .value {
+            color: var(--text-muted);
+            font-family: var(--mono);
+            font-weight: 500;
+        }
+
+        /* ── Error screen ───────────────────────────────────── */
+        .error-screen {
+            text-align: center;
+            padding: 28px 16px;
+        }
+        .error-screen h2 {
+            font-size: 1rem;
+            color: var(--error);
+            margin-bottom: 8px;
+        }
+        .error-screen p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        @media (max-width: 480px) {
+            .amount-value { font-size: 1.8rem; }
+            .vendor-phone { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card" id="app">
+    <div class="card-header">
+        <div class="brand">Wakhma Store</div>
+        <div class="subtitle">Paiement sécurisé via Wave</div>
+    </div>
+    <div class="card-body" id="checkoutBody">
+        <div class="loader">
+            <div class="spinner"></div>
+            <div>Chargement...</div>
+        </div>
+    </div>
+    <div class="card-footer">
+        Paiement automatique · Wave · Sénégal
+    </div>
+</div>
+
+<script>
+// ==========================================================================
+// CONFIG
+// ==========================================================================
+const API_BASE_URL = window.location.origin;
+const POLL_INTERVAL_MS = 3000;
+const DEFAULT_REDIRECT_URL = 'https://www.wakhmastore.com/paiement/confirmation';
+// After this many seconds of polling without confirmation, fall back to
+// redirecting the user back to wakhmastore.com so the server-side Wave
+// Business polling can complete the validation (instead of leaving the
+// user stuck on the gateway).
+const POLL_TIMEOUT_SECONDS = 300; // 5 min
+
+let transactionId = null;
+let montantAPayer = null;
+let montantBase = null;
+let clientRef = null;
+let callbackUrl = null;
+let pollTimer = null;
+let startTime = null;
+let planInfo = null;
+let planIdFromUrl = null;
+let montantFromUrl = null;
+let vendeurInfo = null;
+
+function getUrlParam(name) {
+    return new URLSearchParams(window.location.search).get(name);
+}
+
+// ==========================================================================
+// LOCALSTORAGE — Survit au rechargement de page (retour depuis l'app Wave)
+// ==========================================================================
+function saveTransactionState() {
+    const state = {
+        transactionId, montantAPayer, montantBase, clientRef,
+        callbackUrl, planIdFromUrl, montantFromUrl,
+        planInfo, vendeurInfo, startTime,
+        savedAt: Date.now()
+    };
+    try { localStorage.setItem('wakhma_tx_state', JSON.stringify(state)); } catch (e) {}
+}
+
+function loadTransactionState() {
+    try {
+        const raw = localStorage.getItem('wakhma_tx_state');
+        if (!raw) return false;
+        const state = JSON.parse(raw);
+        // Ne restaurer que si moins de 5 minutes
+        if (Date.now() - state.savedAt > 5 * 60 * 1000) {
+            localStorage.removeItem('wakhma_tx_state');
+            return false;
+        }
+        const currentPlan = getUrlParam('plan');
+        if (currentPlan && currentPlan !== state.planIdFromUrl) {
+            localStorage.removeItem('wakhma_tx_state');
+            return false;
+        }
+        transactionId = state.transactionId;
+        montantAPayer = state.montantAPayer;
+        montantBase = state.montantBase;
+        clientRef = state.clientRef;
+        callbackUrl = state.callbackUrl;
+        planIdFromUrl = state.planIdFromUrl;
+        montantFromUrl = state.montantFromUrl;
+        planInfo = state.planInfo;
+        vendeurInfo = state.vendeurInfo;
+        startTime = state.startTime;
+        return !!transactionId;
+    } catch(e) {
+        localStorage.removeItem('wakhma_tx_state');
+        return false;
+    }
+}
+
+function clearTransactionState() {
+    try { localStorage.removeItem('wakhma_tx_state'); } catch (e) {}
+}
+
+// ==========================================================================
+// CLIPBOARD
+// ==========================================================================
+function copyToClipboard(text, btnId) {
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            const original = btn.innerHTML;
+            btn.innerHTML = '✓ Copié';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.innerHTML = original;
+                btn.classList.remove('copied');
+            }, 2000);
+        }
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+    });
+}
+
+// ==========================================================================
+// OUVRIR WAVE
+// ==========================================================================
+function openWavePayment() {
+    if (!vendeurInfo || !vendeurInfo.wave_url) return;
+    saveTransactionState();
+    window.location.href = vendeurInfo.wave_url;
+}
+
+// ==========================================================================
+// RENDU — FORMULAIRE
+// ==========================================================================
+async function renderLoginForm() {
+    let planPreview = '';
+    if (planIdFromUrl) {
+        try {
+            const resp = await fetch(`${API_BASE_URL}/api/plans/${planIdFromUrl}`);
+            const data = await resp.json();
+            if (data.success && data.plan) {
+                planInfo = data.plan;
+                planPreview = `
+                    <div class="plan-preview">
+                        <span class="plan-icon">${data.plan.icone}</span>
+                        <div>
+                            <span class="plan-name">${data.plan.nom}</span>
+                            <span class="plan-price">${data.plan.prix_formate}</span>
+                        </div>
+                    </div>`;
+            }
+        } catch(e) {}
+    } else if (montantFromUrl) {
+        planPreview = `
+            <div class="plan-preview">
+                <span class="plan-icon">💰</span>
+                <div>
+                    <span class="plan-name">Paiement libre</span>
+                    <span class="plan-price">${parseInt(montantFromUrl).toLocaleString('fr-FR')} XOF</span>
+                </div>
+            </div>`;
+    }
+
+    document.getElementById('checkoutBody').innerHTML = `
+        <div class="form">
+            <h2>Finaliser le paiement</h2>
+            <p>Entrez votre numéro pour recevoir la confirmation.</p>
+            ${planPreview}
+            <div class="form-group">
+                <label for="phoneInput">Numéro de téléphone</label>
+                <input type="tel" id="phoneInput" placeholder="77 123 45 67" maxlength="15" autocomplete="tel">
+            </div>
+            <div class="form-group">
+                <label for="nameInput">Nom (optionnel)</label>
+                <input type="text" id="nameInput" placeholder="Mamadou Diop" maxlength="50">
+            </div>
+            <button class="btn btn-primary" id="btnPay" onclick="submitPayment()">Continuer</button>
+        </div>`;
+
+    document.getElementById('phoneInput').addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/[^\d+]/g, '');
+    });
+    document.getElementById('phoneInput').focus();
+}
+
+async function submitPayment() {
+    const phone = document.getElementById('phoneInput').value.replace(/\s/g, '');
+    const name = document.getElementById('nameInput') ? document.getElementById('nameInput').value.trim() : '';
+    if (!phone || phone.length < 9) {
+        const input = document.getElementById('phoneInput');
+        input.style.borderColor = 'var(--error)';
+        input.focus();
+        return;
+    }
+    clientRef = name ? `${phone} (${name})` : phone;
+    const btn = document.getElementById('btnPay');
+    btn.disabled = true;
+    btn.textContent = 'Chargement...';
+    await initiatePayment();
+}
+
+// ==========================================================================
+// RENDU — EN ATTENTE
+// ==========================================================================
+function renderPending(amount, txId, baseAmount) {
+    const variation = amount - baseAmount;
+    const variationNote = variation > 0
+        ? `Montant ajusté de +${variation} XOF pour garantir l'unicité de la transaction.`
+        : '';
+
+    const sellerPhone = vendeurInfo ? vendeurInfo.telephone : '---';
+    const sellerName = vendeurInfo ? vendeurInfo.nom : 'Wakhma Store';
+    const sellerPhoneClean = sellerPhone.replace(/\s/g, '');
+
+    const planBadge = planInfo
+        ? `<div class="plan-preview">
+               <span class="plan-icon">${planInfo.icone}</span>
+               <div>
+                   <span class="plan-name">${planInfo.nom}</span>
+                   <span class="plan-detail">${planInfo.categorie === 'abonnement' ? planInfo.duree + ' ' + planInfo.unite : planInfo.points ? planInfo.points.toLocaleString('fr-FR') + ' points' : ''}</span>
+               </div>
+           </div>`
+        : '';
+
+    document.getElementById('checkoutBody').innerHTML = `
+        ${planBadge}
+
+        <div class="amount-block">
+            <div class="amount-label">Montant à payer</div>
+            <div class="amount-value" id="amountDisplay">${amount.toLocaleString('fr-FR')}</div>
+            <div class="amount-currency">XOF (FCFA)</div>
+            ${variationNote ? `<div style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;">${variationNote}</div>` : ''}
+        </div>
+
+        <div class="vendor-block">
+            <div class="vendor-label">Envoyez l'argent à</div>
+            <div class="vendor-name">${sellerName}</div>
+            <div class="vendor-phone" id="sellerPhone">${sellerPhone}</div>
+            <button class="copy-btn" id="copyPhoneBtn" onclick="copyToClipboard('${sellerPhoneClean}', 'copyPhoneBtn')">
+                Copier le numéro
+            </button>
+        </div>
+
+        <button class="wave-btn" onclick="openWavePayment()">
+            <svg class="wave-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5l-4-4 1.41-1.41L11 13.67l5.59-5.58L18 9.5l-7 7z"/></svg>
+            Payer avec Wave
+        </button>
+        <div class="wave-hint">Montant pré-rempli · Paiement sécurisé</div>
+
+        <div class="steps">
+            <h3>Étapes</h3>
+            <ol>
+                <li>Cliquez sur <strong>« Payer avec Wave »</strong></li>
+                <li>Wave s'ouvre avec <strong>${amount.toLocaleString('fr-FR')} XOF</strong> pré-rempli</li>
+                <li>Confirmez le paiement dans Wave</li>
+                <li>La validation est <strong>automatique</strong></li>
+            </ol>
+        </div>
+
+        <div class="status-block pending" id="statusBlock">
+            <div class="spinner"></div>
+            <div class="status-text">En attente de paiement...</div>
+            <div class="status-subtext">Vérification automatique toutes les 3 secondes</div>
+        </div>
+
+        <button class="btn btn-secondary" style="margin-top:8px;" onclick="manualConfirm()">
+            J'ai déjà payé — Vérifier
+        </button>
+
+        <div class="tx-details">
+            <div><span class="label">Référence :</span> <span class="value">${txId}</span></div>
+            <div><span class="label">Compte :</span> <span class="value">${clientRef}</span></div>
+            ${planInfo ? `<div><span class="label">Offre :</span> <span class="value">${planInfo.nom}</span></div>` : ''}
+            <div id="timerDisplay"><span class="label">Temps écoulé :</span> <span class="value">0s</span></div>
+        </div>`;
+
+    startTime = Date.now();
+    updateTimer();
+}
+
+// ==========================================================================
+// CONFIRMATION MANUELLE — "J'ai déjà payé"
+// ==========================================================================
+function manualConfirm() {
+    if (!transactionId) return;
+    checkPaymentStatus();
+    const statusBlock = document.getElementById('statusBlock');
+    if (statusBlock) {
+        statusBlock.innerHTML = `
+            <div class="spinner"></div>
+            <div class="status-text">Vérification en cours...</div>
+            <div class="status-subtext">On cherche votre paiement...</div>
+        `;
+    }
+    let checks = 0;
+    const fastPoll = setInterval(async () => {
+        checks++;
+        await checkPaymentStatus();
+        if (checks >= 5 || !transactionId) {
+            clearInterval(fastPoll);
+            if (transactionId && montantAPayer) {
+                const sb = document.getElementById('statusBlock');
+                if (sb && !document.querySelector('.status-block.success')) {
+                    sb.innerHTML = `
+                        <div class="spinner"></div>
+                        <div class="status-text">En attente de paiement...</div>
+                        <div class="status-subtext">Vérification automatique toutes les 3 secondes</div>
+                    `;
+                }
+            }
+        }
+    }, 3000);
+}
+
+// ==========================================================================
+// RENDU — SUCCÈS + REDIRECTION
+// ==========================================================================
+function renderSuccess(callbackSent) {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    clearTransactionState();
+
+    const redirectSeconds = 5;
+
+    let planBadge = '';
+    if (planInfo) {
+        if (planInfo.categorie === 'points' && planInfo.points) {
+            planBadge = `
+                <div class="plan-preview" style="background:var(--success-soft);border-color:#a7f3d0;">
+                    <span class="plan-icon">💎</span>
+                    <div>
+                        <span class="plan-name" style="color:var(--success);">+${planInfo.points.toLocaleString('fr-FR')} points</span>
+                        <span class="plan-price">crédités sur votre compte</span>
+                    </div>
+                </div>`;
+        } else {
+            planBadge = `
+                <div class="plan-preview" style="background:var(--success-soft);border-color:#a7f3d0;">
+                    <span class="plan-icon">${planInfo.icone}</span>
+                    <div>
+                        <span class="plan-name" style="color:var(--success);">${planInfo.nom}</span>
+                        <span class="plan-price">${planInfo.duree ? planInfo.duree + ' ' + planInfo.unite : ''} activé</span>
+                    </div>
+                </div>`;
+        }
+    }
+
+    let callbackBadge = '';
+    if (callbackSent === false) {
+        callbackBadge = `<div style="text-align:center;margin:8px 0;padding:8px 12px;background:var(--warning-soft);border:1px solid #fde68a;border-radius:6px;font-size:0.78rem;color:var(--warning);">⚠ Synchronisation en cours — vos points seront crédités dans quelques instants sur Wakhma Store.</div>`;
+    }
+
+    document.getElementById('checkoutBody').innerHTML = `
+        <div class="amount-block" style="background:var(--success-soft);border-color:#a7f3d0;">
+            <div class="amount-label">Paiement confirmé</div>
+            <div class="amount-value" style="color:var(--success);">${montantAPayer.toLocaleString('fr-FR')}</div>
+            <div class="amount-currency">XOF</div>
+        </div>
+
+        ${planBadge}
+        ${callbackBadge}
+
+        <div class="status-block success">
+            <div class="status-text" style="color:var(--success);">✓ Paiement validé</div>
+            <div class="status-subtext">Redirection vers Wakhma Store dans <span id="redirectCountdown">${redirectSeconds}</span>s...</div>
+        </div>
+
+        <div class="tx-details">
+            <div><span class="label">Référence :</span> <span class="value">${transactionId}</span></div>
+            <div><span class="label">Compte :</span> <span class="value">${clientRef}</span></div>
+            ${planInfo ? `<div><span class="label">Offre :</span> <span class="value">${planInfo.nom}</span></div>` : ''}
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:14px;" onclick="goToWakhmaStore()">
+            Aller sur Wakhma Store
+        </button>`;
+
+    // Compte à rebours
+    let remaining = redirectSeconds;
+    const countdownTimer = setInterval(() => {
+        remaining--;
+        const el = document.getElementById('redirectCountdown');
+        if (el) el.textContent = remaining;
+        if (remaining <= 0) {
+            clearInterval(countdownTimer);
+            goToWakhmaStore();
+        }
+    }, 1000);
+}
+
+// ==========================================================================
+// FALLBACK — Quand le polling n'a pas détecté le paiement après 5 min,
+// on redirige quand même l'utilisateur vers wakhmastore.com avec le pending
+// ID. Le backend wakhmastore.com continuera à interroger Wave Business et
+// créditera les points dès qu'il trouvera la transaction.
+// ==========================================================================
+function renderTimeoutFallback() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    clearTransactionState();
+
+    document.getElementById('checkoutBody').innerHTML = `
+        <div class="status-block pending">
+            <div class="status-text">Vérification prolongée...</div>
+            <div class="status-subtext">Si vous avez payé, vos points seront crédités automatiquement sur Wakhma Store dans quelques minutes.</div>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:14px;" onclick="goToWakhmaStore()">
+            Retourner sur Wakhma Store
+        </button>
+
+        <div class="tx-details">
+            <div><span class="label">Référence :</span> <span class="value">${transactionId || '—'}</span></div>
+        </div>`;
+
+    // Auto-redirect après 10s
+    setTimeout(() => goToWakhmaStore(), 10000);
+}
+
+// ==========================================================================
+// REDIRECTION VERS WAKHMA STORE
+// ==========================================================================
+function goToWakhmaStore() {
+    const redirectUrl = callbackUrl || DEFAULT_REDIRECT_URL;
+    const sep = redirectUrl.includes('?') ? '&' : '?';
+    let finalUrl = `${redirectUrl}${sep}txn=${encodeURIComponent(transactionId || '')}&status=succes&montant=${montantAPayer || 0}&compte=${encodeURIComponent(clientRef || '')}`;
+    if (planInfo) finalUrl += `&plan=${encodeURIComponent(planInfo.id)}`;
+    if (planInfo && planInfo.points) finalUrl += `&points=${planInfo.points}`;
+    window.location.href = finalUrl;
+}
+
+function renderFailed(status) {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    clearTransactionState();
+    const messages = {
+        'EXPIRE': { title: 'Transaction expirée', detail: 'Le délai est dépassé. Réessayez depuis Wakhma Store.' },
+        'ECHEC':  { title: 'Paiement échoué', detail: 'La transaction a échoué. Contactez le support.' },
+    };
+    const info = messages[status] || { title: 'Erreur', detail: 'Une erreur inattendue est survenue.' };
+    document.getElementById('checkoutBody').innerHTML = `
+        <div class="status-block error">
+            <div class="status-text" style="color:var(--error);">✕ ${info.title}</div>
+            <div class="status-subtext">${info.detail}</div>
+        </div>`;
+}
+
+function updateTimer() {
+    if (!startTime) return;
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const min = Math.floor(elapsed / 60);
+    const sec = elapsed % 60;
+    const el = document.getElementById('timerDisplay');
+    if (el) {
+        const display = min > 0 ? `${min}min ${sec}s` : `${sec}s`;
+        el.innerHTML = `<span class="label">Temps écoulé :</span> <span class="value">${display}</span>`;
+    }
+    // ⭐ FALLBACK : si on dépasse POLL_TIMEOUT_SECONDS sans confirmation,
+    // rediriger quand même vers wakhmastore.com (le serveur finira la validation)
+    if (elapsed > POLL_TIMEOUT_SECONDS && transactionId) {
+        console.log('[TIMEOUT] Redirection fallback après ' + elapsed + 's');
+        renderTimeoutFallback();
+        return;
+    }
+    requestAnimationFrame(updateTimer);
+}
+
+// ==========================================================================
+// APPELS API
+// ==========================================================================
+async function initiatePayment() {
+    try {
+        const payload = { compte: clientRef, callback_url: callbackUrl };
+        if (planIdFromUrl) {
+            payload.plan = planIdFromUrl;
+        } else {
+            payload.montant = montantBase;
+        }
+        const response = await fetch(`${API_BASE_URL}/api/initiate-payment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        if (!data.success) {
+            renderError('Erreur', data.error);
+            return;
+        }
+
+        transactionId = data.transaction_id;
+        montantAPayer = data.montant_a_payer;
+        montantBase = data.montant_base;
+        if (data.plan) planInfo = data.plan;
+        if (data.vendeur) vendeurInfo = data.vendeur;
+
+        saveTransactionState();
+        renderPending(montantAPayer, transactionId, montantBase);
+        startPolling();
+    } catch (error) {
+        console.error('Erreur:', error);
+        renderError('Erreur de connexion', 'Impossible de joindre le serveur. Vérifiez votre connexion.');
+    }
+}
+
+function startPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(checkPaymentStatus, POLL_INTERVAL_MS);
+    checkPaymentStatus();
+}
+
+function checkPaymentStatus() {
+    if (!transactionId) return;
+    try {
+        const response = fetch(`${API_BASE_URL}/api/check-status/${transactionId}`);
+        return response.then(res => {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        }).then(data => {
+            console.log('[POLLING] Statut:', data.status, '| Callback envoyé:', data.callback_sent);
+            if (!data.success) return;
+            switch (data.status) {
+                case 'SUCCES': renderSuccess(data.callback_sent); break;
+                case 'ECHEC':
+                case 'EXPIRE': renderFailed(data.status); break;
+            }
+        }).catch(err => { console.error('[POLLING] Erreur:', err); });
+    } catch (error) {
+        console.error('[POLLING] Erreur:', error);
+    }
+}
+
+// ==========================================================================
+// DÉTECTION RETOUR SUR LA PAGE (revenant de l'app Wave)
+// ==========================================================================
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && transactionId) {
+        console.log('Client de retour sur la page — vérification immédiate');
+        checkPaymentStatus();
+    }
+});
+
+window.addEventListener('focus', () => {
+    if (transactionId) {
+        checkPaymentStatus();
+    }
+});
+
+function renderError(title, message) {
+    document.getElementById('checkoutBody').innerHTML = `
+        <div class="error-screen">
+            <h2>${title}</h2>
+            <p>${message}</p>
+        </div>`;
+}
+
+// ==========================================================================
+// DÉMARRAGE
+// ==========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    planIdFromUrl = getUrlParam('plan');
+    montantFromUrl = getUrlParam('montant');
+    const compteFromUrl = getUrlParam('compte');
+    callbackUrl = getUrlParam('callback_url');
+
+    if (!planIdFromUrl && (!montantFromUrl || isNaN(parseInt(montantFromUrl)) || parseInt(montantFromUrl) < 1)) {
+        renderError('Paramètre invalide', 'Utilisez un plan : <strong>checkout.html?plan=bolt</strong><br>ou un montant : <strong>checkout.html?montant=2000</strong>');
+        return;
+    }
+    if (montantFromUrl) montantBase = parseInt(montantFromUrl, 10);
+
+    // ── TENTER DE RESTAURER UNE TRANSACTION EN COURS ──────────────
+    if (loadTransactionState()) {
+        console.log('Transaction restaurée:', transactionId);
+        renderPending(montantAPayer, transactionId, montantBase);
+        startPolling();
+        return;
+    }
+
+    if (compteFromUrl) {
+        clientRef = compteFromUrl;
+        initiatePayment();
+    } else {
+        renderLoginForm();
+    }
+});
+</script>
+</body>
+</html>

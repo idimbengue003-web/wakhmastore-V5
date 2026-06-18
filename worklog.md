@@ -455,3 +455,30 @@ Stage Summary:
   2. Cliquer "Mon Profil" — doit rester sur /profil sans flash /login
   3. Cliquer "Recharger" -> "Acheter des points" — doit rester sur la page
   4. Vérifier que le menu "Parrainage" reste visible dans la navbar
+
+---
+Task ID: checkout-redesign-2026-06-19
+Agent: main (Super Z)
+Task: Redesign du checkout.html de la passerelle de paiement + fix matching montant
+
+Work Log:
+- Récupéré le checkout.html actuel depuis https://payment-gateway-beige-ten.vercel.app/checkout.html
+- Analysé l'architecture : passerelle externe (Vercel séparé) avec backend /api/initiate-payment + /api/check-status, et système SMS (Automate/MacroDroid) qui déclenche un callback HMAC vers wakhmastore.com/api/payment-callback
+- Identifié le bug majeur : la passerelle ajoute parfois +1/+2 FCFA au montant pour garantir l'unicité de la transaction (ex: 1300 → 1301). wakhmastore.com faisait un match strict `amount === expectedAmount`, donc les paiements avec variation n'étaient JAMAIS matchés → paiement reçu mais jamais validé côté wakhmastore
+- Fix appliqué dans /home/z/my-project/src/lib/wave-business.ts : `findMatchingTransaction` accepte maintenant ±10 FCFA de tolérance
+- Commit `6d9cafd` poussé sur main → Vercel redéploie automatiquement
+- Nouveau checkout.html créé à /home/z/my-project/download/checkout.html :
+  * Fond blanc (était noir avec halos animés)
+  * Une seule couleur accent : bleu Wave #1DC3E0 (était vert + or + bleu + orange)
+  * Header plat (était dégradé vert-émeraude)
+  * Plus de bouton Orange Money (Wave uniquement)
+  * Plus d'animations décoratives (bgShift, successPulse, etc.)
+  * SVG check minimaliste au lieu d'emojis partout
+  * Fallback après 5 min : redirection auto vers wakhmastore.com/paiement/confirmation?pending=<id> même si SMS non détecté, pour que le polling serveur Wave Business finisse le job
+  * localStorage pour reprendre la transaction au retour de l'app Wave
+- Guide de déploiement écrit à /home/z/my-project/download/DEPLOY-NEW-CHECKOUT.md
+
+Stage Summary:
+- ✅ wakhmastore.com : tolérance ±10 FCFA déployée (commit 6d9cafd)
+- ⏳ checkout.html : nouveau fichier prêt dans download/ — doit être déployé par l'utilisateur sur le repo GitHub du projet payment-gateway-beige-ten
+- ✅ Architecture fallback en place : même si le SMS est raté, le polling serveur Wave Business créditera les points via /api/payment-status

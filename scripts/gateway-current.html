@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wakhma Store — Paiement Mobile Money</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
+    <style>
+        :root {
+            --wk-green-dark: #065f46;
+            --wk-green: #059669;
+            --wk-green-light: #10b981;
+            --wk-green-glow: rgba(16, 185, 129, 0.25);
+            --wk-gold: #f59e0b;
+            --wk-gold-light: #fbbf24;
+            --wk-gold-glow: rgba(245, 158, 11, 0.2);
+            --color-bg: #020617;
+            --color-surface: #0f172a;
+            --color-surface-raised: #1e293b;
+            --color-success: #10b981;
+            --color-success-glow: rgba(16, 185, 129, 0.3);
+            --color-warning: #f59e0b;
+            --color-error: #ef4444;
+            --color-text: #f1f5f9;
+            --color-text-muted: #94a3b8;
+            --color-text-dim: #64748b;
+            --color-border: rgba(255, 255, 255, 0.08);
+            --radius-xl: 20px;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --font-mono: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            --wave-blue: #1DC3E0;
+            --om-orange: #FF6600;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--color-bg);
+            color: var(--color-text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; top: -40%; left: -20%;
+            width: 140%; height: 140%;
+            background:
+                radial-gradient(ellipse 600px 400px at 20% 30%, var(--wk-green-glow), transparent),
+                radial-gradient(ellipse 500px 300px at 80% 70%, var(--wk-gold-glow), transparent);
+            pointer-events: none; z-index: 0;
+            animation: bgShift 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgShift {
+            0%   { transform: translate(0, 0) scale(1); }
+            50%  { transform: translate(-3%, 2%) scale(1.05); }
+            100% { transform: translate(2%, -2%) scale(1); }
+        }
+
+        .checkout-container {
+            width: 100%; max-width: 460px;
+            background: var(--color-surface);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--color-border);
+            overflow: hidden;
+            position: relative; z-index: 1;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 4px 24px rgba(0,0,0,0.5), 0 24px 80px rgba(0,0,0,0.4);
+        }
+
+        .checkout-header {
+            background: linear-gradient(135deg, var(--wk-green-dark) 0%, var(--wk-green) 50%, var(--wk-green-light) 100%);
+            padding: 28px 24px 24px;
+            text-align: center;
+            position: relative; overflow: hidden;
+        }
+
+        .checkout-header::before {
+            content: ''; position: absolute; top: -50%; right: -30%;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .brand-name {
+            font-size: 1.5rem; font-weight: 800;
+            letter-spacing: 1px; margin-bottom: 2px;
+            position: relative; z-index: 1;
+        }
+        .brand-name .highlight { color: var(--wk-gold-light); }
+
+        .brand-subtitle {
+            font-size: 0.72rem; letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.6);
+            position: relative; z-index: 1;
+        }
+
+        .checkout-body { padding: 24px 20px; }
+
+        /* ── Form login ──────────────────────────────────────────── */
+        .login-form { text-align: center; }
+        .login-form h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; }
+        .login-form p { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 20px; line-height: 1.6; }
+        .login-form .form-group { margin-bottom: 14px; text-align: left; }
+        .login-form label { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px; color: var(--color-text-muted); margin-bottom: 5px; text-transform: uppercase; }
+        .login-form input {
+            width: 100%; padding: 13px 14px;
+            background: var(--color-bg); border: 1.5px solid var(--color-border);
+            border-radius: var(--radius-sm); color: var(--color-text);
+            font-size: 1rem; font-weight: 600; font-family: var(--font-mono);
+            transition: border-color 0.2s; outline: none;
+        }
+        .login-form input::placeholder { color: var(--color-text-dim); font-weight: 400; }
+        .login-form input:focus { border-color: var(--wk-green); box-shadow: 0 0 0 3px var(--wk-green-glow); }
+
+        .btn-pay {
+            display: block; width: 100%; padding: 15px; border: none;
+            border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 800;
+            letter-spacing: 0.5px; cursor: pointer;
+            background: var(--wk-green); color: #fff; margin-top: 6px;
+            transition: all 0.2s;
+        }
+        .btn-pay:hover { background: var(--wk-green-light); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(5,150,105,0.4); }
+        .btn-pay:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .plan-preview {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--color-bg); border: 1.5px solid var(--color-border);
+            border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 20px;
+        }
+        .plan-preview .plan-icon { font-size: 1.8rem; }
+        .plan-preview .plan-name { font-size: 0.95rem; font-weight: 800; display: block; }
+        .plan-preview .plan-price { font-size: 0.75rem; color: var(--color-text-dim); }
+
+        /* ── Bloc montant ────────────────────────────────────────── */
+        .amount-block {
+            background: var(--color-bg); border: 2px solid var(--wk-green);
+            border-radius: var(--radius-md); padding: 24px 20px 20px;
+            text-align: center; margin-bottom: 16px;
+            position: relative; overflow: hidden;
+        }
+        .amount-block::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 30%, var(--wk-green-glow) 0%, transparent 60%);
+            opacity: 0.15; pointer-events: none;
+        }
+        .amount-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 3px; color: var(--color-text-dim); margin-bottom: 8px; }
+        .amount-value { font-size: 3rem; font-weight: 900; color: var(--wk-green-light); line-height: 1; position: relative; }
+        .amount-currency { font-size: 1rem; font-weight: 600; color: var(--color-text-muted); margin-top: 4px; letter-spacing: 1px; }
+        .amount-note { font-size: 0.7rem; color: var(--wk-gold); margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--color-border); line-height: 1.5; }
+
+        /* ── Numéro vendeur ──────────────────────────────────────── */
+        .seller-block {
+            background: var(--color-bg);
+            border: 1.5px solid var(--wk-gold);
+            border-radius: var(--radius-md);
+            padding: 18px 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .seller-label {
+            font-size: 0.68rem; text-transform: uppercase;
+            letter-spacing: 2px; color: var(--color-text-dim);
+            margin-bottom: 8px;
+        }
+        .seller-name {
+            font-size: 0.85rem; font-weight: 700;
+            color: var(--wk-gold-light); margin-bottom: 6px;
+        }
+        .seller-phone {
+            font-size: 1.6rem; font-weight: 900;
+            font-family: var(--font-mono);
+            color: var(--wk-gold); letter-spacing: 2px;
+            line-height: 1.2;
+        }
+        .copy-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(245,158,11,0.1);
+            border: 1px solid rgba(245,158,11,0.3);
+            border-radius: 20px; padding: 6px 16px;
+            color: var(--wk-gold); font-size: 0.72rem;
+            font-weight: 700; cursor: pointer; margin-top: 10px;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { background: rgba(245,158,11,0.2); }
+        .copy-btn.copied { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.3); color: var(--wk-green-light); }
+
+        /* ── Boutons Wave / OM ───────────────────────────────────── */
+        .app-buttons {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px; margin-bottom: 16px;
+        }
+        .app-btn {
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; padding: 14px 12px;
+            border: 2px solid; border-radius: var(--radius-md);
+            font-size: 0.85rem; font-weight: 800;
+            cursor: pointer; transition: all 0.2s;
+            text-decoration: none; text-align: center;
+        }
+        .app-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        .app-btn:active { transform: translateY(0); }
+
+        .app-btn.wave-btn {
+            background: rgba(29,195,224,0.15);
+            border-color: var(--wave-blue);
+            color: var(--wave-blue);
+        }
+        .app-btn.wave-btn:hover { background: rgba(29,195,224,0.3); box-shadow: 0 6px 24px rgba(29,195,224,0.3); }
+
+        /* ── Gros bouton Wave principal ───────────────────────────── */
+        .wave-main-btn {
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px;
+            width: 100%; padding: 18px;
+            background: linear-gradient(135deg, #1DC3E0, #17a8c4);
+            border: none; border-radius: var(--radius-md);
+            color: #fff;
+            font-size: 1.05rem; font-weight: 900;
+            letter-spacing: 0.5px; cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 16px rgba(29,195,224,0.3);
+        }
+        .wave-main-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(29,195,224,0.4); }
+        .wave-main-btn:active { transform: translateY(0); }
+        .wave-main-btn .btn-icon { font-size: 1.4rem; }
+
+        .wave-subtitle {
+            text-align: center;
+            font-size: 0.65rem;
+            color: var(--color-text-dim);
+            margin-bottom: 14px;
+        }
+
+        .app-btn.om-btn {
+            background: rgba(255,102,0,0.1);
+            border-color: var(--om-orange);
+            color: var(--om-orange);
+        }
+        .app-btn.om-btn:hover { background: rgba(255,102,0,0.2); }
+
+        .app-btn-icon { font-size: 1.3rem; }
+
+        /* ── Instructions ────────────────────────────────────────── */
+        .instructions {
+            background: rgba(16, 185, 129, 0.06);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            border-left: 4px solid var(--wk-green);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding: 16px 18px; margin-bottom: 16px;
+        }
+        .instructions h3 {
+            font-size: 0.82rem; font-weight: 700;
+            margin-bottom: 10px; color: var(--wk-green-light);
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .instructions ol { padding-left: 18px; font-size: 0.8rem; line-height: 2; color: var(--color-text-muted); }
+        .instructions ol li strong { color: var(--color-text); }
+
+        /* ── Status ──────────────────────────────────────────────── */
+        .status-block {
+            border-radius: var(--radius-md);
+            padding: 22px 18px; text-align: center;
+            margin-bottom: 16px; transition: all 0.5s ease;
+        }
+        .status-block.pending { background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.2); }
+        .status-block.success { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); animation: successPulse 2s ease infinite; }
+        .status-block.error { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); }
+
+        @keyframes successPulse {
+            0%, 100% { box-shadow: 0 0 0 0 var(--color-success-glow); }
+            50% { box-shadow: 0 0 40px 4px var(--color-success-glow); }
+        }
+
+        .status-icon { font-size: 2.5rem; margin-bottom: 6px; }
+        .status-text { font-size: 1rem; font-weight: 700; }
+        .status-subtext { font-size: 0.75rem; color: var(--color-text-dim); margin-top: 6px; }
+
+        .spinner {
+            width: 32px; height: 32px;
+            border: 3px solid rgba(245,158,11,0.15);
+            border-top-color: var(--wk-gold);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Plan badge ──────────────────────────────────────────── */
+        .plan-badge {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--color-bg); border: 1.5px solid;
+            border-radius: var(--radius-md); padding: 14px 16px;
+            margin-bottom: 16px; position: relative;
+        }
+        .plan-badge .plan-icon { font-size: 1.8rem; line-height: 1; }
+        .plan-badge .plan-info { flex: 1; }
+        .plan-badge .plan-name { font-size: 0.95rem; font-weight: 800; display: block; }
+        .plan-badge .plan-detail { font-size: 0.72rem; color: var(--color-text-dim); }
+        .plan-badge .plan-pop {
+            position: absolute; top: -8px; right: 12px;
+            background: var(--wk-gold); color: #000;
+            font-size: 0.58rem; font-weight: 800;
+            letter-spacing: 1px; padding: 3px 10px; border-radius: 20px;
+        }
+
+        /* ── Tx details ──────────────────────────────────────────── */
+        .tx-details {
+            font-size: 0.72rem; color: var(--color-text-dim);
+            text-align: center; padding-top: 16px;
+            border-top: 1px solid var(--color-border);
+        }
+        .tx-details span { display: block; margin: 4px 0; }
+        .tx-details .label { color: var(--color-text-dim); }
+        .tx-details .value { color: var(--color-text-muted); font-family: var(--font-mono); font-weight: 600; font-size: 0.7rem; }
+
+        .checkout-footer {
+            padding: 16px 20px; text-align: center;
+            background: var(--color-bg); border-top: 1px solid var(--color-border);
+        }
+        .footer-brand { font-size: 0.7rem; font-weight: 700; color: var(--wk-green); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 3px; }
+        .footer-legal { font-size: 0.62rem; color: var(--color-text-dim); line-height: 1.5; }
+
+        .error-screen { text-align: center; padding: 36px 20px; }
+        .error-screen h2 { color: var(--color-error); margin-bottom: 10px; font-size: 1.05rem; }
+        .error-screen p { color: var(--color-text-muted); font-size: 0.82rem; line-height: 1.6; }
+
+        .security-badge {
+            display: flex; align-items: center; justify-content: center;
+            gap: 6px; font-size: 0.68rem; color: var(--color-text-dim);
+            margin-bottom: 16px; padding: 7px 12px;
+            background: rgba(16,185,129,0.04); border-radius: var(--radius-sm);
+        }
+        .security-badge .lock { color: var(--wk-green); font-size: 0.8rem; }
+
+        @media (max-width: 480px) {
+            .amount-value { font-size: 2.5rem; }
+            .seller-phone { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="checkout-container" id="app">
+    <div class="checkout-header">
+        <div class="brand-name">Wakhma<span class="highlight">Store</span></div>
+        <div class="brand-subtitle">Paiement Mobile Money</div>
+    </div>
+    <div class="checkout-body" id="checkoutBody">
+        <div class="spinner"></div>
+        <p style="text-align:center; color: var(--color-text-dim); font-size: 0.85rem;">Chargement...</p>
+    </div>
+    <div class="checkout-footer">
+        <div class="footer-brand">Wakhma Store</div>
+        <div class="footer-legal">Paiement automatique &middot; Validation SMS temps r&eacute;el<br>Wave &amp; Orange Money &middot; S&eacute;n&eacute;gal</div>
+    </div>
+</div>
+
+<script>
+// ==========================================================================
+const API_BASE_URL = window.location.origin;
+const POLL_INTERVAL_MS = 3000;
+const DEFAULT_REDIRECT_URL = 'https://wakhma-store.com/confirmation';
+
+let transactionId = null;
+let montantAPayer = null;
+let montantBase = null;
+let clientRef = null;
+let callbackUrl = null;
+let pollTimer = null;
+let startTime = null;
+let planInfo = null;
+let planIdFromUrl = null;
+let montantFromUrl = null;
+let vendeurInfo = null;
+
+function getUrlParam(name) { return new URLSearchParams(window.location.search).get(name); }
+
+// ==========================================================================
+// SAUVEGARDE DANS LOCALSTORAGE — Survit au rechargement de page
+// ==========================================================================
+function saveTransactionState() {
+    const state = {
+        transactionId, montantAPayer, montantBase, clientRef,
+        callbackUrl, planIdFromUrl, montantFromUrl,
+        planInfo, vendeurInfo, startTime,
+        savedAt: Date.now()
+    };
+    localStorage.setItem('wakhma_tx_state', JSON.stringify(state));
+}
+
+function loadTransactionState() {
+    try {
+        const raw = localStorage.getItem('wakhma_tx_state');
+        if (!raw) return false;
+        const state = JSON.parse(raw);
+        // Ne restaurer que si moins de 5 minutes
+        if (Date.now() - state.savedAt > 5 * 60 * 1000) {
+            localStorage.removeItem('wakhma_tx_state');
+            return false;
+        }
+        // Ne restaurer que si le plan correspond à l'URL actuelle
+        const currentPlan = getUrlParam('plan');
+        if (currentPlan && currentPlan !== state.planIdFromUrl) {
+            localStorage.removeItem('wakhma_tx_state');
+            return false;
+        }
+        transactionId = state.transactionId;
+        montantAPayer = state.montantAPayer;
+        montantBase = state.montantBase;
+        clientRef = state.clientRef;
+        callbackUrl = state.callbackUrl;
+        planIdFromUrl = state.planIdFromUrl;
+        montantFromUrl = state.montantFromUrl;
+        planInfo = state.planInfo;
+        vendeurInfo = state.vendeurInfo;
+        startTime = state.startTime;
+        return !!transactionId;
+    } catch(e) {
+        localStorage.removeItem('wakhma_tx_state');
+        return false;
+    }
+}
+
+function clearTransactionState() {
+    localStorage.removeItem('wakhma_tx_state');
+}
+
+// ==========================================================================
+// COPIER DANS LE PRESSE-PAPIERS
+// ==========================================================================
+function copyToClipboard(text, btnId) {
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            const original = btn.innerHTML;
+            btn.innerHTML = '&#10003; Copi&eacute; !';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.innerHTML = original; btn.classList.remove('copied'); }, 2000);
+        }
+    }).catch(() => {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta);
+    });
+}
+
+// ==========================================================================
+// OUVRIR WAVE BUSINESS (lien de paiement sécurisé)
+// ==========================================================================
+function openWavePayment() {
+    if (!vendeurInfo || !vendeurInfo.wave_url) return;
+    // Sur mobile: window.location.href ouvre l'app Wave directement
+    // et garde la page checkout accessible avec le bouton "Retour"
+    // Sur desktop: ouvre la page Wave Business
+    saveTransactionState(); // Sauvegarder avant de quitter
+    window.location.href = vendeurInfo.wave_url;
+}
+
+function openOMApp() {
+    // Orange Money : pour l'instant ouvre le numéro
+    // TODO: intégrer OM Marchand quand disponible
+    if (!vendeurInfo) return;
+    const phone = vendeurInfo.telephone.replace(/\s/g, '');
+    const omDeepLink = `intent://send/${phone}#Intent;scheme=orange;package=com.orange.mali.om;end`;
+    const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.orange.mali.om';
+    const now = Date.now();
+    window.location.href = omDeepLink;
+    setTimeout(() => { if (Date.now() - now < 1500) window.location.href = playStoreUrl; }, 1000);
+}
+
+// ==========================================================================
+// RENDU — FORMULAIRE
+// ==========================================================================
+async function renderLoginForm() {
+    let planPreview = '';
+    if (planIdFromUrl) {
+        try {
+            const resp = await fetch(`${API_BASE_URL}/api/plans/${planIdFromUrl}`);
+            const data = await resp.json();
+            if (data.success && data.plan) {
+                planInfo = data.plan;
+                planPreview = `
+                    <div class="plan-preview" style="border-color: ${data.plan.couleur}33;">
+                        <span class="plan-icon">${data.plan.icone}</span>
+                        <div>
+                            <span class="plan-name" style="color: ${data.plan.couleur};">${data.plan.nom}</span>
+                            <span class="plan-price">${data.plan.prix_formate}</span>
+                        </div>
+                    </div>`;
+            }
+        } catch(e) {}
+    } else if (montantFromUrl) {
+        planPreview = `
+            <div class="plan-preview">
+                <span class="plan-icon">💰</span>
+                <div>
+                    <span class="plan-name">Paiement libre</span>
+                    <span class="plan-price">${parseInt(montantFromUrl).toLocaleString('fr-FR')} XOF</span>
+                </div>
+            </div>`;
+    }
+
+    document.getElementById('checkoutBody').innerHTML = `
+        <div class="login-form">
+            <h2>Finalisez votre achat</h2>
+            <p>Entrez votre num&eacute;ro de t&eacute;l&eacute;phone pour recevoir la confirmation.</p>
+            ${planPreview}
+            <div class="form-group">
+                <label for="phoneInput">Num&eacute;ro de t&eacute;l&eacute;phone</label>
+                <input type="tel" id="phoneInput" placeholder="77 123 45 67" maxlength="15" autocomplete="tel">
+            </div>
+            <div class="form-group">
+                <label for="nameInput">Votre nom (optionnel)</label>
+                <input type="text" id="nameInput" placeholder="Ex: Mamadou Diop" maxlength="50">
+            </div>
+            <button class="btn-pay" id="btnPay" onclick="submitPayment()">Continuer vers le paiement</button>
+        </div>`;
+
+    document.getElementById('phoneInput').addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/[^\d+]/g, '');
+    });
+    document.getElementById('phoneInput').focus();
+}
+
+async function submitPayment() {
+    const phone = document.getElementById('phoneInput').value.replace(/\s/g, '');
+    const name = document.getElementById('nameInput') ? document.getElementById('nameInput').value.trim() : '';
+    if (!phone || phone.length < 9) {
+        document.getElementById('phoneInput').style.borderColor = 'var(--color-error)';
+        document.getElementById('phoneInput').focus();
+        return;
+    }
+    clientRef = name ? `${phone} (${name})` : phone;
+    const btn = document.getElementById('btnPay');
+    btn.disabled = true; btn.textContent = 'Chargement...';
+    await initiatePayment();
+}
+
+// ==========================================================================
+// RENDU — EN ATTENTE
+// ==========================================================================
+function renderPending(amount, txId, baseAmount) {
+    const variation = amount - baseAmount;
+    const variationNote = variation > 0
+        ? `Montant ajust&eacute; de +${variation} XOF pour garantir l'unicit&eacute; de votre transaction.`
+        : 'Montant exact &mdash; aucun ajustement n&eacute;cessaire.';
+
+    const sellerPhone = vendeurInfo ? vendeurInfo.telephone : '---';
+    const sellerName = vendeurInfo ? vendeurInfo.nom : 'Wakhma Store';
+    const sellerPhoneClean = sellerPhone.replace(/\s/g, '');
+
+    const planBadge = planInfo
+        ? `<div class="plan-badge" style="border-color: ${planInfo.couleur};">
+               <span class="plan-icon">${planInfo.icone}</span>
+               <div class="plan-info">
+                   <span class="plan-name" style="color: ${planInfo.couleur};">${planInfo.nom}</span>
+                   <span class="plan-detail">${planInfo.categorie === 'abonnement' ? planInfo.duree + ' ' + planInfo.unite : planInfo.points ? planInfo.points.toLocaleString('fr-FR') + ' points' : ''}</span>
+               </div>
+               ${planInfo.populaire ? '<span class="plan-pop">POPULAIRE</span>' : ''}
+           </div>`
+        : '';
+
+    document.getElementById('checkoutBody').innerHTML = `
+        <div class="security-badge">
+            <span class="lock">&#128274;</span> Paiement s&eacute;curis&eacute; &mdash; Wakhma Store
+        </div>
+
+        ${planBadge}
+
+        <div class="amount-block">
+            <div class="amount-label">Montant exact &agrave; transf&eacute;rer</div>
+            <div class="amount-value" id="amountDisplay">${amount.toLocaleString('fr-FR')}</div>
+            <div class="amount-currency">XOF (FCFA)</div>
+            <div class="amount-note">${variationNote}</div>
+        </div>
+
+        <!-- ══════ NUMÉRO DU VENDEUR ══════ -->
+        <div class="seller-block">
+            <div class="seller-label">Envoyez l'argent &agrave; ce num&eacute;ro</div>
+            <div class="seller-name">${sellerName}</div>
+            <div class="seller-phone" id="sellerPhone">${sellerPhone}</div>
+            <button class="copy-btn" id="copyPhoneBtn" onclick="copyToClipboard('${sellerPhoneClean}', 'copyPhoneBtn')">
+                &#128203; Copier le num&eacute;ro
+            </button>
+        </div>
+
+        <!-- ══════ BOUTON WAVE BUSINESS PRINCIPAL ══════ -->
+        <button class="wave-main-btn" onclick="openWavePayment()">
+            <span class="btn-icon">🌊</span> Payer avec Wave
+        </button>
+        <div class="wave-subtitle">Montant de ${amount.toLocaleString('fr-FR')} XOF pr&eacute;-rempli &middot; Paiement s&eacute;curis&eacute; &amp; non annulable</div>
+
+        <!-- ══════ BOUTON ORANGE MONEY (secondaire) ══════ -->
+        <div class="app-buttons">
+            <a class="app-btn om-btn" onclick="openOMApp()" href="#">
+                <span class="app-btn-icon">🟠</span> Payer avec Orange Money
+            </a>
+        </div>
+
+        <div class="instructions">
+            <h3>Comment payer</h3>
+            <ol>
+                <li>Cliquez sur <strong>"Payer avec Wave"</strong> ci-dessus</li>
+                <li>Wave s'ouvre avec le montant de <strong>${amount.toLocaleString('fr-FR')} XOF</strong> d&eacute;j&agrave; rempli</li>
+                <li>Confirmez le paiement dans Wave &mdash; <strong>il ne peut pas &ecirc;tre annul&eacute;</strong></li>
+                <li>La validation est <strong>automatique</strong> d&egrave;s r&eacute;ception du SMS</li>
+            </ol>
+        </div>
+
+        <div class="status-block pending" id="statusBlock">
+            <div class="spinner"></div>
+            <div class="status-text" style="color: var(--wk-gold);">En attente de paiement...</div>
+            <div class="status-subtext">V&eacute;rification automatique toutes les 3 secondes</div>
+        </div>
+
+        <!-- ══════ BOUTON "J'AI PAYÉ" (confirmation manuelle) ══════ -->
+        <button class="btn-pay" style="margin-top:16px; background: linear-gradient(135deg, #059669, #10b981);" onclick="manualConfirm()">
+            &#10003; J'ai d&eacute;j&agrave; pay&eacute; — V&eacute;rifier maintenant
+        </button>
+        <div style="text-align:center; margin-top:8px; font-size:0.75rem; color: var(--color-text-dim);">
+            Cliquez ici si vous avez pay&eacute; mais la page ne se met pas &agrave; jour
+        </div>
+
+        <div class="tx-details">
+            <span><span class="label">R&eacute;f&eacute;rence :</span> <span class="value">${txId}</span></span>
+            <span><span class="label">Compte :</span> <span class="value">${clientRef}</span></span>
+            ${planInfo ? `<span><span class="label">Offre :</span> <span class="value">${planInfo.nom}</span></span>` : ''}
+            <span id="timerDisplay"><span class="label">Temps &eacute;coul&eacute; :</span> <span class="value">0s</span></span>
+        </div>`;
+
+    startTime = Date.now();
+    updateTimer();
+}
+
+// ==========================================================================
+// CONFIRMATION MANUELLE — "J'ai déjà payé"
+// ==========================================================================
+function manualConfirm() {
+    if (!transactionId) return;
+    // Forcer une vérification immédiate
+    checkPaymentStatus();
+    // Afficher un feedback
+    const statusBlock = document.getElementById('statusBlock');
+    if (statusBlock) {
+        statusBlock.innerHTML = `
+            <div class="spinner"></div>
+            <div class="status-text" style="color: var(--wave-blue);">V&eacute;rification en cours...</div>
+            <div class="status-subtext">On cherche votre paiement...</div>
+        `;
+    }
+    // Re-vérifier plusieurs fois sur 15 secondes
+    let checks = 0;
+    const fastPoll = setInterval(async () => {
+        checks++;
+        await checkPaymentStatus();
+        if (checks >= 5 || !transactionId) {
+            clearInterval(fastPoll);
+            // Si toujours pas confirmé après 15s
+            if (transactionId && montantAPayer) {
+                const sb = document.getElementById('statusBlock');
+                if (sb && !document.querySelector('.status-block.success')) {
+                    sb.innerHTML = `
+                        <div class="spinner"></div>
+                        <div class="status-text" style="color: var(--wk-gold);">En attente de paiement...</div>
+                        <div class="status-subtext">V&eacute;rification automatique toutes les 3 secondes</div>
+                    `;
+                }
+            }
+        }
+    }, 3000);
+}
+
+function renderSuccess(callbackSent) {
+    const redirectUrl = callbackUrl || DEFAULT_REDIRECT_URL;
+
+    // Badge points/abonnement
+    let planBadge = '';
+    if (planInfo) {
+        if (planInfo.categorie === 'points' && planInfo.points) {
+            planBadge = `
+                <div class="plan-badge" style="border-color: var(--wk-green-light); background: rgba(16,185,129,0.08);">
+                    <span class="plan-icon" style="font-size:2rem;">&#128142;</span>
+                    <div class="plan-info">
+                        <span class="plan-name" style="color: var(--wk-green-light); font-size:1.3rem;">+${planInfo.points.toLocaleString('fr-FR')} Points</span>
+                        <span class="plan-detail" style="color: var(--color-text-muted);">cr&eacute;dit&eacute;s sur votre compte</span>
+                    </div>
+                </div>`;
+        } else {
+            planBadge = `
+                <div class="plan-badge" style="border-color: var(--wk-green-light); background: rgba(16,185,129,0.08);">
+                    <span class="plan-icon" style="font-size:2rem;">${planInfo.icone}</span>
+                    <div class="plan-info">
+                        <span class="plan-name" style="color: var(--wk-green-light); font-size:1.3rem;">${planInfo.nom}</span>
+                        <span class="plan-detail" style="color: var(--color-text-muted);">${planInfo.duree ? planInfo.duree + ' ' + planInfo.unite : ''} activ&eacute;</span>
+                    </div>
+                </div>`;
+        }
+    }
+
+    // Statut callback
+    let callbackBadge = '';
+    if (callbackSent === true) {
+        callbackBadge = `<div style="text-align:center; margin:8px 0; padding:6px 12px; background:rgba(16,185,129,0.1); border-radius:8px; font-size:0.8rem; color:var(--wk-green-light);">&#10003; Points envoy&eacute;s &agrave; Wakhma Store</div>`;
+    } else if (callbackSent === false) {
+        callbackBadge = `<div style="text-align:center; margin:8px 0; padding:6px 12px; background:rgba(245,158,11,0.1); border-radius:8px; font-size:0.8rem; color:var(--wk-gold);">&#9888; Points en attente de synchronisation — ils seront cr&eacute;dit&eacute;s automatiquement</div>`;
+    }
+
+    // Compte à rebours pour la redirection
+    const redirectSeconds = 8;
+
+    document.getElementById('checkoutBody').innerHTML = `
+        <div class="amount-block" style="border-color: var(--wk-green-light);">
+            <div class="amount-label">Paiement confirm&eacute;</div>
+            <div class="amount-value" style="color: var(--wk-green-light);">${montantAPayer.toLocaleString('fr-FR')}</div>
+            <div class="amount-currency">XOF</div>
+        </div>
+
+        ${planBadge}
+        ${callbackBadge}
+
+        <div class="status-block success">
+            <div class="status-icon" style="color: var(--wk-green-light);">&#10003;</div>
+            <div class="status-text" style="color: var(--wk-green-light);">Paiement valid&eacute; avec succ&egrave;s !</div>
+            <div class="status-subtext">Redirection automatique dans <span id="redirectCountdown">${redirectSeconds}</span>s...</div>
+        </div>
+        <div class="tx-details">
+            <span><span class="label">R&eacute;f&eacute;rence :</span> <span class="value">${transactionId}</span></span>
+            <span><span class="label">Compte :</span> <span class="value">${clientRef}</span></span>
+            ${planInfo ? `<span><span class="label">Offre :</span> <span class="value">${planInfo.nom}</span></span>` : ''}
+        </div>
+        <button class="btn-pay" style="margin-top:16px; background: linear-gradient(135deg, #059669, #10b981);" onclick="goToWakhmaStore()">
+            Aller sur Wakhma Store maintenant
+        </button>`;
+
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    clearTransactionState();
+
+    // Compte à rebours visuel
+    let remaining = redirectSeconds;
+    const countdownTimer = setInterval(() => {
+        remaining--;
+        const el = document.getElementById('redirectCountdown');
+        if (el) el.textContent = remaining;
+        if (remaining <= 0) {
+            clearInterval(countdownTimer);
+            goToWakhmaStore();
+        }
+    }, 1000);
+}
+
+function goToWakhmaStore() {
+    const redirectUrl = callbackUrl || DEFAULT_REDIRECT_URL;
+    const sep = redirectUrl.includes('?') ? '&' : '?';
+    let finalUrl = `${redirectUrl}${sep}txn=${encodeURIComponent(transactionId)}&status=succes&montant=${montantAPayer}&compte=${encodeURIComponent(clientRef)}`;
+    if (planInfo) finalUrl += `&plan=${encodeURIComponent(planInfo.id)}`;
+    if (planInfo && planInfo.points) finalUrl += `&points=${planInfo.points}`;
+    window.location.href = finalUrl;
+}
+
+function renderFailed(status) {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    clearTransactionState();
+    const messages = {
+        'EXPIRE': { title: 'Transaction expir&eacute;e', detail: 'Le d&eacute;lai est d&eacute;pass&eacute;. R&eacute;essayez depuis Wakhma Store.' },
+        'ECHEC':  { title: 'Paiement &eacute;chou&eacute;', detail: 'La transaction a &eacute;chou&eacute;. Contactez le support.' },
+    };
+    const info = messages[status] || { title: 'Erreur', detail: 'Une erreur inattendue est survenue.' };
+    document.getElementById('checkoutBody').innerHTML = `
+        <div class="status-block error">
+            <div class="status-icon" style="color: var(--color-error);">&#10007;</div>
+            <div class="status-text" style="color: var(--color-error);">${info.title}</div>
+            <div class="status-subtext">${info.detail}</div>
+        </div>`;
+}
+
+function updateTimer() {
+    if (!startTime) return;
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const min = Math.floor(elapsed / 60);
+    const sec = elapsed % 60;
+    const el = document.getElementById('timerDisplay');
+    if (el) {
+        const display = min > 0 ? `${min}min ${sec}s` : `${sec}s`;
+        el.innerHTML = `<span class="label">Temps &eacute;coul&eacute; :</span> <span class="value">${display}</span>`;
+    }
+    requestAnimationFrame(updateTimer);
+}
+
+// ==========================================================================
+// APPELS API
+// ==========================================================================
+async function initiatePayment() {
+    try {
+        const payload = { compte: clientRef, callback_url: callbackUrl };
+        if (planIdFromUrl) { payload.plan = planIdFromUrl; } else { payload.montant = montantBase; }
+        const response = await fetch(`${API_BASE_URL}/api/initiate-payment`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        if (!data.success) { renderError('Erreur', data.error); return; }
+
+        transactionId = data.transaction_id;
+        montantAPayer = data.montant_a_payer;
+        montantBase = data.montant_base;
+        if (data.plan) planInfo = data.plan;
+        if (data.vendeur) vendeurInfo = data.vendeur;
+
+        // Sauvegarder l'état pour survivre au rechargement
+        saveTransactionState();
+
+        renderPending(montantAPayer, transactionId, montantBase);
+        startPolling();
+    } catch (error) {
+        console.error('Erreur:', error);
+        renderError('Erreur de connexion', 'Impossible de joindre le serveur. V&eacute;rifiez votre connexion.');
+    }
+}
+
+function startPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(checkPaymentStatus, POLL_INTERVAL_MS);
+    checkPaymentStatus();
+}
+
+function checkPaymentStatus() {
+    if (!transactionId) return;
+    try {
+        const response = fetch(`${API_BASE_URL}/api/check-status/${transactionId}`);
+        return response.then(res => {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        }).then(data => {
+            console.log('[POLLING] Statut:', data.status, '| Callback envoyé:', data.callback_sent);
+            if (!data.success) return;
+            switch (data.status) {
+                case 'SUCCES': renderSuccess(data.callback_sent); break;
+                case 'ECHEC':
+                case 'EXPIRE': renderFailed(data.status); break;
+            }
+        }).catch(err => { console.error('[POLLING] Erreur:', err); });
+    } catch (error) { console.error('[POLLING] Erreur:', error); }
+}
+
+// ==========================================================================
+// DÉTECTION RETOUR SUR LA PAGE — Vérifie immédiatement quand le client
+// revient de l'app Wave vers le navigateur
+// ==========================================================================
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && transactionId) {
+        // Le client est revenu sur la page ! Vérifier tout de suite
+        console.log('Client de retour sur la page — vérification immédiate');
+        checkPaymentStatus();
+    }
+});
+
+window.addEventListener('focus', () => {
+    if (transactionId) {
+        checkPaymentStatus();
+    }
+});
+
+function renderError(title, message) {
+    document.getElementById('checkoutBody').innerHTML = `
+        <div class="error-screen"><h2>${title}</h2><p>${message}</p></div>`;
+}
+
+// ==========================================================================
+// DÉMARRAGE
+// ==========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    planIdFromUrl = getUrlParam('plan');
+    montantFromUrl = getUrlParam('montant');
+    const compteFromUrl = getUrlParam('compte');
+    callbackUrl = getUrlParam('callback_url');
+
+    if (!planIdFromUrl && (!montantFromUrl || isNaN(parseInt(montantFromUrl)) || parseInt(montantFromUrl) < 1)) {
+        renderError('Param&egrave;tre invalide', 'Utilisez un plan : <strong>checkout.html?plan=bolt</strong><br>ou un montant : <strong>checkout.html?montant=2000</strong>');
+        return;
+    }
+    if (montantFromUrl) montantBase = parseInt(montantFromUrl, 10);
+
+    // ── TENTER DE RESTAURER UNE TRANSACTION EN COURS ──────────────
+    if (loadTransactionState()) {
+        // Une transaction existe déjà ! On reprend où on en était
+        console.log('Transaction restaurée:', transactionId);
+        renderPending(montantAPayer, transactionId, montantBase);
+        startPolling();
+        return;
+    }
+
+    if (compteFromUrl) { clientRef = compteFromUrl; initiatePayment(); }
+    else { renderLoginForm(); }
+});
+</script>
+</body>
+</html>
