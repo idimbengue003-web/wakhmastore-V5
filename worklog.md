@@ -272,3 +272,62 @@ Stage Summary:
 - ⚠️ Action utilisateur requise : ajouter PAYMENT_AUTOMATE_TOKEN dans Vercel env vars
 - ⚠️ Action utilisateur requise : installer Automate sur le téléphone marchand
   et configurer les 2 flows selon le guide
+
+---
+Task ID: 6
+Agent: Main Agent
+Task: Architecture polling intelligent Wave Business + alertes WhatsApp admin
+
+Work Log:
+- Architecture débatue et validée avec user : polling serveur-side, déclenché
+  par les requêtes utilisateur, debouncé globalement à 30s. Plus de dépendance
+  téléphone/SMS/notification. Plus besoin d'Automate.
+- Schema Prisma mis à jour : externalRef @unique (anti-doublon transaction Wave)
+  + index [status, createdAt] pour performance polling.
+- Nouveau src/lib/wave-business.ts (250 lignes) :
+  * Client HTTP qui appelle l'API interne business.wave.com
+  * Debounce global 30s (1 appel Wave / 30s max)
+  * Cache mémoire partagé entre tous les polls utilisateur
+  * Détection session expirée (HTTP 401/403) -> alerte admin
+  * Parsing transactions flexible (à adapter selon cURL de l'admin)
+  * Filtres : montant exact + timestamp >= since + type 'in' + externalRef unused
+- Nouveau src/lib/admin-alert.ts (110 lignes) :
+  * Envoi WhatsApp via CallMeBot (gratuit, auto-notification admin)
+  * 3 niveaux : critical / warning / info
+  * Fallback silencieux si non configuré (pas de crash app)
+  * Timeout 10s pour ne pas bloquer user
+- Nouvel endpoint /api/payment-status (260 lignes) :
+  * Authentification user (cookie session)
+  * Vérification appartenance pending (anti-CSRF)
+  * Expiration auto TTL 10 min
+  * Crédit atomique en transaction SQL (race condition safe)
+  * Anti-doublon via externalRef @unique
+  * Gestion WaveSessionExpiredError (alerte admin + continue pending)
+- Page /paiement/confirmation mise à jour :
+  * Nouveau flow : poll /api/payment-status?id=<pending> toutes les 3s
+  * Max 10 min polling (200 tentatives)
+  * Affichage polling count en temps réel
+  * Legacy preserved pour ancien flow gateway webhook (status=succes)
+- Build vérifié : npx tsc --noEmit OK, npm run build OK (page /api/payment-status
+  bien listée comme function serverless)
+- Commit 871b0b2 poussé sur origin/main (GitHub). Vercel auto-deploy en cours.
+
+Stage Summary:
+- 5 fichiers modifiés (+793 lignes, -21)
+- 3 nouveaux fichiers : wave-business.ts, admin-alert.ts, /api/payment-status/route.ts
+- Architecture 100% serveur, zero dépendance téléphone
+- Polling intelligent : 0 appel Wave si personne attend, max 1/30s sinon
+- Anti-fraude : externalRef @unique + transaction SQL atomique + race condition safe
+- Alerte admin WhatsApp (CallMeBot) pour session expirée
+- ⚠️ Action user requise : récupérer cURL Wave Business via Reqable/DevTools
+  pour ajuster l'URL endpoint + headers dans wave-business.ts
+- ⚠️ Action user requise : setup CallMeBot (ajouter +34 644 39 96 84 sur WhatsApp,
+  envoyer "I allow callmebot to send me messages", récupérer API key)
+- ⚠️ Action user requise : ajouter variables Vercel :
+  * WAVE_BUSINESS_COOKIE
+  * WAVE_BUSINESS_API_BASE (default OK)
+  * WAVE_BUSINESS_ACCOUNT_ID (optionnel)
+  * CALLMEBOT_PHONE
+  * CALLMEBOT_API_KEY
+- Automate (payment-notify) conservé en parallèle temporairement (safety net)
+  → sera supprimé une fois Wave Business validé en production
