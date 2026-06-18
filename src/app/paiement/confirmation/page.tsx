@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   CheckCircle2, XCircle, Loader2, Coins, Crown, Sparkles,
-  ArrowRight, RefreshCw, Home, AlertCircle, Copy, Check, ShieldCheck,
+  ArrowRight, RefreshCw, Home, AlertCircle, ShieldCheck,
   Smartphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/use-auth';
-import { PAYMENT_PHONE } from '@/lib/constants';
+import { buildWaveCheckoutUrl, WAVE_CHECKOUT_URL } from '@/lib/constants';
 
 type PaymentStatus = 'succes' | 'echec' | 'attente' | 'inconnu';
 
@@ -42,7 +42,6 @@ function ConfirmationContent() {
   const [status, setStatus] = useState<PaymentStatus>(initialStatus);
   const [pointsBefore, setPointsBefore] = useState<number | null>(null);
   const [pollCount, setPollCount] = useState(0);
-  const [phoneCopied, setPhoneCopied] = useState(false);
   const initialPointsStored = useRef(false);
 
   // Capture the user's points balance on first mount (before refresh).
@@ -53,26 +52,6 @@ function ConfirmationContent() {
       initialPointsStored.current = true;
     }
   }, [user]);
-
-  // Copy vendor phone to clipboard
-  const copyVendorPhone = async () => {
-    const phone = PAYMENT_PHONE.replace(/\s/g, '');
-    try {
-      await navigator.clipboard.writeText(phone);
-      setPhoneCopied(true);
-      setTimeout(() => setPhoneCopied(false), 2000);
-    } catch {
-      // Fallback
-      const ta = document.createElement('textarea');
-      ta.value = phone;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      setPhoneCopied(true);
-      setTimeout(() => setPhoneCopied(false), 2000);
-    }
-  };
 
   // When status is 'attente' with a pendingId, poll /api/payment-status every 3s.
   // This endpoint checks Wave Business directly and confirms the payment server-side.
@@ -427,40 +406,61 @@ function ConfirmationContent() {
               </Card>
             )}
 
-            {/* Vendor phone — copy button */}
-            <Card className="border-gray-200">
-              <CardContent className="p-5 space-y-3">
-                <div className="flex items-center gap-2 text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                  <Smartphone className="w-3.5 h-3.5" />
-                  Numéro Wave marchand
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs text-gray-500">Wakhma Store</p>
-                    <p className="text-2xl font-black text-gray-900 tracking-wide font-mono">
-                      {PAYMENT_PHONE}
+            {/* Vendor phone — copy button (DÉSACTIVÉ : on ne montre plus le numéro
+                pour empêcher les annulations de transfert manuel. À la place,
+                on redirige vers une page de paiement Wave Business avec montant
+                pré-rempli — la transaction est alors traitée comme un paiement
+                marchand, beaucoup plus difficile à annuler côté client.) */}
+
+            {/* Bouton "Payer avec Wave" — redirige vers Wave Business checkout */}
+            {montantNum > 0 && pendingId && (
+              <Card className="border-2 border-[#1DC3E0]">
+                <CardContent className="p-6 space-y-4">
+                  <div className="text-center space-y-1">
+                    <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                      Paiement sécurisé Wave
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Cliquez sur le bouton ci-dessous : Wave s&apos;ouvrira avec le montant pré-rempli.
                     </p>
                   </div>
-                  <Button
-                    onClick={copyVendorPhone}
-                    variant={phoneCopied ? 'default' : 'outline'}
-                    className={phoneCopied ? 'bg-green-600 hover:bg-green-700 text-white' : ''}
-                  >
-                    {phoneCopied ? (
-                      <>
-                        <Check className="w-4 h-4 mr-1.5" />
-                        Copié
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4 mr-1.5" />
-                        Copier
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+
+                  {WAVE_CHECKOUT_URL ? (
+                    <a
+                      href={buildWaveCheckoutUrl(montantNum, pendingId)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <Button
+                        className="w-full bg-[#1DC3E0] hover:bg-[#17a8c4] text-white font-bold rounded-xl h-14 text-base"
+                        type="button"
+                      >
+                        <Smartphone className="w-5 h-5 mr-2" />
+                        Payer {montantNum.toLocaleString('fr-FR')} FCFA avec Wave
+                      </Button>
+                    </a>
+                  ) : (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-left">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-600" />
+                        <div className="text-xs text-red-800">
+                          <p className="font-semibold mb-0.5">Paiement indisponible</p>
+                          <p>
+                            Le lien de paiement Wave Business n&apos;est pas configuré.
+                            Contactez le support ou réessayez dans quelques minutes.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-center text-xs text-gray-500">
+                    Vous n&apos;avez rien à saisir — le montant est déjà inscrit.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Instructions */}
             <Card className="border-blue-100 bg-blue-50/50">
@@ -474,7 +474,7 @@ function ConfirmationContent() {
                       1
                     </span>
                     <span>
-                      Ouvrez l&apos;application <strong>Wave</strong> sur votre téléphone
+                      Cliquez sur <strong>« Payer {montantNum.toLocaleString('fr-FR')} FCFA avec Wave »</strong>
                     </span>
                   </li>
                   <li className="flex gap-3">
@@ -482,7 +482,7 @@ function ConfirmationContent() {
                       2
                     </span>
                     <span>
-                      Allez dans <strong>« Transfert »</strong> et collez le numéro marchand ci-dessus
+                      Wave s&apos;ouvre avec le montant <strong>{montantNum.toLocaleString('fr-FR')} FCFA</strong> déjà pré-rempli
                     </span>
                   </li>
                   <li className="flex gap-3">
@@ -490,7 +490,7 @@ function ConfirmationContent() {
                       3
                     </span>
                     <span>
-                      Entrez le montant exact : <strong>{montantNum.toLocaleString('fr-FR')} FCFA</strong>
+                      Confirmez le paiement dans Wave (votre code PIN ou biométrie)
                     </span>
                   </li>
                   <li className="flex gap-3">
@@ -498,7 +498,7 @@ function ConfirmationContent() {
                       4
                     </span>
                     <span>
-                      Confirmez le paiement. Vos points seront crédités <strong>automatiquement</strong> dans quelques secondes.
+                      Revenez sur cette page — vos points seront crédités <strong>automatiquement</strong> dans quelques secondes.
                     </span>
                   </li>
                 </ol>

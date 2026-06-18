@@ -171,6 +171,45 @@ export const PAYMENT_PHONE = process.env.NEXT_PUBLIC_PAYMENT_PHONE || '78 927 12
 export const WHATSAPP_LINK = process.env.NEXT_PUBLIC_WHATSAPP_LINK || 'https://wa.me/221789271296';
 export const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '221789271296';
 
+// ── URL de paiement Wave Business (checkout avec montant pré-rempli) ───────
+// Format attendu (sans query string) :
+//   https://pay.wave.com/m/<merchant-slug>/pay/
+//
+// On y ajoute ensuite ?amount=<montant>&currency=XOF&client_reference=<pendingId>
+//
+// ⚠️ Cette URL est OBLIGATOIRE pour le bouton "Payer avec Wave". Sans elle,
+// le bouton affiche un message d'erreur à la place.
+//
+// Pour la trouver :
+// 1. Connecte-toi sur https://business.wave.com
+// 2. Va dans "Liens de paiement" ou "Payment Links"
+// 3. Crée un lien → copie l'URL (ex: https://pay.wave.com/m/wakhma-store/pay/)
+// 4. Mets NEXT_PUBLIC_WAVE_CHECKOUT_URL dans Vercel avec cette valeur
+export const WAVE_CHECKOUT_URL = process.env.NEXT_PUBLIC_WAVE_CHECKOUT_URL || '';
+
+/**
+ * Construit l'URL de paiement Wave Business avec montant pré-rempli.
+ * L'utilisateur sera redirigé vers cette URL ; Wave ouvrira la page de
+ * paiement avec le montant déjà saisi — il n'aura plus qu'à confirmer.
+ *
+ * @param amount  Montant en FCFA (ex: 1300)
+ * @param pendingId  Référence unique (servira de client_reference côté Wave)
+ * @returns URL complète vers la page de paiement Wave, ou '' si non configuré
+ */
+export function buildWaveCheckoutUrl(amount: number, pendingId: string): string {
+  if (!WAVE_CHECKOUT_URL) return '';
+  const base = WAVE_CHECKOUT_URL.endsWith('?')
+    ? WAVE_CHECKOUT_URL.slice(0, -1)
+    : WAVE_CHECKOUT_URL;
+  const separator = base.includes('?') ? '&' : '?';
+  const params = new URLSearchParams({
+    amount: String(amount),
+    currency: 'XOF',
+    client_reference: pendingId,
+  });
+  return `${base}${separator}${params.toString()}`;
+}
+
 // --- Automated payment gateway links ---
 export const PAYMENT_GATEWAY_BASE = 'https://payment-gateway-beige-ten.vercel.app/checkout.html';
 
