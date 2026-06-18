@@ -11,10 +11,10 @@
 // - Détection session expirée (HTTP 401) → alerte admin via WhatsApp
 //
 // 🔑 VARIABLES D'ENVIRONNEMENT REQUISES :
-// - WAVE_BUSINESS_API_KEY    : token API (ex: "US_tok_sn_03b36f96c9e448ae6cdad4fa9bcf74d1")
+// - WAVE_BUSINESS_API_KEY    : token API (format: "US_tok_sn_<random>")
 //                              → capturé via DevTools > Network > business_graphql
 //                                > authorization header (base64 decoded)
-// - WAVE_BUSINESS_WALLET_ID  : ID du wallet business (ex: "W_sn_LUvGY4hJVmNP")
+// - WAVE_BUSINESS_WALLET_ID  : ID du wallet business (format: "W_sn_<random>")
 //                              → capturé dans les variables de la requête GraphQL
 //                                (champ walletOpaqueId)
 // - WAVE_BUSINESS_USER_AGENT : User-Agent du navigateur utilisé (optionnel)
@@ -27,6 +27,9 @@
 // 5. La partie après ":" est ta clé API → colle dans WAVE_BUSINESS_API_KEY
 // 6. Dans le body JSON, cherche "walletOpaqueId":"W_sn_XXX"
 //    → colle la valeur dans WAVE_BUSINESS_WALLET_ID
+//
+// ⚠️ NE JAMAIS committer la vraie clé API dans le repo. Utilise Vercel env vars.
+//    Si la clé fuite, la révoquer immédiatement sur business.wave.com.
 //
 // 🌐 ENDPOINT :
 // - URL: https://sn.mmapp.wave.com/a/business_graphql
@@ -52,6 +55,11 @@ export interface WaveTransaction {
   senderPhone: string;     // Numéro expéditeur (ex: "+22176XXXXXXX")
   timestamp: Date;         // Date de réception
   type: 'in' | 'out';      // 'in' = encaissement
+  clientReference?: string; // ⚠️ Référence client passée dans l'URL de checkout
+                            //    (?client_reference=XXX). C'est elle qui permet
+                            //    de matcher de façon UNIVOQUE un paiement à un
+                            //    pending wakhmastore — SANS elle, on risquerait
+                            //    d'attribuer le paiement d'un user à un autre.
   rawText?: string;        // Texte brut pour debug
 }
 
@@ -414,6 +422,14 @@ function parseWaveResponse(data: any): WaveTransaction[] {
           entry.recipientMobile ||
           '';
 
+        // ⚠️ clientReference — la référence client passée dans l'URL de checkout
+        // Wave Business (paramètre ?client_reference=XXX). C'est CE champ qui
+        // permet de matcher un paiement à UN pending wakhmastore précis, sans
+        // ambiguïté. Sur MerchantSaleEntry uniquement.
+        const clientReference = entry.clientReference
+          ? String(entry.clientReference).trim()
+          : '';
+
         // Timestamp — whenEntered est le champ principal
         const timestampRaw = entry.whenEntered || entry.whenCreated;
         const timestamp = timestampRaw ? new Date(timestampRaw) : new Date();
@@ -425,6 +441,7 @@ function parseWaveResponse(data: any): WaveTransaction[] {
           senderPhone: String(senderPhone),
           timestamp,
           type: 'in' as const,
+          clientReference: clientReference || undefined,
           rawText: JSON.stringify(entry).substring(0, 500), // limité pour économiser mémoire
         };
       } catch {
@@ -621,36 +638,56 @@ export async function getRecentTransactions(): Promise<WaveTransaction[]> {
 /**
  * Cherche une transaction Wave qui matche un pending.
  *
- * Critères de matching (tous obligatoires) :
- * 1. amount ∈ [expectedAmount - TOLERANCE, expectedAmount + TOLERANCE]
- *    ⚠️ Tolérance de ±10 FCFA car la passerelle de paiement ajoute parfois
- *    une variation de +1/+2 FCFA au montant demandé pour garantir l'unicité
- *    de la transaction (ex: 1300 → 1301, 1302, etc.). Sans tolérance, ces
- *    transactions ne seraient jamais matchées et le paiement resterait en
- *    attente pour toujours côté wakhmastore.com.
- * 2. timestamp >= since (créé après la création du pending)
- * 3. type === 'in' (encaissement)
- * 4. externalRef (id Wave) pas déjà utilisé par un autre PointPurchase
+ * 🔐 ALGORITHME DE MATCHING (sécurité critique) :
  *
- * @param expectedAmount Montant exact attendu en FCFA
- * @param since Date minimale de la transaction
- * @param usedExternalRefs IDs Wave déjà utilisés (pour anti-doublon)
+ *   1. **Filtre principal — clientReference === expectedClientReference**
+ *      On vérifie d'abord que la transaction a été initiée via le checkout
+ *      Wave Business avec la bonne `?client_reference=<pendingId>`. C'est ce
+ *      qui garantit que la transaction a BIEN été payée POUR ce pending
+ *      précis, et empêche le vol de paiement (un user A ne peut pas voler
+ *      les points du pending du user B même s'ils ont le même montant).
+ *
+ *   2. **Sanity check — montant à ±10 FCFA**
+ *      Vérification secondaire pour détecter une éventuelle corruption ou
+ *      tentative de manipulation. La tolérance de ±10 FCFA couvre la
+ *      variation de +1/+2 FCFA que Wave ajoute parfois pour l'unicité.
+ *
+ *   3. **Filtre temporel — timestamp >= since**
+ *      La transaction doit avoir eu lieu APRÈS la création du pending.
+ *
+ *   4. **Anti-doublon — id pas dans usedExternalRefs**
+ *      Une même transaction Wave ne peut pas créditer 2 pendings différents.
+ *
+ * @param expectedAmount          Montant attendu en FCFA (sanity check)
+ * @param since                   Date minimale de la transaction
+ * @param usedExternalRefs        IDs Wave déjà utilisés (anti-doublon)
+ * @param expectedClientReference La client_reference (= pendingId wakhmastore)
+ *                                que la transaction doit avoir.
+ *                                ⚠️ OBLIGATOIRE — sans ça, aucun match possible.
  */
 const AMOUNT_TOLERANCE_FCFA = 10;
 
 export async function findMatchingTransaction(
   expectedAmount: number,
   since: Date,
-  usedExternalRefs: Set<string>
+  usedExternalRefs: Set<string>,
+  expectedClientReference: string
 ): Promise<WaveTransaction | null> {
+  if (!expectedClientReference) {
+    console.error('[WAVE-BUSINESS] findMatchingTransaction appelé sans expectedClientReference — REFUS');
+    return null;
+  }
+
   const transactions = await getRecentTransactions();
 
-  // Filtrer par montant (avec tolérance) + date + type
+  // ── Filtre 1 (principal) : client_reference exact ──────────────────────
+  // C'est ce filtre qui empêche le vol de paiement entre users.
   const minAmount = expectedAmount - AMOUNT_TOLERANCE_FCFA;
   const maxAmount = expectedAmount + AMOUNT_TOLERANCE_FCFA;
 
   const candidates = transactions.filter(
     (tx) =>
+      tx.clientReference === expectedClientReference &&  // ← CRITIQUE
       tx.amount >= minAmount &&
       tx.amount <= maxAmount &&
       tx.timestamp >= since &&
@@ -658,9 +695,30 @@ export async function findMatchingTransaction(
       !usedExternalRefs.has(tx.id)
   );
 
-  if (candidates.length === 0) return null;
+  if (candidates.length === 0) {
+    // Log pour debug — combien de transactions ont le bon montant mais pas
+    // la bonne client_reference (indique tentative d'attaque ou mismatch)
+    const amountOnlyMatches = transactions.filter(
+      (tx) =>
+        tx.amount >= minAmount &&
+        tx.amount <= maxAmount &&
+        tx.timestamp >= since &&
+        tx.type === 'in' &&
+        !usedExternalRefs.has(tx.id)
+    );
+    if (amountOnlyMatches.length > 0) {
+      console.warn(
+        `[WAVE-BUSINESS] ${amountOnlyMatches.length} tx match le montant ` +
+        `${expectedAmount} FCFA mais PAS la client_reference attendue ` +
+        `${expectedClientReference}. clientReferences vues: ` +
+        amountOnlyMatches.map(t => t.clientReference || '(none)').slice(0, 5).join(', ')
+      );
+    }
+    return null;
+  }
 
-  // Si plusieurs candidats, prendre le plus récent
+  // Si plusieurs candidats (très rare — même clientReference + même montant),
+  // prendre le plus récent.
   candidates.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   return candidates[0];
 }

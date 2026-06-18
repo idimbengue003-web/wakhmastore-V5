@@ -222,16 +222,24 @@ export async function GET(request: NextRequest) {
           usedRefs.map((p) => p.externalRef!).filter(Boolean)
         );
 
-        // Chercher une transaction Wave qui matche
+        // Chercher une transaction Wave qui matche — le matching se fait
+        // principalement par client_reference (= purchaseId) et non par montant,
+        // pour empêcher le vol de paiement entre users.
         const match = await findMatchingTransaction(
           purchase.amountFcfa,
           purchase.createdAt,
-          usedExternalRefs
+          usedExternalRefs,
+          purchase.id  // ← expectedClientReference : le pendingId est passé
+                       //   dans l'URL Wave checkout via ?client_reference=<pendingId>
+                       //   et Wave le renvoie dans la transaction (champ
+                       //   clientReference sur MerchantSaleEntry).
         );
 
         if (match) {
           console.log(
-            `[PAYMENT-STATUS][${requestId}] Match trouvé: tx=${match.id}, amount=${match.amount}, from=${match.senderPhone}`
+            `[PAYMENT-STATUS][${requestId}] Match trouvé: tx=${match.id}, amount=${match.amount}, ` +
+            `from=${match.senderPhone}, clientReference=${match.clientReference || '(none)'} ` +
+            `(attendue: ${purchase.id})`
           );
 
           // Créditer atomiquement

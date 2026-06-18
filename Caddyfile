@@ -1,23 +1,18 @@
+# Caddyfile pour wakhmastore.com
+#
+# ⚠️ SÉCURITÉ : l'ancien bloc @transform_port_query (qui permettait à
+# n'importe qui de proxifier vers n'importe quel port localhost via
+# ?XTransformPort=NNNN) a été SUPPRIMÉ — c'était une vulnérabilité
+# SSRF critique permettant de scanner les ports internes et d'accéder
+# à des services admin-only (Postgres, Redis, etc.).
+#
+# Maintenant le port 81 ne fait que proxifier vers le Next.js (port 3000).
+
 :81 {
-	@transform_port_query {
-		query XTransformPort=*
-	}
-
-	handle @transform_port_query {
-		reverse_proxy localhost:{query.XTransformPort} {
-			header_up Host {host}
-			header_up X-Forwarded-For {remote_host}
-			header_up X-Forwarded-Proto {scheme}
-			header_up X-Real-IP {remote_host}
-		}
-	}
-
-	handle {
-		reverse_proxy localhost:3000 {
-			header_up Host {host}
-			header_up X-Forwarded-For {remote_host}
-			header_up X-Forwarded-Proto {scheme}
-			header_up X-Real-IP {remote_host}
-		}
+	reverse_proxy localhost:3000 {
+		header_up Host {host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Real-IP {remote_host}
 	}
 }

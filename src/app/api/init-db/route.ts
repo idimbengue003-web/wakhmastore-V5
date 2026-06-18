@@ -6,7 +6,30 @@ import { getUserFromRequest } from '@/lib/get-user';
 // GET /api/init-db → verify database connection and tables
 // GET /api/init-db?seed=true → seed demo data (admin only)
 // GET /api/init-db?reset=true → drop all tables and recreate (admin only, ⚠️ deletes all data)
+//
+// ⚠️ SÉCURITÉ : en production (NODE_ENV=production), les modes destructifs
+// (reset + seed) sont DÉSACTIVÉS — ils peuvent dropper toutes les données ou
+// créer un compte admin avec PIN trivial (backdoor). Seul le mode vérification
+// (sans query params) reste disponible en prod pour diagnostiquer la DB.
 export async function GET(request: NextRequest) {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const seedMode = request.nextUrl.searchParams.get('seed') === 'true';
+  const resetMode = request.nextUrl.searchParams.get('reset') === 'true';
+
+  // En production : bloquer reset et seed (opérations destructives/backdoor)
+  if (isProduction && (seedMode || resetMode)) {
+    console.error(
+      `[INIT-DB] Tentative bloquée en production: ${resetMode ? 'reset' : 'seed'} ` +
+      `par user ${getUserFromRequest(request)?.userId || 'inconnu'}`
+    );
+    return NextResponse.json(
+      {
+        error: 'Opération désactivée en production. Utilisez prisma migrate depuis un poste admin local.',
+      },
+      { status: 403 }
+    );
+  }
+
   // SECURITY: Require admin authentication for ALL operations
   const payload = getUserFromRequest(request);
   if (!payload || payload.role !== 'admin') {
@@ -17,8 +40,6 @@ export async function GET(request: NextRequest) {
   }
 
   const results: { step: string; status: string; error?: string }[] = [];
-  const seedMode = request.nextUrl.searchParams.get('seed') === 'true';
-  const resetMode = request.nextUrl.searchParams.get('reset') === 'true';
 
   try {
     if (resetMode) {

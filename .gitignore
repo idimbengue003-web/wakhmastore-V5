@@ -52,3 +52,11 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# ⚠️ Sécurité — ne jamais committer ces fichiers (peuvent contenir des secrets)
+/worklog.md
+/scripts/
+/tool-results/
+/upload/
+.zscripts
+mini-services

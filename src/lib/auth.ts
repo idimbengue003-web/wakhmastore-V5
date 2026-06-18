@@ -2,24 +2,67 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+// ============================================================================
+// 🔐 GESTION DU JWT_SECRET — sécurisée (pas de fallback hardcoded)
+// ============================================================================
+//
+// Règles :
+// - En runtime production (NODE_ENV=production) : JWT_SECRET OBLIGATOIRE.
+//   Si manquant → throw au module load (build fails / runtime crash) plutôt
+//   que d'utiliser un secret dev qui compromettrait tous les tokens.
+// - En dev/test/build : on autorise un secret dev pour ne pas casser `next
+//   build` et les tests locaux, mais on log un warning visible.
+// - On vérifie aussi que le secret fait au moins 32 caractères (256 bits) —
+//   secret faible = JWT forgeable.
+// - On vérifie que le secret n'est pas le secret dev connu publiquement
+//   (au cas où quelqu'un copierait le code sans le changer).
+// ============================================================================
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Use fallback during build time or development; fail hard in production runtime
-const isBuildTime = typeof window === 'undefined' && (
-  process.env.NEXT_PHASE === 'phase-production-build' ||
-  process.env.NODE_ENV !== 'production'
-);
+const DEV_SECRET = 'wakhma-store-dev-secret-key-not-for-production';
+const isBuildTime =
+  typeof window === 'undefined' &&
+  (process.env.NEXT_PHASE === 'phase-production-build' ||
+   process.env.NODE_ENV !== 'production');
 
-const SECRET: string = JWT_SECRET || (isBuildTime ? 'wakhma-store-dev-secret-key-not-for-production' : '');
+const isProdRuntime =
+  typeof window === 'undefined' &&
+  process.env.NODE_ENV === 'production' &&
+  process.env.NEXT_PHASE !== 'phase-production-build';
 
-if (!SECRET && process.env.NODE_ENV === 'production' && !isBuildTime) {
-  throw new Error(
-    'FATAL: JWT_SECRET environment variable is not set. ' +
-    'Set it in your Vercel environment variables before deploying.'
+if (isProdRuntime) {
+  if (!JWT_SECRET) {
+    throw new Error(
+      'FATAL: JWT_SECRET environment variable is not set in production. ' +
+      'Set a 64+ char random string in Vercel env vars before deploying.'
+    );
+  }
+  if (JWT_SECRET.length < 32) {
+    throw new Error(
+      `FATAL: JWT_SECRET is too short (${JWT_SECRET.length} chars). ` +
+      'Use at least 32 characters (64+ recommended).'
+    );
+  }
+  if (JWT_SECRET === DEV_SECRET) {
+    throw new Error(
+      'FATAL: JWT_SECRET is the dev fallback — this is publicly known. ' +
+      'Generate a new random secret for production.'
+    );
+  }
+}
+
+// En dev/build : utiliser le secret fourni, ou un dev secret (avec warning)
+const SECRET: string = JWT_SECRET || (isBuildTime ? DEV_SECRET : '');
+
+if (isBuildTime && !JWT_SECRET) {
+  console.warn(
+    '⚠️ [auth.ts] JWT_SECRET non défini — utilisation du secret dev. ' +
+    'OK en dev, FATAL en production (runtime crash au premier import).'
   );
 }
 
-const JWT_SIGN_SECRET: string = SECRET || 'wakhma-store-dev-fallback';
+const JWT_SIGN_SECRET: string = SECRET || DEV_SECRET;
 const REFRESH_SIGN_SECRET: string = JWT_SIGN_SECRET + '-refresh';
 
 const SALT_ROUNDS = 12;
