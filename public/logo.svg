@@ -4,37 +4,48 @@
 <defs>
   <style type="text/css">
     .st-bg{fill:#0A0A0A;stroke:#FFFFFF;stroke-width:0.5;stroke-miterlimit:10;}
-    .st-bag{fill:none;stroke:#FFFFFF;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
-    .st-handle{fill:none;stroke:#1D4ED8;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
-    .st-w{fill:#FFFFFF;}
+    .st-meg{fill:#FFFFFF;}
+    .st-handle{fill:#FF8A00;}
+    .st-wave{fill:none;stroke:#FF8A00;stroke-width:1.5;stroke-linecap:round;}
 
-    .bag-breathe {
+    .meg-breathe {
       animation: breathe 2.8s ease-in-out infinite;
       transform-origin: 15px 15px;
     }
+    .wave-1 { animation: wave-pulse 2.4s ease-in-out infinite; transform-origin: 19px 15px; }
+    .wave-2 { animation: wave-pulse 2.4s ease-in-out 0.25s infinite; transform-origin: 19px 15px; }
+    .wave-3 { animation: wave-pulse 2.4s ease-in-out 0.5s infinite; transform-origin: 19px 15px; }
 
     @keyframes breathe {
-      0%, 100% { opacity: 0.92; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.04); }
+      0%, 100% { opacity: 0.95; }
+      50% { opacity: 1; }
+    }
+    @keyframes wave-pulse {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 1; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .bag-breathe { animation: none; }
+      .meg-breathe, .wave-1, .wave-2, .wave-3 { animation: none; }
     }
   </style>
 </defs>
 
-  <path class="st-bg" d="M24.51,28.51H5.49c-2.21,0-4-1.79-4-4V5.49c0-2.21,1.79-4,4-4h19.03c2.21,0,4,1.79,4,4v19.03
-    C28.51,26.72,26.72,28.51,24.51,28.51z"/>
+  <path class="st-bg" d="M24.51,28.51H5.49c-2.21,0-4-1.79-4-4V5.49c0-2.21,1.79-4,4-4h19.03c2.21,0,4,1.79,4,4v19.03C28.51,26.72,26.72,28.51,24.51,28.51z"/>
 
-  <g class="bag-breathe">
-    <!-- Anse du sac (poignée) — bleu professionnel Wakhma -->
-    <path class="st-handle" d="M11.5,11.5 v-1.2 c0-2.2,1.6-4,3.5-4 s3.5,1.8,3.5,4 v1.2"/>
+  <g class="meg-breathe">
+    <!-- Poignée du mégaphone (orange Wakhma) -->
+    <rect x="5" y="13" width="2" height="4" class="st-handle"/>
 
-    <!-- Corps du sac -->
-    <path class="st-bag" d="M8.5,11.5 h13 l-1,12.5 c-0.05,0.7-0.65,1.25-1.35,1.25 h-8.3 c-0.7,0-1.3-0.55-1.35-1.25 L8.5,11.5 z"/>
+    <!-- Corps du mégaphone (cône blanc qui s'élargit vers la droite) -->
+    <path class="st-meg" d="M7,11 L7,19 L17.5,22 L17.5,8 Z"/>
 
-    <!-- "W" stylisé intégré au sac -->
-    <path class="st-w" d="M11.2,15 l1.4,5.5 l1.4-3.8 l1.4,3.8 l1.4-5.5" />
+    <!-- Lèvre d'ouverture (bord du mégaphone) -->
+    <rect x="17" y="8" width="1.2" height="14" class="st-meg"/>
   </g>
+
+  <!-- 3 ondes sonores qui résonnent -->
+  <path class="st-wave wave-1" d="M20,12 Q21.5,15 20,18"/>
+  <path class="st-wave wave-2" d="M22.5,10.5 Q25,15 22.5,19.5"/>
+  <path class="st-wave wave-3" d="M25,9 Q28,15 25,21"/>
 </svg>

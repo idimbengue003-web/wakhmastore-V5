@@ -100,7 +100,7 @@ export default function HomePage() {
         </div>
 
         <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24 text-center">
-          <h1 className="wakhma-title w-full flex flex-col items-center justify-center gap-4 sm:gap-5 md:gap-6 mb-10 tracking-tight">
+          <h1 className="wakhma-title w-full flex flex-col items-center justify-center gap-4 sm:gap-5 md:gap-6 mb-4 tracking-tight">
             <Image
               src="/logo.svg"
               alt="Logo Wakhma Store"
@@ -113,8 +113,11 @@ export default function HomePage() {
               Wakhma Store
             </span>
           </h1>
-          <p className="text-white/95 mb-12 max-w-2xl mx-auto text-base sm:text-lg md:text-xl font-medium leading-relaxed">
+          <p className="text-white/95 mb-2 max-w-2xl mx-auto text-base sm:text-lg md:text-xl font-medium leading-relaxed">
             La marketplace sénégalaise pour acheter et vendre.
+          </p>
+          <p className="text-white/80 mb-10 max-w-2xl mx-auto text-sm sm:text-base md:text-lg font-normal leading-relaxed">
+            Poste ton annonce gratuitement et laisse les vendeurs te le trouver rapidement.
           </p>
 
           {/* Search bar */}
