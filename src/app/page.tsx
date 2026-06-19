@@ -25,6 +25,8 @@ interface Annonce {
   vipType: string | null;
   authorName?: string;
   createdAt: string;
+  coverImageUrl?: string | null;
+  imageCount?: number;
 }
 
 function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {

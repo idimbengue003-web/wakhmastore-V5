@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, LogIn, LogOut, User, Gift, Award, UserCircle } from 'lucide-react';
+import { Menu, X, LogIn, LogOut, User, Gift, Award, UserCircle, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import {
@@ -144,6 +144,17 @@ export default function Navbar() {
                       Recharger
                     </Link>
                   </DropdownMenuItem>
+                  {user.role === 'admin' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link href="/admin" className="flex items-center gap-2">
+                          <Shield className="w-4 h-4 text-purple-600" />
+                          <span className="font-semibold text-purple-700">Panneau Admin</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setShowLogoutConfirm(true)} className="cursor-pointer text-red-600">
                     <LogOut className="w-4 h-4 mr-2" />
@@ -261,6 +272,17 @@ export default function Navbar() {
                     >
                       <Gift className="w-5 h-5" />
                       Parrainage
+                    </Link>
+                  )}
+
+                  {user?.role === 'admin' && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setOpen(false)}
+                      className="text-base font-semibold text-purple-700 hover:text-purple-800 px-4 py-3 rounded-lg hover:bg-purple-50 transition-colors flex items-center gap-2"
+                    >
+                      <Shield className="w-5 h-5" />
+                      Panneau Admin
                     </Link>
                   )}
 

@@ -30,6 +30,8 @@ interface Annonce {
   isVip: boolean;
   vipType: string | null;
   createdAt: string;
+  coverImageUrl?: string | null;
+  imageCount?: number;
 }
 
 function AnnoncesContent() {
