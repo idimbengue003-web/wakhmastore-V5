@@ -94,6 +94,18 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* Cadre noir fin aux rebords du site pour délimiter visuellement */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid #0A0A0A;
+    pointer-events: none;
+    z-index: 30;
+  }
 }
 
 /* Custom search bar shadow */
