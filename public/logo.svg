@@ -6,21 +6,29 @@
     .st-bg{fill:#0A0A0A;stroke:#FFFFFF;stroke-width:0.5;stroke-miterlimit:10;}
     .st-bag{fill:#FFFFFF;stroke:#FFFFFF;stroke-width:0.4;stroke-linejoin:round;}
     .st-handle{fill:none;stroke:#FFFFFF;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
-    .st-w{fill:#0A0A0A;}
-    .st-text{fill:#FFFFFF;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:3.4px;font-weight:700;letter-spacing:0.2px;}
+    .st-w{fill:#0A0A0A;stroke:#0A0A0A;stroke-width:0.5;stroke-linejoin:round;}
+    .st-ripple{fill:none;stroke:#FFFFFF;stroke-linecap:round;}
 
     .bag-breathe {
       animation: breathe 2.8s ease-in-out infinite;
       transform-origin: 15px 15px;
     }
+    .ripple-1 { animation: ripple 3s ease-in-out infinite; }
+    .ripple-2 { animation: ripple 3s ease-in-out 0.5s infinite; }
+    .ripple-3 { animation: ripple 3s ease-in-out 1s infinite; }
 
     @keyframes breathe {
       0%, 100% { opacity: 0.95; }
       50% { opacity: 1; }
     }
+    @keyframes ripple {
+      0%, 100% { opacity: 0.12; }
+      50% { opacity: 0.4; }
+    }
 
     @media (prefers-reduced-motion: reduce) {
-      .bag-breathe { animation: none; }
+      .bag-breathe, .ripple-1, .ripple-2, .ripple-3 { animation: none; }
+      .ripple-1, .ripple-2, .ripple-3 { opacity: 0.2; }
     }
   </style>
 </defs>
@@ -29,16 +37,20 @@
   <path class="st-bg" d="M24.51,28.51H5.49c-2.21,0-4-1.79-4-4V5.49c0-2.21,1.79-4,4-4h19.03c2.21,0,4,1.79,4,4v19.03C28.51,26.72,26.72,28.51,24.51,28.51z"/>
 
   <g class="bag-breathe">
-    <!-- Anses du sac (poignées) -->
+    <!-- Anses du sac -->
     <path class="st-handle" d="M11,12 v-1.2 c0-2,1.8-3.6,4-3.6 s4,1.6,4,3.6 v1.2"/>
 
-    <!-- Corps du sac (shopping bag blanc) -->
-    <path class="st-bag" d="M7.5,12 h15 l-1,13 c-0.05,0.7-0.65,1.25-1.35,1.25 h-10.3 c-0.7,0-1.3-0.55-1.35-1.25 L7.5,12 z"/>
+    <!-- Corps du sac -->
+    <path class="st-bag" d="M7.5,12 h15 l-1,11 c-0.05,0.6-0.6,1.1-1.2,1.1 h-10.6 c-0.6,0-1.15-0.5-1.2-1.1 L7.5,12 z"/>
 
     <!-- "W" stylisé noir sur le sac -->
-    <path class="st-w" d="M11.5,16 l1.3,4.5 l1.3-3.2 l1.3,3.2 l1.3-4.5" stroke="#0A0A0A" stroke-width="0.5" stroke-linejoin="round"/>
+    <path class="st-w" d="M11.5,15 l1.2,4 l1.2-2.8 l1.2,2.8 l1.2-4"/>
   </g>
 
-  <!-- Texte "Wakhma Store" en bas -->
-  <text x="15" y="27" text-anchor="middle" class="st-text">WAKHMA STORE</text>
+  <!-- Effet réflexion/ondulation sous le sac (comme surface d'eau) -->
+  <g>
+    <path class="st-ripple ripple-1" stroke-width="0.5" d="M6,25 Q9,24.5 12,25 T18,25 T24,25"/>
+    <path class="st-ripple ripple-2" stroke-width="0.5" d="M7,26.5 Q10,26 13,26.5 T17,26.5 T23,26.5"/>
+    <path class="st-ripple ripple-3" stroke-width="0.4" d="M8,27.5 Q11,27.2 14,27.5 T16,27.5 T22,27.5"/>
+  </g>
 </svg>
