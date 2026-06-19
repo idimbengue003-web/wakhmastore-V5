@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-         viewBox="0 0 30 30" style="enable-background:new 0 0 30 30;" xml:space="preserve">
+	 viewBox="0 0 30 30" style="enable-background:new 0 0 30 30;" xml:space="preserve">
 <defs>
   <style type="text/css">
     .st-bg{fill:#0A0A0A;stroke:#FFFFFF;stroke-width:0.5;stroke-miterlimit:10;}
-    .st-meg{fill:#1D4ED8;}
-    .st-handle{fill:#FFFFFF;}
-    .st-wave{fill:none;stroke:#FFFFFF;stroke-width:1.5;stroke-linecap:round;}
+    .st-blue{fill:#2563EB;}
+    .st-blue-stroke{fill:none;stroke:#2563EB;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 
     .meg-breathe {
       animation: breathe 2.8s ease-in-out infinite;
       transform-origin: 15px 15px;
     }
-    .wave-1 { animation: wave-pulse 2.4s ease-in-out infinite; transform-origin: 19px 15px; }
-    .wave-2 { animation: wave-pulse 2.4s ease-in-out 0.25s infinite; transform-origin: 19px 15px; }
-    .wave-3 { animation: wave-pulse 2.4s ease-in-out 0.5s infinite; transform-origin: 19px 15px; }
+    .wave-1 { animation: wave-pulse 2.4s ease-in-out infinite; transform-origin: 21px 15px; }
+    .wave-2 { animation: wave-pulse 2.4s ease-in-out 0.25s infinite; transform-origin: 21px 15px; }
+    .wave-3 { animation: wave-pulse 2.4s ease-in-out 0.5s infinite; transform-origin: 21px 15px; }
 
     @keyframes breathe {
       0%, 100% { opacity: 0.95; }
@@ -31,21 +30,25 @@
   </style>
 </defs>
 
+  <!-- Fond noir arrondi -->
   <path class="st-bg" d="M24.51,28.51H5.49c-2.21,0-4-1.79-4-4V5.49c0-2.21,1.79-4,4-4h19.03c2.21,0,4,1.79,4,4v19.03C28.51,26.72,26.72,28.51,24.51,28.51z"/>
 
   <g class="meg-breathe">
-    <!-- Poignée du mégaphone (orange Wakhma) -->
-    <rect x="5" y="13" width="2" height="4" class="st-handle"/>
+    <!-- Poignée (grip) du mégaphone -->
+    <rect x="4.5" y="17" width="3" height="5" rx="0.8" class="st-blue"/>
 
-    <!-- Corps du mégaphone (cône blanc qui s'élargit vers la droite) -->
-    <path class="st-meg" d="M7,11 L7,19 L17.5,22 L17.5,8 Z"/>
+    <!-- Embout arrière (micro/bouche) -->
+    <rect x="7" y="13" width="1.8" height="4" rx="0.6" class="st-blue"/>
+
+    <!-- Corps du mégaphone (cône qui s'élargit vers la droite) -->
+    <path class="st-blue" d="M 8.5 12.5 L 20 7.5 L 20 22.5 L 8.5 17.5 Z"/>
 
     <!-- Lèvre d'ouverture (bord du mégaphone) -->
-    <rect x="17" y="8" width="1.2" height="14" class="st-meg"/>
+    <rect x="19.5" y="7.5" width="1.8" height="15" rx="0.6" class="st-blue"/>
   </g>
 
   <!-- 3 ondes sonores qui résonnent -->
-  <path class="st-wave wave-1" d="M20,12 Q21.5,15 20,18"/>
-  <path class="st-wave wave-2" d="M22.5,10.5 Q25,15 22.5,19.5"/>
-  <path class="st-wave wave-3" d="M25,9 Q28,15 25,21"/>
+  <path class="st-blue-stroke wave-1" d="M 22 12 Q 23.2 15 22 18"/>
+  <path class="st-blue-stroke wave-2" d="M 24 10 Q 26 15 24 20"/>
+  <path class="st-blue-stroke wave-3" d="M 26 8.5 Q 28.5 15 26 21.5"/>
 </svg>
