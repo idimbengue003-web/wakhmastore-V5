@@ -5,7 +5,7 @@
   <style type="text/css">
     .st-bg{fill:#0A0A0A;stroke:#FFFFFF;stroke-width:0.5;stroke-miterlimit:10;}
     .st-bag{fill:none;stroke:#FFFFFF;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
-    .st-handle{fill:none;stroke:#FF8A00;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+    .st-handle{fill:none;stroke:#1D4ED8;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
     .st-w{fill:#FFFFFF;}
 
     .bag-breathe {
@@ -28,7 +28,7 @@
     C28.51,26.72,26.72,28.51,24.51,28.51z"/>
 
   <g class="bag-breathe">
-    <!-- Anse du sac (poignée) — accent orange Wakhma -->
+    <!-- Anse du sac (poignée) — bleu professionnel Wakhma -->
     <path class="st-handle" d="M11.5,11.5 v-1.2 c0-2.2,1.6-4,3.5-4 s3.5,1.8,3.5,4 v1.2"/>
 
     <!-- Corps du sac -->

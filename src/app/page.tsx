@@ -98,12 +98,12 @@ export default function HomePage() {
           <span className="floating-emoji opacity-10" style={{ '--float-x': '42%', '--float-delay': '6.8s', '--float-duration': '12s', '--float-size': '1.2rem' } as React.CSSProperties}>⚡</span>
         </div>
 
-        <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 text-center">
-          <h1 className="wakhma-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tight">
-            Wakhma Store
+        <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24 text-center">
+          <h1 className="wakhma-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-10 tracking-tight">
+            <span className="text-blue-300">W</span>akhma Store
           </h1>
-          <p className="text-white/90 mb-8 max-w-xl mx-auto text-base sm:text-lg md:text-xl font-medium">
-            Poste ce que tu cherches gratuitement. Les vendeurs te trouvent et te contactent directement.
+          <p className="text-white/95 mb-12 max-w-2xl mx-auto text-base sm:text-lg md:text-xl font-medium leading-relaxed">
+            La marketplace sénégalaise pour acheter et vendre.
           </p>
 
           {/* Search bar */}
