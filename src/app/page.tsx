@@ -99,15 +99,15 @@ export default function HomePage() {
           <span className="floating-emoji opacity-10" style={{ '--float-x': '42%', '--float-delay': '6.8s', '--float-duration': '12s', '--float-size': '1.2rem' } as React.CSSProperties}>⚡</span>
         </div>
 
-        <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24 text-center">
-          <h1 className="wakhma-title w-full flex flex-col items-center justify-center gap-4 sm:gap-5 md:gap-6 mb-4 tracking-tight">
+        <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 text-center">
+          <h1 className="wakhma-title w-full flex flex-col items-center justify-center gap-3 sm:gap-4 md:gap-5 mb-4 tracking-tight">
             <Image
               src="/logo.svg"
               alt="Logo Wakhma Store"
-              width={80}
-              height={80}
+              width={140}
+              height={140}
               priority
-              className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-2xl drop-shadow-lg mx-auto"
+              className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-2xl drop-shadow-xl mx-auto"
             />
             <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white whitespace-nowrap text-center">
               Wakhma Store
