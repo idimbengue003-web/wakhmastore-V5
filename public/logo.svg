@@ -3,27 +3,38 @@
 	 viewBox="0 0 30 30" style="enable-background:new 0 0 30 30;" xml:space="preserve">
 <defs>
   <style type="text/css">
-    .st194{fill:#2D2D2D;stroke:#FFFFFF;stroke-width:0.6317;stroke-miterlimit:10;}
-    .st23{fill:#FFFFFF;}
+    .st-bg{fill:#0A0A0A;stroke:#FFFFFF;stroke-width:0.5;stroke-miterlimit:10;}
+    .st-bag{fill:none;stroke:#FFFFFF;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+    .st-handle{fill:none;stroke:#FF8A00;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+    .st-w{fill:#FFFFFF;}
 
-    .z-breathe {
-      animation: breathe 2.5s ease-in-out infinite;
+    .bag-breathe {
+      animation: breathe 2.8s ease-in-out infinite;
+      transform-origin: 15px 15px;
     }
 
     @keyframes breathe {
-      0%, 100% { opacity: 0.7; }
-      50% { opacity: 1; }
+      0%, 100% { opacity: 0.92; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.04); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bag-breathe { animation: none; }
     }
   </style>
 </defs>
 
-<g>
-  <path class="st194" d="M24.51,28.51H5.49c-2.21,0-4-1.79-4-4V5.49c0-2.21,1.79-4,4-4h19.03c2.21,0,4,1.79,4,4v19.03
+  <path class="st-bg" d="M24.51,28.51H5.49c-2.21,0-4-1.79-4-4V5.49c0-2.21,1.79-4,4-4h19.03c2.21,0,4,1.79,4,4v19.03
     C28.51,26.72,26.72,28.51,24.51,28.51z"/>
-  <g class="z-breathe">
-    <path class="st23" d="M15.47,7.1l-1.3,1.85c-0.2,0.29-0.54,0.47-0.9,0.47h-7.1V7.09C6.16,7.1,15.47,7.1,15.47,7.1z"/>
-    <polygon class="st23" points="24.3,7.1 13.14,22.91 5.7,22.91 16.86,7.1"/>
-    <path class="st23" d="M14.53,22.91l1.31-1.86c0.2-0.29,0.54-0.47,0.9-0.47h7.09v2.33H14.53z"/>
+
+  <g class="bag-breathe">
+    <!-- Anse du sac (poignée) — accent orange Wakhma -->
+    <path class="st-handle" d="M11.5,11.5 v-1.2 c0-2.2,1.6-4,3.5-4 s3.5,1.8,3.5,4 v1.2"/>
+
+    <!-- Corps du sac -->
+    <path class="st-bag" d="M8.5,11.5 h13 l-1,12.5 c-0.05,0.7-0.65,1.25-1.35,1.25 h-8.3 c-0.7,0-1.3-0.55-1.35-1.25 L8.5,11.5 z"/>
+
+    <!-- "W" stylisé intégré au sac -->
+    <path class="st-w" d="M11.2,15 l1.4,5.5 l1.4-3.8 l1.4,3.8 l1.4-5.5" />
   </g>
-</g>
 </svg>
