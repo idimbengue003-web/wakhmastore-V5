@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, Zap, Shield, TrendingUp, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -99,8 +100,17 @@ export default function HomePage() {
         </div>
 
         <div className="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-24 text-center">
-          <h1 className="wakhma-title text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-10 tracking-tight">
-            <span className="text-blue-300">W</span>akhma Store
+          <h1 className="wakhma-title flex items-center justify-center gap-3 sm:gap-4 md:gap-5 flex-wrap text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-10 tracking-tight">
+            <span>Wakhma</span>
+            <Image
+              src="/logo.svg"
+              alt="Logo Wakhma Store"
+              width={56}
+              height={56}
+              priority
+              className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-2xl drop-shadow-lg"
+            />
+            <span>Store</span>
           </h1>
           <p className="text-white/95 mb-12 max-w-2xl mx-auto text-base sm:text-lg md:text-xl font-medium leading-relaxed">
             La marketplace sénégalaise pour acheter et vendre.
